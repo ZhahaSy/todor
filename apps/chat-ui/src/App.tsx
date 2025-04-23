@@ -1,35 +1,72 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import React, { useState } from "react";
+import { App, Flex, GetProp } from "antd";
+import { Bubble, Sender } from "@ant-design/x";
+import { BubbleDataType } from "@ant-design/x/es/bubble/BubbleList";
 
-function App() {
-  const [count, setCount] = useState(0)
+import './App.css';
+
+const roles: GetProp<typeof Bubble.List, "roles"> = {
+  ai: {
+    placement: "start",
+    typing: { step: 5, interval: 20 },
+    styles: {
+      content: {
+        borderRadius: 16,
+      },
+    },
+  },
+  local: {
+    placement: "end",
+    variant: "shadow",
+  },
+};
+
+const Demo: React.FC = () => {
+  const histChatList: BubbleDataType[] = [];
+
+  const [value, setValue] = useState<string>("Hello? this is X!");
+  const [loading, setLoading] = useState<boolean>(false);
+
+  const { message } = App.useApp();
+
+  // Mock send message
+  React.useEffect(() => {
+    if (loading) {
+      const timer = setTimeout(() => {
+        setLoading(false);
+        message.success("Send message successfully!");
+      }, 3000);
+      return () => {
+        clearTimeout(timer);
+      };
+    }
+  }, [loading]);
 
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
-}
+    <div className="chat-wrapper">
+      <Flex gap="middle" vertical className="chat-list">
+        <Bubble.List items={histChatList} roles={roles} />
+      </Flex>
+      <Sender
+        className="sender"
+        loading={loading}
+        value={value}
+        onChange={(v) => {
+          setValue(v);
+        }}
+        onSubmit={() => {
+          setValue("");
+          setLoading(true);
+          message.info("Send message!");
+        }}
+        onCancel={() => {
+          setLoading(false);
+          message.error("Cancel sending!");
+        }}
+        autoSize={{ minRows: 2, maxRows: 6 }}
+      />
+    </div>
+  );
+};
 
-export default App
+export default Demo;
