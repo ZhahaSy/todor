@@ -1,10 +1,11 @@
 {
   "name": "LangChainDemo",
   "private": true,
+  "type": "module",
   "scripts": {
     "build": "turbo run build",
     "dev": "turbo run dev",
-    "start:c": "turbo run dev --filter=chat-ui",
+    "start:c": "turbo run dev --filter=chat-ui...",
     "lint": "turbo run lint",
     "format": "prettier --write \"**/*.{ts,tsx,md}\"",
     "check-types": "turbo run check-types"

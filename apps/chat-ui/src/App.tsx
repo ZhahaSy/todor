@@ -1,9 +1,15 @@
-import React, { useState } from "react";
-import { App, Flex, GetProp } from "antd";
+import React, { useEffect, useState } from "react";
+import { Flex, GetProp, message } from "antd";
 import { Bubble, Sender } from "@ant-design/x";
 import { BubbleDataType } from "@ant-design/x/es/bubble/BubbleList";
 
-import './App.css';
+import * as aiService from "ai-service";
+import "./App.css";
+import {
+  addChatRecord,
+  getChatRecord,
+  HistRecordItem,
+} from "./api/ConversationsAPI";
 
 const roles: GetProp<typeof Bubble.List, "roles"> = {
   ai: {
@@ -18,16 +24,20 @@ const roles: GetProp<typeof Bubble.List, "roles"> = {
   local: {
     placement: "end",
     variant: "shadow",
+    styles: {
+      content: {
+        borderRadius: 16,
+        background: "yellowGreen",
+      },
+    },
   },
 };
 
 const Demo: React.FC = () => {
-  const histChatList: BubbleDataType[] = [];
+  const [histChatList, setHistChatList] = useState<BubbleDataType[]>([]);
 
-  const [value, setValue] = useState<string>("Hello? this is X!");
+  const [value, setValue] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(false);
-
-  const { message } = App.useApp();
 
   // Mock send message
   React.useEffect(() => {
@@ -42,6 +52,47 @@ const Demo: React.FC = () => {
     }
   }, [loading]);
 
+  const getChatList = async () => {
+    const data: HistRecordItem[] = await getChatRecord();
+    setHistChatList(
+      data?.map(({ id, content, user }) => {
+        return {
+          id,
+          content,
+          role: user,
+        };
+      })
+    );
+  };
+
+  const handleSubmit = async () => {
+    setLoading(true);
+    handleAsk(value)
+    await addChatRecord({
+      user: "local",
+      content: value,
+      date: Date.now(),
+    });
+    setLoading(false);
+    setValue("");
+    getChatList();
+  };
+
+  const handleAsk = async (value:string) => {
+    const aiMsg = await aiService.sendMessage(value);
+
+    await addChatRecord({
+      user: "ai",
+      content: aiMsg.content,
+      date: Date.now(),
+    });
+    getChatList();
+  }
+
+  useEffect(() => {
+    getChatList();
+  }, []);
+
   return (
     <div className="chat-wrapper">
       <Flex gap="middle" vertical className="chat-list">
@@ -55,9 +106,7 @@ const Demo: React.FC = () => {
           setValue(v);
         }}
         onSubmit={() => {
-          setValue("");
-          setLoading(true);
-          message.info("Send message!");
+          handleSubmit();
         }}
         onCancel={() => {
           setLoading(false);
