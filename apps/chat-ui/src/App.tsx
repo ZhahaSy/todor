@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
-import { Flex, GetProp, message } from "antd";
-import { Bubble, Sender } from "@ant-design/x";
+import { Flex, GetProp, message, Typography } from "antd";
+import { Bubble, BubbleProps, Sender } from "@ant-design/x";
 import { BubbleDataType } from "@ant-design/x/es/bubble/BubbleList";
 
 import * as aiService from "ai-service";
@@ -10,6 +10,7 @@ import {
   getChatRecord,
   HistRecordItem,
 } from "./api/ConversationsAPI";
+import markdownit from 'markdown-it';
 
 const roles: GetProp<typeof Bubble.List, "roles"> = {
   ai: {
@@ -32,6 +33,16 @@ const roles: GetProp<typeof Bubble.List, "roles"> = {
     },
   },
 };
+
+const md = markdownit({ html: true, breaks: true });
+
+
+const renderMarkdown: BubbleProps['messageRender'] = (content) => (
+  <Typography>
+    {/* biome-ignore lint/security/noDangerouslySetInnerHtml: used in demo */}
+    <div dangerouslySetInnerHTML={{ __html: md.render(content) }} />
+  </Typography>
+);
 
 const Demo: React.FC = () => {
   const [histChatList, setHistChatList] = useState<BubbleDataType[]>([]);
@@ -60,6 +71,7 @@ const Demo: React.FC = () => {
           id,
           content,
           role: user,
+          messageRender: renderMarkdown,
         };
       })
     );
@@ -96,7 +108,7 @@ const Demo: React.FC = () => {
   return (
     <div className="chat-wrapper">
       <Flex gap="middle" vertical className="chat-list">
-        <Bubble.List items={histChatList} roles={roles} />
+        <Bubble.List items={histChatList}  roles={roles} />
       </Flex>
       <Sender
         className="sender"
