@@ -1,19 +1,17 @@
-import React, {  } from 'react';
+import React from 'react';
 import ChatList from './components/ChatList';
 import SenderPanel from './components/SenderPanel';
 import styles from './App.module.less';
 import Sidebar from './components/SideBar';
 import { Conversation } from '@ant-design/x/es/conversations';
 import { useChat } from './hooks/useChat';
-import { sendMessage } from '../../../packages/aiService';
-
+import { sendMessage } from './api/ai';
 const Independent: React.FC = () => {
 
   // ==================== State =================
   const [loading, setLoading] = React.useState(false);
-  const [inputValue, setInputValue] = React.useState('');
 
-  const {messages, addMessage} = useChat('test-01')
+  const {messages, addMessage} = useChat()
 
   const [conversations, setConversations] = React.useState<Conversation[]>([]);
   const [curConversation, setCurConversation] = React.useState('');
@@ -25,22 +23,28 @@ const Independent: React.FC = () => {
     }, 1000);
   };
   const handleSubmit = async (value: string) => {
-    setInputValue('');
-    // 添加消息到消息列表
-    addMessage(value,'local');
+    setLoading(true); // 立即显示加载状态
     
-    // 发送消息到服务器
-    const answer = await sendMessage(value);
-
-    console.log(answer);
-    
-    addMessage(answer as unknown as string,'ai');
-
-    setLoading(true);
+    try {
+      // 先添加用户消息
+      await addMessage(value, 'local');
+      
+      // 发送消息到服务器
+      const answer = await sendMessage({ input: value });
+      
+      // 添加AI回复
+      await addMessage(answer as string, 'ai');
+    } catch (error) {
+      console.error('Message send failed:', error);
+    } finally {
+      setLoading(false); // 无论成功失败都关闭加载状态
+    }
   }
 
   const handleCancel = () => {
-    setInputValue('');
+    console.log('cancel');
+    // TODO: 取消发送消息 暂时不做
+    // 取消发送消息的逻辑     
   }
 
   const handleAddConversation = () => {
@@ -61,8 +65,6 @@ const Independent: React.FC = () => {
       <div className={styles.chat}>
         <ChatList messages={messages} loading={loading} onRetry={handleRetry} />
         <SenderPanel
-          value={inputValue}
-          onChange={setInputValue}
           onSubmit={handleSubmit}
           onCancel={handleCancel}
         />

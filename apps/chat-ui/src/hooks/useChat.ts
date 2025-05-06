@@ -1,11 +1,9 @@
 import { useState, useEffect } from "react";
-import localforage from "localforage";
+import { addChatHistory, getChatHistory } from "../api/chat-history";
 
 export interface HistRecordItem {
-  id: string;
   role: "local" | "ai";
   content: string;
-  date: number;
 }
 export type ReturnType = {
   /**
@@ -28,21 +26,28 @@ export type ReturnType = {
  * @description 使用 localforage 存储聊天记录，并提供添加聊天记录的方法，
  *
  */
-export const useChat = (chat_list_key: string): ReturnType => {
+export const useChat = (): ReturnType => {
   const [messages, setMessages] = useState<HistRecordItem[]>([]);
+
+  const getMessages = async () => {
+    try {
+      const data = await getChatHistory();
+      setMessages(data || []);  
+      return data || [];
+    } catch (error) {
+      console.error("Failed to get messages:", error);
+      return [];
+    }
+  }
 
   // 初始化加载本地数据
   useEffect(() => {
-    localforage
-      .getItem<HistRecordItem[]>(chat_list_key)
-      .then((data) => data && setMessages(data))
-      .catch(console.error);
-  }, [chat_list_key]);
+    getMessages();
+  }, []);
 
-  const updateMessage = (newMessage: HistRecordItem[]) => {
-    console.log(messages, "updateMessage");
+  const updateMessage = async (newMessage: HistRecordItem) => {
     
-    localforage.setItem(chat_list_key, newMessage).catch(console.error);
+    return await addChatHistory(newMessage)
   }
 
   const addMessage = async (
@@ -51,17 +56,15 @@ export const useChat = (chat_list_key: string): ReturnType => {
   ): Promise<boolean> => {
     try {
       const newMessage: HistRecordItem = {
-        id: Date.now().toString(),
         role: user as "local" | "ai",
         content,
-        date: Date.now(),
       };
 
 
       // 先更新UI状态
       setMessages((prev) => {
         const newDataList = [...prev, newMessage]
-        updateMessage(newDataList)
+        updateMessage(newMessage)
         return newDataList;
       });
 
