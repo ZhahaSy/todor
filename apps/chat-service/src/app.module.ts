@@ -6,6 +6,14 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 
 import { ConfigModule } from '@nestjs/config';
 import { ChatHistoryModule } from './modules/chat-history/chat-history.module';
+import { TodoModule } from './modules/todo/todo.module';
+
+import {
+  utilities as nestWinstonModuleUtilities,
+  WinstonModule,
+} from 'nest-winston';
+import { transports, format } from 'winston';
+import 'winston-daily-rotate-file';
 
 @Module({
   imports: [
@@ -15,11 +23,31 @@ import { ChatHistoryModule } from './modules/chat-history/chat-history.module';
       entities: [__dirname + '/**/*.entity{.ts,.js}'],
       synchronize: true, // 开发环境使用，生产环境需关闭
     }),
-    ChatHistoryModule,
+
     ConfigModule.forRoot({
       isGlobal: true,
       envFilePath: '.env', // 显式指定.env文件路径
     }),
+    WinstonModule.forRoot({
+      transports: [
+        new transports.Console({
+          format: format.combine(
+            format.timestamp(),
+            format.ms(),
+            nestWinstonModuleUtilities.format.nestLike('Voltron Service', {
+              colors: true,
+              prettyPrint: true,
+              processId: true,
+              appName: true,
+            }),
+          ),
+        }),
+        // other transports...
+      ],
+    }),
+
+    ChatHistoryModule,
+    TodoModule,
     AiModule,
   ],
   controllers: [AppController],

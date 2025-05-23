@@ -18,8 +18,6 @@ export class ChatHistoryService {
 
   async findAll(): Promise<ChatHistory[]> {
     const data = await this.chatRepository.find({ order: { date: 'ASC' } });
-    console.log('findAll', data);
-
     return data;
   }
 }
