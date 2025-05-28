@@ -4,9 +4,9 @@
   "type": "module",
   "scripts": {
     "build": "turbo run build",
-    "dev": "turbo run dev",
+    "start": "pnpm run start:c && pnpm run start:s",
     "start:c": "turbo run dev --filter=chat-ui...",
-    "start:s": "pnpm run start --filter=chat-service...",
+    "start:s": "turbo run start --filter=chat-service...",
     "lint": "turbo run lint",
     "format": "prettier --write \"**/*.{ts,tsx,md}\"",
     "check-types": "turbo run check-types"

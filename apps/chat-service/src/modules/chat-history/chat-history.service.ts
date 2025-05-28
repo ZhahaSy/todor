@@ -12,8 +12,8 @@ export class ChatHistoryService {
   ) {}
 
   async create(createChatDto: CreateChatDto): Promise<ChatHistory> {
-    const newChat = await this.chatRepository.create(createChatDto);
-    return await this.chatRepository.save(newChat);
+    const newChat = this.chatRepository.create(createChatDto);
+    return this.chatRepository.save(newChat);
   }
 
   async findAll(): Promise<ChatHistory[]> {

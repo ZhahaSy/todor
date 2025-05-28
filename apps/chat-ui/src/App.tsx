@@ -25,12 +25,17 @@ const Independent: React.FC = () => {
   const handleSubmit = async (value: string) => {
     setLoading(true); // 立即显示加载状态
 
+    if(loading) return;
+    
     try {
       // 先添加用户消息
       await addMessage(value, "local");
 
+      console.log('local',value);
+      
       // 发送消息到服务器
       const answer = await sendMessage({ input: value });
+      console.log('answer',answer);
 
       // 添加AI回复
       await addMessage(answer as string, "ai");
@@ -67,7 +72,7 @@ const Independent: React.FC = () => {
 
       <div className={styles.chat}>
         <ChatList messages={messages} loading={loading} onRetry={handleRetry} />
-        <SenderPanel onSubmit={handleSubmit} onCancel={handleCancel} />
+        <SenderPanel onSubmit={handleSubmit} sending={loading} onCancel={handleCancel} />
       </div>
       <Todo />
     </div>

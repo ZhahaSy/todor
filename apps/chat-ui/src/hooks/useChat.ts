@@ -64,9 +64,11 @@ export const useChat = (): ReturnType => {
       // 先更新UI状态
       setMessages((prev) => {
         const newDataList = [...prev, newMessage]
-        updateMessage(newMessage)
         return newDataList;
       });
+
+      // 再更新本地数据
+      updateMessage(newMessage)
 
       
       return true;

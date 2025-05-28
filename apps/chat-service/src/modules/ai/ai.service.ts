@@ -21,7 +21,9 @@ export class AiService {
     originInput: zod.string().describe('原始输入'),
     originOutput: zod
       .string()
-      .describe('对待办标题，内容，类型，优先级，是否紧急的整理成语言的输出'),
+      .describe(
+        '好的，我已经收到了你的待办事项，请查看我整理的待办信息是否合理。',
+      ),
   });
 
   constructor(private configService: ConfigService) {
