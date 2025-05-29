@@ -22,6 +22,33 @@ async function bootstrap() {
   });
   SwaggerModule.setup('api', app, document);
 
-  await app.listen(3000);
+  const MAX_RETRY = 5; // 最大重试次数
+  let port = 3000;
+  let retryCount = 0;
+
+  while (retryCount < MAX_RETRY) {
+    try {
+      await app.listen(port);
+      console.log(`\x1b[32mApplication is running on port ${port}\x1b[0m`);
+      break;
+    } catch (error) {
+      if (error.code === 'EADDRINUSE') {
+        console.log(
+          `\x1b[33mPort ${port} is in use, trying port ${port + 1}...\x1b[0m`,
+        );
+        port++;
+        retryCount++;
+      } else {
+        throw error;
+      }
+    }
+  }
+
+  if (retryCount === MAX_RETRY) {
+    console.error(
+      '\x1b[31mFailed to find available port after 5 attempts\x1b[0m',
+    );
+    process.exit(1);
+  }
 }
 bootstrap();
