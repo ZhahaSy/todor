@@ -4,7 +4,7 @@
   "type": "module",
   "scripts": {
     "build": "turbo run build",
-    "start": "pnpm run start:c && pnpm run start:s",
+    "start": "pnpm run start:s & pnpm run start:c ",
     "start:c": "turbo run dev --filter=chat-ui...",
     "start:s": "turbo run start --filter=chat-service...",
     "lint": "turbo run lint",
