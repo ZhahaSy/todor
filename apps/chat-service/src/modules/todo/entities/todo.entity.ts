@@ -61,6 +61,15 @@ export class Todo {
   })
   status: string;
 
+  @Column({
+    type: 'bigint',
+    comment: 'todo 时间',
+    default: () => {
+      return Date.now();
+    },
+  })
+  todoTime: string;
+
   @CreateDateColumn({
     type: 'bigint',
     comment: 'create time',

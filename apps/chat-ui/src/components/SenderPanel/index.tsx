@@ -12,6 +12,7 @@ const SenderPanel = ({  onSubmit, onCancel, sending }: SenderPanelProps) => {
   return (
     <Sender
       loading={sending}
+      disabled={sending}
       className={styles.sender}
       onSubmit={onSubmit}
       onCancel={onCancel}
