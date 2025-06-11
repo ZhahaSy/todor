@@ -21,7 +21,11 @@ export class AiController {
   @ApiBody({ type: SendMessageDto })
   @Post('message')
   async sendMessage(@Body() sendMessageDto: SendMessageDto) {
-    const result = await this.aiService.sendMessage(sendMessageDto.input);
+    const { structured: result } = await this.aiService.process(
+      sendMessageDto.input,
+    );
+    console.log(result);
+
     // 保存到待办事项
     await this.todoService.create({
       title: result.title,

@@ -1,8 +1,10 @@
-import { Button, Drawer, Flex, FloatButton, List, Radio } from "antd";
+import { Button, Drawer, Flex, FloatButton, List, Radio, Space } from "antd";
 
 import * as TodoApi from "../../api/todo";
 import { useEffect, useState } from "react";
 import { TodoItemEntity } from "../../entities/todo";
+
+import Styles from "./index.module.less";
 
 const Todo = () => {
   const [open, setOpen] = useState(false);
@@ -16,11 +18,14 @@ const Todo = () => {
     await TodoApi.addTodo({
       title: "新任务",
       content: "新任务内容",
-      type: 'life'
+      type: "life",
     });
     getTodoList();
   };
-  const updateTodoStatus = async (id: string, status: 'active' | 'completed') => {
+  const updateTodoStatus = async (
+    id: string,
+    status: "active" | "completed"
+  ) => {
     await TodoApi.updateTodo({
       id,
       status,
@@ -61,30 +66,36 @@ const Todo = () => {
           </Button>
         </Flex>
         <List
+          className={Styles.todoWrap}
           dataSource={todoList}
           renderItem={(item) => (
             <List.Item
+              className={Styles.todoItem}
               key={item.id}
               extra={
-                <Flex gap={10}>
+                <Space direction="vertical">
                   <Button
-                    type="primary"
+                    size="small"
+                    type="link"
                     onClick={() => updateTodoStatus(item.id, "completed")}
                   >
                     完成
                   </Button>
-
-                  <Button type="primary" onClick={() => deleteTodo(item.id)}>
+                  <Button
+                    type="text"
+                    size="small"
+                    danger
+                    onClick={() => deleteTodo(item.id)}
+                  >
                     删除
                   </Button>
-                </Flex>
+                </Space>
               }
             >
               <List.Item.Meta
                 title={
                   <>
-                    <Radio checked={item.status === "completed"}></Radio>
-                    {item.title}
+                    {item.title} | {item.type} |{ item.todoTime}
                   </>
                 }
                 description={item.content}

@@ -31,11 +31,8 @@ const Independent: React.FC = () => {
       // 先添加用户消息
       await addMessage(value, "local");
 
-      console.log('local',value);
-      
       // 发送消息到服务器
       const answer = await sendMessage({ input: value });
-      console.log('answer',answer);
 
       // 添加AI回复
       await addMessage(answer as string, "ai");

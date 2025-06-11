@@ -18,4 +18,5 @@ export interface TodoItemEntity {
   status: 'active' | 'completed';
 
   createTime: number;
+  todoTime: 'string'
 }
