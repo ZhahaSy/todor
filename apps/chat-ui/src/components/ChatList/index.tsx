@@ -5,6 +5,8 @@ import styles from "./index.module.less";
 import { GetProp, Typography } from "antd";
 import markdownit from "markdown-it";
 
+import aiAvatar from "@/assets/logo.png";
+
 interface ChatListProps {
   messages: BubbleDataType[];
   loading: boolean;
@@ -21,6 +23,7 @@ const renderMarkdown: BubbleProps["messageRender"] = (content) => (
 
 const roles: GetProp<typeof Bubble.List, "roles"> = {
   ai: {
+    avatar: {src: aiAvatar},
     placement: "start",
     typing: { step: 5, interval: 20 },
     styles: {
