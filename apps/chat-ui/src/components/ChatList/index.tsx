@@ -45,11 +45,13 @@ const ChatList = ({ messages }: ChatListProps) => (
   <div className={styles.chatList}>
     {messages?.length ? (
       <Bubble.List
+        style={{ overflowY: "auto", height: "100%" }}
         items={messages.map((message) => ({
           ...message,
           messageRender: renderMarkdown,
         }))}
         roles={roles}
+        autoScroll
       />
     ) : (
       <Welcome
