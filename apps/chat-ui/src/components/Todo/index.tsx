@@ -2,26 +2,19 @@ import {
   Button,
   Card,
   Col,
-  Drawer,
   Flex,
   FloatButton,
-  Form,
   Input,
-  List,
   Modal,
-  Radio,
   Row,
   Space,
 } from "antd";
 
-import * as TodoApi from "../../api/todo";
-import { useEffect, useState } from "react";
-import { TodoItemEntity } from "../../entities/todo";
+import { useState } from "react";
 
 import Styles from "./index.module.less";
 import {
   CloseCircleFilled,
-  DeleteFilled,
   EditFilled,
   SearchOutlined,
 } from "@ant-design/icons";

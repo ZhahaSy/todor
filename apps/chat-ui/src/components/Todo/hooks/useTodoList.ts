@@ -9,12 +9,8 @@ const useTodoList = ({ dependencies }: { dependencies: any[] }) => {
     setTodoList(res);
   };
 
-  const addTodo = async () => {
-    await TodoApi.addTodo({
-      title: "新任务",
-      content: "新任务内容",
-      type: "life",
-    });
+  const addTodo = async (params: Partial<Omit<TodoItemEntity, 'id' | 'createTime' | 'originInput' | 'originOutput'>>) => {
+    await TodoApi.addTodo(params);
     getTodoList();
   };
   const updateTodoStatus = async (
