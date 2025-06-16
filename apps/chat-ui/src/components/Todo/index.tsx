@@ -1,5 +1,7 @@
 import {
   Button,
+  Card,
+  Col,
   Drawer,
   Flex,
   FloatButton,
@@ -8,6 +10,7 @@ import {
   List,
   Modal,
   Radio,
+  Row,
   Space,
 } from "antd";
 
@@ -16,12 +19,19 @@ import { useEffect, useState } from "react";
 import { TodoItemEntity } from "../../entities/todo";
 
 import Styles from "./index.module.less";
-import { SearchOutlined } from "@ant-design/icons";
+import {
+  CloseCircleFilled,
+  DeleteFilled,
+  EditFilled,
+  SearchOutlined,
+} from "@ant-design/icons";
 import useTodoList from "./hooks/useTodoList";
+import LevelTag from "./LevelTag";
+import TypeTag from "./TypeTag";
 
 const Todo = () => {
   const [open, setOpen] = useState(false);
-  const { todoList, getTodoList, addTodo, updateTodoStatus, deleteTodo } =
+  const { todoList, updateTodoStatus, deleteTodo } =
     useTodoList({ dependencies: [open] });
   return (
     <>
@@ -42,6 +52,12 @@ const Todo = () => {
           },
         }}
         maskClosable
+        onClose={() => {
+          setOpen(false);
+        }}
+        onCancel={() => {
+          setOpen(false);
+        }}
         open={open}
         centered
         closable={false}
@@ -55,40 +71,70 @@ const Todo = () => {
             e.stopPropagation();
           }}
         >
-          <Input.Search
-            styles={{
-              input: {
-                height: "80px",
-              },
-              suffix: {
-                height: "80px",
-              },
-            }}
-            size="large"
-            enterButton={
-              <Button style={{ height: "80px", width: "80px" }}>
-                <SearchOutlined />
-              </Button>
-            }
-            placeholder="输入关键词"
-          />
-          {/* 筛选项 */}
+          <Flex vertical={true} gap={30}>
+            <Input.Search
+              className={Styles.todoSearch}
+              styles={{
+                input: {
+                  height: "60px",
+                },
+                suffix: {
+                  height: "60px",
+                },
+              }}
+              size="large"
+              enterButton={
+                <Button style={{ height: "60px", width: "80px" }}>
+                  <SearchOutlined />
+                </Button>
+              }
+              placeholder="输入关键词"
+            />
+            {/* 筛选项 */}
             {/* 视图：列表视图/卡片视图 */}
             {/* 状态：全部/未完成/已完成 */}
             {/* 时间：全部/近一周/近一个月/自定义 */}
             {/* 类型: 全部/工作/学习/生活 */}
-            <Form>
-              <Form.Item>
-                <Radio.Group>
-                  <Radio value={1}>列表视图</Radio>
-                  <Radio value={2}>卡片视图</Radio>
-                </Radio.Group>
-              </Form.Item>
-            </Form>
-          {/* 列表 */}
-          
+
+            {/* 列表 */}
+
+            <Row gutter={20}>
+              {todoList.map((todo) => (
+                <Col className={Styles.todoCard} span={12}>
+                  <Card
+                    onDoubleClick={() => updateTodoStatus(todo.id, todo.status === 'completed' ? 'active' : 'completed')}
+                    className={todo.status === 'completed' ? Styles.todoCardCompleted : ''}
+                    key={todo.id}
+                    title={<Flex gap={4}>
+                    <span>{todo.title}</span>
+                    <LevelTag level={todo.priority}/>
+                    <TypeTag type={todo.type} />
+                    </Flex>}
+                    extra={
+                      <Space>
+                        <Button danger type="text">
+                          <EditFilled />
+                        </Button>
+                        <Button onClick={() => deleteTodo(todo.id)} type="text">
+                          <CloseCircleFilled />
+                        </Button>
+                      </Space>
+                    }
+                  >
+                    <Card.Meta
+                      description={
+                        <>
+                          <div>{todo.content}</div>
+                          <div>{todo.todoTime}</div>
+                        </>
+                      }
+                    />
+                  </Card>
+                </Col>
+              ))}
+            </Row>
+          </Flex>
         </div>
-        {/*  */}
       </Modal>
     </>
   );

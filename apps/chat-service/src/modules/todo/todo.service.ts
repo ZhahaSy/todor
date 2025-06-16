@@ -15,7 +15,10 @@ export class TodoService {
     return await this.todoRepository.save(newTodo);
   }
   async getTodoList() {
-    return await this.todoRepository.find({ where: { isDeleted: false } });
+    return await this.todoRepository.find({
+      where: { isDeleted: false },
+      order: { status: 'ASC', createTime: 'DESC' },
+    });
   }
   async getTodoById(id: string) {
     return await this.todoRepository.findOne({
