@@ -1,47 +1,28 @@
-import { Button, Drawer, Flex, FloatButton, List, Radio, Space } from "antd";
+import {
+  Button,
+  Drawer,
+  Flex,
+  FloatButton,
+  Form,
+  Input,
+  List,
+  Modal,
+  Radio,
+  Space,
+} from "antd";
 
 import * as TodoApi from "../../api/todo";
 import { useEffect, useState } from "react";
 import { TodoItemEntity } from "../../entities/todo";
 
 import Styles from "./index.module.less";
+import { SearchOutlined } from "@ant-design/icons";
+import useTodoList from "./hooks/useTodoList";
 
 const Todo = () => {
   const [open, setOpen] = useState(false);
-  const [todoList, setTodoList] = useState<TodoItemEntity[]>([]);
-  const getTodoList = async () => {
-    const res = await TodoApi.getTodoList();
-    setTodoList(res);
-  };
-
-  const addTodo = async () => {
-    await TodoApi.addTodo({
-      title: "新任务",
-      content: "新任务内容",
-      type: "life",
-    });
-    getTodoList();
-  };
-  const updateTodoStatus = async (
-    id: string,
-    status: "active" | "completed"
-  ) => {
-    await TodoApi.updateTodo({
-      id,
-      status,
-    });
-    getTodoList();
-  };
-
-  const deleteTodo = async (id: string) => {
-    await TodoApi.deleteTodo(id);
-    getTodoList();
-  };
-  useEffect(() => {
-    if (open) {
-      getTodoList();
-    }
-  }, [open]);
+  const { todoList, getTodoList, addTodo, updateTodoStatus, deleteTodo } =
+    useTodoList({ dependencies: [open] });
   return (
     <>
       <FloatButton
@@ -52,58 +33,63 @@ const Todo = () => {
         style={{ width: 40, height: 40, left: 80, bottom: "20%" }}
         description="待办列表"
       ></FloatButton>
-      <Drawer
-        width="60%"
-        open={open}
-        onClose={() => {
-          setOpen(false);
+      <Modal
+        styles={{
+          content: {
+            background: "rgba(0,0,0,0)",
+            boxShadow: "none",
+            height: "800px",
+          },
         }}
-        title="待办列表"
+        maskClosable
+        open={open}
+        centered
+        closable={false}
+        footer={null}
+        width={"80%"}
       >
-        <Flex>
-          <Button type="primary" onClick={addTodo}>
-            新增
-          </Button>
-        </Flex>
-        <List
-          className={Styles.todoWrap}
-          dataSource={todoList}
-          renderItem={(item) => (
-            <List.Item
-              className={Styles.todoItem}
-              key={item.id}
-              extra={
-                <Space direction="vertical">
-                  <Button
-                    size="small"
-                    type="link"
-                    onClick={() => updateTodoStatus(item.id, "completed")}
-                  >
-                    完成
-                  </Button>
-                  <Button
-                    type="text"
-                    size="small"
-                    danger
-                    onClick={() => deleteTodo(item.id)}
-                  >
-                    删除
-                  </Button>
-                </Space>
-              }
-            >
-              <List.Item.Meta
-                title={
-                  <>
-                    {item.title} | {item.type} |{ item.todoTime}
-                  </>
-                }
-                description={item.content}
-              ></List.Item.Meta>
-            </List.Item>
-          )}
-        ></List>
-      </Drawer>
+        <div
+          className={`layout-center ${Styles.todoWrapper}`}
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+          }}
+        >
+          <Input.Search
+            styles={{
+              input: {
+                height: "80px",
+              },
+              suffix: {
+                height: "80px",
+              },
+            }}
+            size="large"
+            enterButton={
+              <Button style={{ height: "80px", width: "80px" }}>
+                <SearchOutlined />
+              </Button>
+            }
+            placeholder="输入关键词"
+          />
+          {/* 筛选项 */}
+            {/* 视图：列表视图/卡片视图 */}
+            {/* 状态：全部/未完成/已完成 */}
+            {/* 时间：全部/近一周/近一个月/自定义 */}
+            {/* 类型: 全部/工作/学习/生活 */}
+            <Form>
+              <Form.Item>
+                <Radio.Group>
+                  <Radio value={1}>列表视图</Radio>
+                  <Radio value={2}>卡片视图</Radio>
+                </Radio.Group>
+              </Form.Item>
+            </Form>
+          {/* 列表 */}
+          
+        </div>
+        {/*  */}
+      </Modal>
     </>
   );
 };
