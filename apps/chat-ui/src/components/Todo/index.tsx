@@ -1,31 +1,21 @@
-import {
-  Button,
-  Card,
-  Col,
-  Flex,
-  FloatButton,
-  Input,
-  Modal,
-  Row,
-  Space,
-} from "antd";
+import { Button, Flex, FloatButton, Form, Input, Modal } from "antd";
 
 import { useState } from "react";
 
 import Styles from "./index.module.less";
-import {
-  CloseCircleFilled,
-  EditFilled,
-  SearchOutlined,
-} from "@ant-design/icons";
+import { SearchOutlined } from "@ant-design/icons";
 import useTodoList from "./hooks/useTodoList";
-import LevelTag from "./LevelTag";
-import TypeTag from "./TypeTag";
+import ViewSelector from "./ViewSelector";
+import CardView from "./CardView";
+import CalendarView from "./CalendarView";
 
 const Todo = () => {
   const [open, setOpen] = useState(false);
-  const { todoList, updateTodoStatus, deleteTodo } =
-    useTodoList({ dependencies: [open] });
+  const todoActionsAndData = useTodoList({ dependencies: [open] });
+
+  const [form] = Form.useForm()
+
+  const view = Form.useWatch('view', form)
   return (
     <>
       <FloatButton
@@ -84,48 +74,20 @@ const Todo = () => {
               placeholder="输入关键词"
             />
             {/* 筛选项 */}
-            {/* 视图：列表视图/卡片视图 */}
+            <Form>
+              <Form form={form} initialValues={{view: 'card'}}>
+                {/* 视图：日历视图/卡片视图 */}
+                <Form.Item name="view">
+                  <ViewSelector />
+                </Form.Item>
+              </Form>
+            </Form>
             {/* 状态：全部/未完成/已完成 */}
             {/* 时间：全部/近一周/近一个月/自定义 */}
             {/* 类型: 全部/工作/学习/生活 */}
 
             {/* 列表 */}
-
-            <Row gutter={20}>
-              {todoList.map((todo) => (
-                <Col className={Styles.todoCard} span={12}>
-                  <Card
-                    onDoubleClick={() => updateTodoStatus(todo.id, todo.status === 'completed' ? 'active' : 'completed')}
-                    className={todo.status === 'completed' ? Styles.todoCardCompleted : ''}
-                    key={todo.id}
-                    title={<Flex gap={4}>
-                    <span>{todo.title}</span>
-                    <LevelTag level={todo.priority}/>
-                    <TypeTag type={todo.type} />
-                    </Flex>}
-                    extra={
-                      <Space>
-                        <Button danger type="text">
-                          <EditFilled />
-                        </Button>
-                        <Button onClick={() => deleteTodo(todo.id)} type="text">
-                          <CloseCircleFilled />
-                        </Button>
-                      </Space>
-                    }
-                  >
-                    <Card.Meta
-                      description={
-                        <>
-                          <div>{todo.content}</div>
-                          <div>{todo.todoTime}</div>
-                        </>
-                      }
-                    />
-                  </Card>
-                </Col>
-              ))}
-            </Row>
+            {view === 'card' ? <CardView {...todoActionsAndData} /> : <CalendarView {...todoActionsAndData} />}
           </Flex>
         </div>
       </Modal>

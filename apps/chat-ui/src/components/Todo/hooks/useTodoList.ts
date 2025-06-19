@@ -2,7 +2,15 @@ import { useEffect, useState } from "react";
 import { TodoItemEntity } from "../../../entities/todo";
 import * as TodoApi from "../../../api/todo";
 
-const useTodoList = ({ dependencies }: { dependencies: any[] }) => {
+export interface UseTodoListReturn {
+  todoList: TodoItemEntity[];
+  getTodoList: () => Promise<void>;
+  addTodo: (params: Partial<Omit<TodoItemEntity, 'id' | 'createTime' | 'originInput' | 'originOutput'>>) => Promise<void>;
+  updateTodoStatus: (id: string, status: "active" | "completed") => Promise<void>;
+  deleteTodo: (id: string) => Promise<void>;
+}
+
+const useTodoList: (config:  { dependencies: any[] }) => UseTodoListReturn = ({ dependencies }) => {
   const [todoList, setTodoList] = useState<TodoItemEntity[]>([]);
   const getTodoList = async () => {
     const res = await TodoApi.getTodoList();
