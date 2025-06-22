@@ -10,7 +10,7 @@ export interface UseTodoListReturn {
   deleteTodo: (id: string) => Promise<void>;
 }
 
-const useTodoList: (config:  { dependencies: any[] }) => UseTodoListReturn = ({ dependencies }) => {
+const useTodoList = ({ readyOn }: { readyOn: boolean }) => {
   const [todoList, setTodoList] = useState<TodoItemEntity[]>([]);
   const getTodoList = async () => {
     const res = await TodoApi.getTodoList();
@@ -38,8 +38,10 @@ const useTodoList: (config:  { dependencies: any[] }) => UseTodoListReturn = ({ 
   };
 
   useEffect(() => {
-    getTodoList();
-  }, [dependencies]);
+    if (readyOn) {
+      getTodoList();
+    }
+  }, [readyOn]);
 
   return {
     todoList,

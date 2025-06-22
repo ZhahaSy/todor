@@ -11,7 +11,7 @@ import CalendarView from "./CalendarView";
 
 const Todo = () => {
   const [open, setOpen] = useState(false);
-  const todoActionsAndData = useTodoList({ dependencies: [open] });
+  const todoActionsAndData = useTodoList({ readyOn: !!open });
 
   const [form] = Form.useForm()
 
@@ -78,7 +78,7 @@ const Todo = () => {
               <Form form={form} initialValues={{view: 'card'}}>
                 {/* 视图：日历视图/卡片视图 */}
                 <Form.Item name="view">
-                  <ViewSelector />
+                  <ViewSelector className={Styles.viewSelector} />
                 </Form.Item>
               </Form>
             </Form>
