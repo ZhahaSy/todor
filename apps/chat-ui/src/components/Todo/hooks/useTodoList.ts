@@ -12,8 +12,8 @@ export interface UseTodoListReturn {
 
 const useTodoList = ({ readyOn }: { readyOn: boolean }) => {
   const [todoList, setTodoList] = useState<TodoItemEntity[]>([]);
-  const getTodoList = async () => {
-    const res = await TodoApi.getTodoList();
+  const getTodoList = async (todoMonth?: string) => {
+    const res = await TodoApi.getTodoList(todoMonth);
     setTodoList(res);
   };
 

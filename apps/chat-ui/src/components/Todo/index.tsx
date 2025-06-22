@@ -1,6 +1,6 @@
 import { Button, Flex, FloatButton, Form, Input, Modal } from "antd";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import Styles from "./index.module.less";
 import { SearchOutlined } from "@ant-design/icons";
@@ -8,14 +8,19 @@ import useTodoList from "./hooks/useTodoList";
 import ViewSelector from "./ViewSelector";
 import CardView from "./CardView";
 import CalendarView from "./CalendarView";
+import dayjs from "dayjs";
 
 const Todo = () => {
   const [open, setOpen] = useState(false);
   const todoActionsAndData = useTodoList({ readyOn: !!open });
 
-  const [form] = Form.useForm()
+  const [form] = Form.useForm();
 
-  const view = Form.useWatch('view', form)
+  const view = Form.useWatch("view", form);
+
+  const onCalendarChange = (date: dayjs.Dayjs) => {
+    todoActionsAndData.getTodoList(date.format("YYYY-MM"));
+  }
   return (
     <>
       <FloatButton
@@ -31,7 +36,7 @@ const Todo = () => {
           content: {
             background: "rgba(0,0,0,0)",
             boxShadow: "none",
-            height: "800px",
+            height: "900px",
           },
         }}
         maskClosable
@@ -54,7 +59,7 @@ const Todo = () => {
             e.stopPropagation();
           }}
         >
-          <Flex vertical={true} gap={30}>
+          <Flex vertical={true}>
             <Input.Search
               className={Styles.todoSearch}
               styles={{
@@ -75,7 +80,7 @@ const Todo = () => {
             />
             {/* 筛选项 */}
             <Form>
-              <Form form={form} initialValues={{view: 'card'}}>
+              <Form form={form} initialValues={{ view: "card" }}>
                 {/* 视图：日历视图/卡片视图 */}
                 <Form.Item name="view">
                   <ViewSelector className={Styles.viewSelector} />
@@ -87,7 +92,11 @@ const Todo = () => {
             {/* 类型: 全部/工作/学习/生活 */}
 
             {/* 列表 */}
-            {view === 'card' ? <CardView {...todoActionsAndData} /> : <CalendarView {...todoActionsAndData} />}
+            {view === "card" ? (
+              <CardView {...todoActionsAndData} />
+            ) : (
+              <CalendarView onChange={onCalendarChange} {...todoActionsAndData} />
+            )}
           </Flex>
         </div>
       </Modal>

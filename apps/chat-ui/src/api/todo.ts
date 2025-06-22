@@ -1,8 +1,8 @@
 import { TodoItemEntity } from "../entities/todo";
 import request from "../request";
 
-export const getTodoList = async () => {
-  const data = await request.get("/todo/list");
+export const getTodoList = async (todoMonth?: string) => {
+  const data = await request.get("/todo/list", { params: { todoMonth } });
   return data;
 };
 export const addTodo = async (data: Partial<TodoItemEntity>) => {
