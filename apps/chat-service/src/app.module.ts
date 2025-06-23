@@ -14,6 +14,7 @@ import {
 } from 'nest-winston';
 import { transports, format } from 'winston';
 import 'winston-daily-rotate-file';
+import { UserModule } from './modules/user/user.module';
 
 @Module({
   imports: [
@@ -49,6 +50,7 @@ import 'winston-daily-rotate-file';
     ChatHistoryModule,
     TodoModule,
     AiModule,
+    UserModule,
   ],
   controllers: [AppController],
   providers: [AppService],

@@ -33,6 +33,7 @@ const Sidebar = ({
 
     {/* 底部栏 */}
     <div className={styles.footerBar}>
+      {/* 增加用户选择器 */}
       <Avatar size={24} />
       <Button icon={<QuestionCircleOutlined />} />
     </div>
