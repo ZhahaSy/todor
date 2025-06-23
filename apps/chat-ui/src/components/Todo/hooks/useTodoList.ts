@@ -1,23 +1,43 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { TodoItemEntity } from "../../../entities/todo";
 import * as TodoApi from "../../../api/todo";
 
 export interface UseTodoListReturn {
   todoList: TodoItemEntity[];
   getTodoList: () => Promise<void>;
-  addTodo: (params: Partial<Omit<TodoItemEntity, 'id' | 'createTime' | 'originInput' | 'originOutput'>>) => Promise<void>;
-  updateTodoStatus: (id: string, status: "active" | "completed") => Promise<void>;
+  addTodo: (
+    params: Partial<
+      Omit<TodoItemEntity, "id" | "createTime" | "originInput" | "originOutput">
+    >
+  ) => Promise<void>;
+  updateTodoStatus: (
+    id: string,
+    status: "active" | "completed"
+  ) => Promise<void>;
   deleteTodo: (id: string) => Promise<void>;
 }
 
-const useTodoList = ({ readyOn }: { readyOn: boolean }) => {
+const useTodoList = ({
+  readyOn,
+  getListParams,
+}: {
+  readyOn: boolean;
+  getListParams?: {
+    todoMonth?: string;
+    type?: ("work" | "life" | "study" | "all")[];
+  };
+}) => {
   const [todoList, setTodoList] = useState<TodoItemEntity[]>([]);
-  const getTodoList = async (todoMonth?: string) => {
-    const res = await TodoApi.getTodoList(todoMonth);
+  const getTodoList = async () => {
+    const res = await TodoApi.getTodoList(getListParams || {});
     setTodoList(res);
   };
 
-  const addTodo = async (params: Partial<Omit<TodoItemEntity, 'id' | 'createTime' | 'originInput' | 'originOutput'>>) => {
+  const addTodo = async (
+    params: Partial<
+      Omit<TodoItemEntity, "id" | "createTime" | "originInput" | "originOutput">
+    >
+  ) => {
     await TodoApi.addTodo(params);
     getTodoList();
   };
@@ -41,7 +61,7 @@ const useTodoList = ({ readyOn }: { readyOn: boolean }) => {
     if (readyOn) {
       getTodoList();
     }
-  }, [readyOn]);
+  }, [readyOn, getListParams]);
 
   return {
     todoList,

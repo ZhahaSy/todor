@@ -1,6 +1,6 @@
 import { Button, Flex, FloatButton, Form, Input, Modal } from "antd";
 
-import { useEffect, useState } from "react";
+import { useMemo, useState } from "react";
 
 import Styles from "./index.module.less";
 import { SearchOutlined } from "@ant-design/icons";
@@ -8,19 +8,29 @@ import useTodoList from "./hooks/useTodoList";
 import ViewSelector from "./ViewSelector";
 import CardView from "./CardView";
 import CalendarView from "./CalendarView";
-import dayjs from "dayjs";
+import TypeSelector from "./TypeSelector";
 
 const Todo = () => {
   const [open, setOpen] = useState(false);
-  const todoActionsAndData = useTodoList({ readyOn: !!open });
+
+  const [calendarData, setCalendarData] = useState<string>();
 
   const [form] = Form.useForm();
 
   const view = Form.useWatch("view", form);
+  const type = Form.useWatch("type", form);
 
-  const onCalendarChange = (date: dayjs.Dayjs) => {
-    todoActionsAndData.getTodoList(date.format("YYYY-MM"));
-  }
+  const getListParams = useMemo(() => ({
+    todoMonth: view === "calendar" ? calendarData : undefined,
+    type: type,
+  }), [view, calendarData, type]);
+
+  const todoActionsAndData = useTodoList({
+    readyOn: !!open,
+    getListParams,
+  });
+
+
   return (
     <>
       <FloatButton
@@ -60,33 +70,44 @@ const Todo = () => {
           }}
         >
           <Flex vertical={true}>
-            <Input.Search
-              className={Styles.todoSearch}
-              styles={{
-                input: {
-                  height: "60px",
-                },
-                suffix: {
-                  height: "60px",
-                },
-              }}
-              size="large"
-              enterButton={
-                <Button style={{ height: "60px", width: "80px" }}>
-                  <SearchOutlined />
-                </Button>
-              }
-              placeholder="输入关键词"
-            />
             {/* 筛选项 */}
-            <Form>
-              <Form form={form} initialValues={{ view: "card" }}>
-                {/* 视图：日历视图/卡片视图 */}
-                <Form.Item name="view">
-                  <ViewSelector className={Styles.viewSelector} />
-                </Form.Item>
-              </Form>
+            <Form
+              form={form}
+              layout="inline"
+              style={{ marginBottom: "10px" }}
+              initialValues={{ view: "card" }}
+            >
+              {/* 视图：日历视图/卡片视图 */}
+              <Form.Item name="view">
+                <ViewSelector className={Styles.viewSelector} />
+              </Form.Item>
+              {/* 类型：全部/工作/学习/生活 */}
+              <Form.Item name="type">
+                <TypeSelector
+                  className={Styles.viewSelector}
+                />
+              </Form.Item>
             </Form>
+            {view === "card" && (
+              <Input.Search
+                className={Styles.todoSearch}
+                styles={{
+                  input: {
+                    height: "30px",
+                  },
+                  suffix: {
+                    height: "30px",
+                  },
+                }}
+                enterButton={
+                  <Button style={{ height: "30px", width: "30px" }}>
+                    <SearchOutlined />
+                  </Button>
+                }
+                placeholder="输入关键词"
+              />
+            )}
+
             {/* 状态：全部/未完成/已完成 */}
             {/* 时间：全部/近一周/近一个月/自定义 */}
             {/* 类型: 全部/工作/学习/生活 */}
@@ -95,7 +116,12 @@ const Todo = () => {
             {view === "card" ? (
               <CardView {...todoActionsAndData} />
             ) : (
-              <CalendarView onChange={onCalendarChange} {...todoActionsAndData} />
+              <CalendarView
+                onChange={(val) => {
+                  setCalendarData(val.format("YYYY-MM"));
+                }}
+                {...todoActionsAndData}
+              />
             )}
           </Flex>
         </div>

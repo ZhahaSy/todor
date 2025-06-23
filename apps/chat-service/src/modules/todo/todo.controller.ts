@@ -7,8 +7,16 @@ import { ResOp } from '@/common/model/response.model';
 export class TodoController {
   constructor(private readonly todoService: TodoService) {}
   @Get('/list')
-  async getTodoList(@Query('todoMonth') todoMonth?: string) {
-    return ResOp.success(await this.todoService.getTodoList(todoMonth));
+  async getTodoList(
+    @Query('todoMonth') todoMonth?: string,
+    @Query('type') type?: ('work' | 'life' | 'study' | 'all')[],
+  ) {
+    return ResOp.success(
+      await this.todoService.getTodoList({
+        todoMonth,
+        type,
+      }),
+    );
   }
   @Get(':id')
   async getTodoById(@Param('id') id: string) {
