@@ -24,7 +24,6 @@ export class AiController {
     const { structured: result } = await this.aiService.process(
       sendMessageDto.input,
     );
-    console.log(result);
 
     // 保存到待办事项
     await this.todoService.create({

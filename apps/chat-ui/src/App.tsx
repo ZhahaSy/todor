@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import ChatList from "./components/ChatList";
 import SenderPanel from "./components/SenderPanel";
 import styles from "./App.module.less";
@@ -7,7 +7,13 @@ import { Conversation } from "@ant-design/x/es/conversations";
 import { useChat } from "./hooks/useChat";
 import { sendMessage } from "./api/ai";
 import Todo from "./components/Todo";
+import useUserStore from "./store/useUserStore";
 const Independent: React.FC = () => {
+  const { getUserList } = useUserStore();
+  useEffect(() => {
+    getUserList();
+  }, []);
+
   // ==================== State =================
   const [loading, setLoading] = React.useState(false);
 
@@ -25,8 +31,8 @@ const Independent: React.FC = () => {
   const handleSubmit = async (value: string) => {
     setLoading(true); // 立即显示加载状态
 
-    if(loading) return;
-    
+    if (loading) return;
+
     try {
       // 先添加用户消息
       await addMessage(value, "local");
@@ -69,7 +75,11 @@ const Independent: React.FC = () => {
 
       <div className={styles.chat}>
         <ChatList messages={messages} loading={loading} onRetry={handleRetry} />
-        <SenderPanel onSubmit={handleSubmit} sending={loading} onCancel={handleCancel} />
+        <SenderPanel
+          onSubmit={handleSubmit}
+          sending={loading}
+          onCancel={handleCancel}
+        />
       </div>
       <Todo />
     </div>

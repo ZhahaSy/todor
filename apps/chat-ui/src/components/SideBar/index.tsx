@@ -1,8 +1,9 @@
-import { Button, Avatar } from "antd";
+import { Button } from "antd";
 import { PlusOutlined, QuestionCircleOutlined } from "@ant-design/icons";
 import Conversations, { Conversation } from "@ant-design/x/es/conversations";
 
 import styles from "./index.module.less";
+import UserSelector from "./UserSelector";
 
 interface SidebarProps {
   conversations: Conversation[];
@@ -34,7 +35,7 @@ const Sidebar = ({
     {/* 底部栏 */}
     <div className={styles.footerBar}>
       {/* 增加用户选择器 */}
-      <Avatar size={24} />
+      <UserSelector />
       <Button icon={<QuestionCircleOutlined />} />
     </div>
   </div>
