@@ -15,6 +15,7 @@ import {
 import { transports, format } from 'winston';
 import 'winston-daily-rotate-file';
 import { UserModule } from './modules/user/user.module';
+import { AuthModule } from './modules/auth/auth.module';
 
 @Module({
   imports: [
@@ -50,6 +51,7 @@ import { UserModule } from './modules/user/user.module';
     ChatHistoryModule,
     TodoModule,
     AiModule,
+    AuthModule,
     UserModule,
   ],
   controllers: [AppController],

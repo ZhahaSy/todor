@@ -61,4 +61,33 @@ export class User {
     length: 255,
   })
   schedule: string;
+
+  @Column({
+    comment: '是否删除',
+    default: false,
+  })
+  @Column({
+    comment: '是否登录',
+    default: false,
+  })
+  logging: boolean;
+
+  @Column({
+    comment: '密码',
+    length: 255,
+    default: '',
+  })
+  hashPwd: string;
+  @Column({
+    comment: '盐',
+    length: 255,
+    default: '',
+  })
+  salt: string;
+
+  @Column({
+    comment: '是否删除',
+    default: false,
+  })
+  deleted: boolean;
 }

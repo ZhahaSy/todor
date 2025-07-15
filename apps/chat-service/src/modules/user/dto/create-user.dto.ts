@@ -8,4 +8,5 @@ export class CreateUserDto {
   readonly address: string;
   readonly hobby: string;
   readonly life_routine: string;
+  readonly password: string;
 }
