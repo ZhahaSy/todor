@@ -171,10 +171,10 @@ importers:
         version: 1.1.1(antd@5.24.8(moment@2.30.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@langchain/core':
         specifier: ^0.3.47
-        version: 0.3.47(openai@4.104.0(encoding@0.1.13)(zod@3.25.64))
+        version: 0.3.47(openai@4.104.0(encoding@0.1.13)(zod@3.25.28))
       '@langchain/deepseek':
         specifier: ^0.0.1
-        version: 0.0.1(@langchain/core@0.3.47(openai@4.104.0(encoding@0.1.13)(zod@3.25.64)))(encoding@0.1.13)
+        version: 0.0.1(@langchain/core@0.3.47(openai@4.104.0(encoding@0.1.13)(zod@3.25.28)))(encoding@0.1.13)
       ahooks:
         specifier: ^3.8.5
         version: 3.8.5(react@18.3.1)
@@ -220,6 +220,9 @@ importers:
       react-dom:
         specifier: ^18.3.1
         version: 18.3.1(react@18.3.1)
+      react-router-dom:
+        specifier: ^7.6.3
+        version: 7.6.3(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       zustand:
         specifier: ^5.0.5
         version: 5.0.5(@types/react@18.3.20)(react@18.3.1)
@@ -2257,6 +2260,10 @@ packages:
   cookie@0.7.2:
     resolution: {integrity: sha512-yki5XnKuf750l50uGTllt6kKILY4nQ1eNIQatoXEByZ5dWgnKqbnqmTrBE5B4N7lrMJKQ2ytWMiTO2o0v6Ew/w==}
     engines: {node: '>= 0.6'}
+
+  cookie@1.0.2:
+    resolution: {integrity: sha512-9Kr/j4O16ISv8zBBhJoi4bXOYNTkFLOqSL3UDB0njXxCXNezjeyVrJyGOWtgfs/q2km1gwBcfH8q1yEGoMYunA==}
+    engines: {node: '>=18'}
 
   cookiejar@2.1.4:
     resolution: {integrity: sha512-LDx6oHrK+PhzLKJU9j5S7/Y3jM/mUHvD/DeI1WQmJn652iPC5Y4TBzC9l+5OMOXlyTTA+SmVUPm0HQUwpD5Jqw==}
@@ -4417,6 +4424,23 @@ packages:
     resolution: {integrity: sha512-jCvmsr+1IUSMUyzOkRcvnVbX3ZYC6g9TDrDbFuFmRDq7PD4yaGbLKNQL6k2jnArV8hjYxh7hVhAZB6s9HDGpZA==}
     engines: {node: '>=0.10.0'}
 
+  react-router-dom@7.6.3:
+    resolution: {integrity: sha512-DiWJm9qdUAmiJrVWaeJdu4TKu13+iB/8IEi0EW/XgaHCjW/vWGrwzup0GVvaMteuZjKnh5bEvJP/K0MDnzawHw==}
+    engines: {node: '>=20.0.0'}
+    peerDependencies:
+      react: '>=18'
+      react-dom: '>=18'
+
+  react-router@7.6.3:
+    resolution: {integrity: sha512-zf45LZp5skDC6I3jDLXQUu0u26jtuP4lEGbc7BbdyxenBN1vJSTA18czM2D+h5qyMBuMrD+9uB+mU37HIoKGRA==}
+    engines: {node: '>=20.0.0'}
+    peerDependencies:
+      react: '>=18'
+      react-dom: '>=18'
+    peerDependenciesMeta:
+      react-dom:
+        optional: true
+
   react@18.3.1:
     resolution: {integrity: sha512-wS+hAgJShR0KhEvPJArfuPVN1+Hz1t0Y6n5jLrGQbkb4urgPE/0Rve+1kMB1v/oWgHgm4WIcV+i7F2pTVj+2iQ==}
     engines: {node: '>=0.10.0'}
@@ -4572,6 +4596,9 @@ packages:
 
   set-blocking@2.0.0:
     resolution: {integrity: sha512-KiKBS8AnWGEyLzofFfmvKwpdPzqiy16LvQfK3yv/fVH7Bj13/wl3JSR1J+rfgRE9q7xUJK4qvgS8raSOeLUehw==}
+
+  set-cookie-parser@2.7.1:
+    resolution: {integrity: sha512-IOc8uWeOZgnb3ptbCURJWNjWUPcO3ZnTTdzsurqERrP6nPyv+paC55vJM0LpOlT2ne+Ix+9+CRG1MNLlyZ4GjQ==}
 
   setprototypeof@1.2.0:
     resolution: {integrity: sha512-E5LDX7Wrp85Kil5bhZv46j8jOeboKq5JMmYM3gVGdGH8xFpPWXUMsNrlODCrkoxMEeNi/XZIwuRvY4XNwYMJpw==}
@@ -6351,23 +6378,6 @@ snapshots:
     transitivePeerDependencies:
       - openai
 
-  '@langchain/core@0.3.47(openai@4.104.0(encoding@0.1.13)(zod@3.25.64))':
-    dependencies:
-      '@cfworker/json-schema': 4.1.1
-      ansi-styles: 5.2.0
-      camelcase: 6.3.0
-      decamelize: 1.2.0
-      js-tiktoken: 1.0.20
-      langsmith: 0.3.31(openai@4.104.0(encoding@0.1.13)(zod@3.25.64))
-      mustache: 4.2.0
-      p-queue: 6.6.2
-      p-retry: 4.6.2
-      uuid: 10.0.0
-      zod: 3.25.28
-      zod-to-json-schema: 3.24.5(zod@3.25.28)
-    transitivePeerDependencies:
-      - openai
-
   '@langchain/core@0.3.58(openai@4.104.0(encoding@0.1.13)(zod@3.25.64))':
     dependencies:
       '@cfworker/json-schema': 4.1.1
@@ -6394,15 +6404,6 @@ snapshots:
       - encoding
       - ws
 
-  '@langchain/deepseek@0.0.1(@langchain/core@0.3.47(openai@4.104.0(encoding@0.1.13)(zod@3.25.64)))(encoding@0.1.13)':
-    dependencies:
-      '@langchain/core': 0.3.47(openai@4.104.0(encoding@0.1.13)(zod@3.25.64))
-      '@langchain/openai': 0.4.9(@langchain/core@0.3.47(openai@4.104.0(encoding@0.1.13)(zod@3.25.64)))(encoding@0.1.13)
-      zod: 3.25.28
-    transitivePeerDependencies:
-      - encoding
-      - ws
-
   '@langchain/deepseek@0.0.1(@langchain/core@0.3.58(openai@4.104.0(encoding@0.1.13)(zod@3.25.64)))(encoding@0.1.13)':
     dependencies:
       '@langchain/core': 0.3.58(openai@4.104.0(encoding@0.1.13)(zod@3.25.64))
@@ -6416,17 +6417,6 @@ snapshots:
   '@langchain/openai@0.4.9(@langchain/core@0.3.47(openai@4.104.0(encoding@0.1.13)(zod@3.25.28)))(encoding@0.1.13)':
     dependencies:
       '@langchain/core': 0.3.47(openai@4.104.0(encoding@0.1.13)(zod@3.25.28))
-      js-tiktoken: 1.0.20
-      openai: 4.104.0(encoding@0.1.13)(zod@3.25.28)
-      zod: 3.25.28
-      zod-to-json-schema: 3.24.5(zod@3.25.28)
-    transitivePeerDependencies:
-      - encoding
-      - ws
-
-  '@langchain/openai@0.4.9(@langchain/core@0.3.47(openai@4.104.0(encoding@0.1.13)(zod@3.25.64)))(encoding@0.1.13)':
-    dependencies:
-      '@langchain/core': 0.3.47(openai@4.104.0(encoding@0.1.13)(zod@3.25.64))
       js-tiktoken: 1.0.20
       openai: 4.104.0(encoding@0.1.13)(zod@3.25.28)
       zod: 3.25.28
@@ -7810,6 +7800,8 @@ snapshots:
   cookie@0.7.1: {}
 
   cookie@0.7.2: {}
+
+  cookie@1.0.2: {}
 
   cookiejar@2.1.4: {}
 
@@ -10271,6 +10263,20 @@ snapshots:
 
   react-refresh@0.14.2: {}
 
+  react-router-dom@7.6.3(react-dom@18.3.1(react@18.3.1))(react@18.3.1):
+    dependencies:
+      react: 18.3.1
+      react-dom: 18.3.1(react@18.3.1)
+      react-router: 7.6.3(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+
+  react-router@7.6.3(react-dom@18.3.1(react@18.3.1))(react@18.3.1):
+    dependencies:
+      cookie: 1.0.2
+      react: 18.3.1
+      set-cookie-parser: 2.7.1
+    optionalDependencies:
+      react-dom: 18.3.1(react@18.3.1)
+
   react@18.3.1:
     dependencies:
       loose-envify: 1.4.0
@@ -10455,6 +10461,8 @@ snapshots:
 
   set-blocking@2.0.0:
     optional: true
+
+  set-cookie-parser@2.7.1: {}
 
   setprototypeof@1.2.0: {}
 

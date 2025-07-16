@@ -19,13 +19,15 @@ export class AuthService {
   ) {}
 
   async validateUser(userName: string, password: string): Promise<any> {
-    const user = await this.usersService.findOne({ userName });
+    const user = await this.usersService.findOne({ name: userName });
 
     if (user) {
       const hashedPwd = user.hashPwd;
       const salt = user.salt;
 
       const newHashPwd = encryptPassword(password, salt);
+      console.log(newHashPwd);
+
       if (hashedPwd === newHashPwd) {
         return {
           code: 1,
@@ -43,10 +45,8 @@ export class AuthService {
 
   async certificate(user: any) {
     const payload = {
-      username: user.userName,
+      username: user.name,
       sub: user.id,
-      realName: user.realName,
-      role: user.role,
     };
 
     try {
@@ -54,11 +54,7 @@ export class AuthService {
         secret: jwtConstants.secret,
       });
       return {
-        code: 200,
-        data: {
-          token,
-        },
-        message: 'success',
+        token,
       };
     } catch (error) {
       return {

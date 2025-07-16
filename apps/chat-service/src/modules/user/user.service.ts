@@ -33,10 +33,10 @@ export class UserService {
     });
   }
 
-  async findOne(id) {
+  async findOne(params: Partial<User>) {
     return await this.userRepository.findOne({
       where: {
-        id,
+        ...params,
       },
     });
   }
@@ -49,13 +49,13 @@ export class UserService {
 
   async login(loginDto: LoginDto) {
     const authResult = await this.authService.validateUser(
-      loginDto.name,
+      loginDto.username,
       loginDto.password,
     );
 
     switch (authResult.code) {
       case 1:
-        return await this.authService.certificate(authResult.data);
+        return await this.authService.certificate(authResult.user);
       case 2:
         return {
           code: 600,

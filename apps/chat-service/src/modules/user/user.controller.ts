@@ -18,8 +18,8 @@ export class UserController {
     return ResOp.success(await this.userService.getUserList());
   }
   @Get('/findOne')
-  async findOne(@Query('id') id: number) {
-    return ResOp.success(await this.userService.findOne(id));
+  async findOne(@Query('id') id: string) {
+    return ResOp.success(await this.userService.findOne({ id }));
   }
   @Post('/login')
   async login(@Body() loginDto: LoginDto) {

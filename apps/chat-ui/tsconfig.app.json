@@ -15,12 +15,17 @@
     "noEmit": true,
     "jsx": "react-jsx",
 
+    "paths": {
+      "@/*": ["./src/*"],
+    },
+
     /* Linting */
     "strict": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true,
     "noUncheckedSideEffectImports": true
+
   },
   "include": ["src"]
 }

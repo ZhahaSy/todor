@@ -5,7 +5,7 @@ export class LoginDto {
     comment: '用户名',
     length: 255,
   })
-  name: string;
+  username: string;
 
   @Column({
     comment: '密码',
