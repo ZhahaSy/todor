@@ -12,7 +12,8 @@ type FieldType = {
 
 const onFinish: FormProps<FieldType>["onFinish"] = async (values) => {
   const res = await login(values);
-  setCookie('token', res.token, 7);
+  setCookie("token", res.token, 7);
+  window.location.href = "/";
 };
 
 const onFinishFailed: FormProps<FieldType>["onFinishFailed"] = (errorInfo) => {
