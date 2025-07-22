@@ -6,6 +6,11 @@ import { makeSalt, encryptPassword } from '@/utils/cryptogram';
 import { CreateUserDto } from './dto/create-user.dto';
 import { AuthService } from '../auth/auth.service';
 import { LoginDto } from './dto/login.dto';
+import {
+  NotFoundUser,
+  Success,
+  UserOrPasswordError,
+} from '@/common/constants/statusCode';
 
 @Injectable()
 export class UserService {
@@ -54,16 +59,16 @@ export class UserService {
     );
 
     switch (authResult.code) {
-      case 1:
-        return await this.authService.certificate(authResult.user);
-      case 2:
+      case Success:
+        return await this.authService.certificate(authResult.data);
+      case UserOrPasswordError:
         return {
-          code: 600,
+          code: UserOrPasswordError,
           msg: `账号或密码不正确`,
         };
       default:
         return {
-          code: 600,
+          code: NotFoundUser,
           msg: `查无此人`,
         };
     }

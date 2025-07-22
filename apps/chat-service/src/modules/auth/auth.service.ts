@@ -6,6 +6,11 @@ import { UserService } from '../user/user.service';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from '../user/entities/user.entity';
+import { ResOp } from '@/common/model/response.model';
+import {
+  NotFoundUser,
+  UserOrPasswordError,
+} from '@/common/constants/statusCode';
 
 @Injectable()
 export class AuthService {
@@ -26,41 +31,27 @@ export class AuthService {
       const salt = user.salt;
 
       const newHashPwd = encryptPassword(password, salt);
-      console.log(newHashPwd);
 
       if (hashedPwd === newHashPwd) {
-        return {
-          code: 1,
-          user,
-        };
+        return ResOp.success(user, '验证成功');
       } else {
-        return {
-          code: 2,
-          user: null,
-        };
+        return ResOp.error(UserOrPasswordError, '账号或密码错误');
       }
     }
-    return { code: 3, user: null };
+    return ResOp.error(NotFoundUser, '账号或密码错误');
   }
 
-  async certificate(user: any) {
+  async certificate(user: Partial<User>) {
     const payload = {
       username: user.name,
       sub: user.id,
     };
 
-    try {
-      const token = this.jwtService.sign(payload, {
-        secret: jwtConstants.secret,
-      });
-      return {
-        token,
-      };
-    } catch (error) {
-      return {
-        code: 600,
-        message: '账号或密码错误',
-      };
-    }
+    const token = await this.jwtService.sign(payload, {
+      secret: jwtConstants.secret,
+    });
+    return ResOp.success<{ token: string }>({
+      token,
+    });
   }
 }

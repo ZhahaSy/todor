@@ -10,7 +10,7 @@ export class UserController {
 
   @Post('/create')
   async create(@Body() createUserDto: CreateUserDto) {
-    return await this.userService.create(createUserDto);
+    return ResOp.success(await this.userService.create(createUserDto));
   }
 
   @Get('/list')
@@ -23,6 +23,7 @@ export class UserController {
   }
   @Post('/login')
   async login(@Body() loginDto: LoginDto) {
-    return ResOp.success(await this.userService.login(loginDto));
+    const result = await this.userService.login(loginDto);
+    return result;
   }
 }
