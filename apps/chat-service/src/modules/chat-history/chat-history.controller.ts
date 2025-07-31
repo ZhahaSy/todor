@@ -1,8 +1,10 @@
-import { Controller, Post, Get, Body } from '@nestjs/common';
+import { Controller, Post, Get, Body, UseGuards } from '@nestjs/common';
+import { JwtAuthGuard } from '@/common/guard/jwt.auth';
 import { ChatHistoryService } from './chat-history.service';
 import { CreateChatDto } from './dto/create-chat.dto';
 import { ResOp } from '@/common/model/response.model';
 
+@UseGuards(JwtAuthGuard)
 @Controller('chat-history')
 export class ChatHistoryController {
   constructor(private readonly chatService: ChatHistoryService) {}
