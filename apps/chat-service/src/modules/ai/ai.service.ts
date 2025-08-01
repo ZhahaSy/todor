@@ -4,6 +4,7 @@ import { ChatPromptTemplate } from '@langchain/core/prompts';
 import { ConfigService } from '@nestjs/config';
 import { RunnableSequence } from '@langchain/core/runnables';
 import zod from 'zod';
+import { User } from '../user/entities/user.entity';
 
 class PromptBuilder {
   private prompts: Record<string, any> = {};
@@ -120,7 +121,7 @@ export class AiService {
     ]);
   }
 
-  async process(input: string) {
-    return this.chain.invoke({ input });
+  async process(input: string, userInfo: User) {
+    return this.chain.invoke({ input, userInfo });
   }
 }

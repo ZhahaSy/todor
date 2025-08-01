@@ -1,8 +1,18 @@
-import { Body, Controller, Get, Param, Post, Query } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  Post,
+  Query,
+  UseGuards,
+} from '@nestjs/common';
 import { TodoService } from './todo.service';
 import { Todo } from './entities/todo.entity';
 import { ResOp } from '@/common/model/response.model';
+import { JwtAuthGuard } from '@/common/guard/jwt.auth';
 
+@UseGuards(JwtAuthGuard)
 @Controller('todo')
 export class TodoController {
   constructor(private readonly todoService: TodoService) {}

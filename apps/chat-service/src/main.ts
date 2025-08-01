@@ -3,11 +3,15 @@ import { AppModule } from '@/app.module';
 import * as dotenv from 'dotenv';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { ResOp } from '@/common/model/response.model';
+import * as cookieParser from 'cookie-parser';
 
 dotenv.config(); // 添加这行加载.env文件
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+
+  // 添加cookie-parser中间件
+  app.use(cookieParser());
 
   // Swagger配置
   const config = new DocumentBuilder()

@@ -54,6 +54,12 @@ instance.interceptors.response.use(
   },
   // 当 status > 300 时，会进入此逻辑
   (error) => {
+    if (error.response.status === 401) {
+      message.destroy();
+      message.error("请先登录");
+      window.location.href = "/login";
+      return Promise.reject(error);
+    }
     if (error.config.headers["content-type"] === "multipart/form-data") {
       message.destroy();
       message.error(CodeMessage[error.response.status] ?? "请求异常");
