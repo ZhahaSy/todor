@@ -19,12 +19,12 @@ export class TodoController {
   @Get('/list')
   async getTodoList(
     @Query('todoMonth') todoMonth?: string,
-    @Query('type') type?: ('work' | 'life' | 'study' | 'all')[],
+    @Query('type') type?: string,
   ) {
     return ResOp.success(
       await this.todoService.getTodoList({
         todoMonth,
-        type,
+        type: type?.split(',') as ('work' | 'life' | 'study' | 'all')[],
       }),
     );
   }

@@ -96,7 +96,7 @@ export class AiService {
       .addPrompt(
         'info',
         '用户档案：\n年龄：{age}\n性别：{gender}\n兴趣：{hobby}',
-        { age: '25', gender: '男', hobby: '编程、摩托车' },
+        {}, // 移除硬编码用户信息
       );
 
     const model = new ChatDeepSeek({
@@ -106,10 +106,16 @@ export class AiService {
     });
 
     this.chain = RunnableSequence.from([
-      {
-        ...promptBuilder.getPromptValues(),
-        input: (input: { input: string }) => input.input,
-      },
+      // 动态注入用户信息
+      ({ input, userInfo }) => ({
+        input,
+        info: {
+          age: userInfo.age,
+          gender: userInfo.gender,
+          hobby: userInfo.hobby,
+        },
+        date: new Date().toLocaleString(),
+      }),
       promptBuilder.buildSystemMessage(
         '处理规则：\n1. 自动识别紧急程度\n2. 生成结构化响应\n3. 提供详细解释\n4. 提供原始输入和输出\n5. 提供具体时间\n6. 提供具体内容\n7. 提供具体标题',
       ),

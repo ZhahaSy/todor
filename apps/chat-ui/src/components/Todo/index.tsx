@@ -22,7 +22,7 @@ const Todo = () => {
 
   const getListParams = useMemo(() => ({
     todoMonth: view === "calendar" ? calendarData : undefined,
-    type: type,
+    type: type?.join(','),
   }), [view, calendarData, type]);
 
   const todoActionsAndData = useTodoList({
@@ -47,6 +47,7 @@ const Todo = () => {
             background: "rgba(0,0,0,0)",
             boxShadow: "none",
             height: "900px",
+            minWidth: "80%",
           },
         }}
         maskClosable
