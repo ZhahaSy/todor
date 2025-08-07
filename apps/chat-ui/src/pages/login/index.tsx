@@ -33,21 +33,22 @@ const App: React.FC = () => (
       name="basic"
       labelCol={{ span: 24 }}
       wrapperCol={{ span: 16 }}
-      style={{ background: '#F9F7F3', padding: '20px 60px 0px', borderRadius: 10,position: 'relative' }}
+      style={{ margin: '20px 60px 0px', borderRadius: 10,position: 'relative' }}
       initialValues={{ remember: true }}
       onFinish={onFinish}
       onFinishFailed={onFinishFailed}
       layout="vertical"
       autoComplete="off"
+      size="large"
     >
       <img src={todorText} width={150} style={{
       position: 'absolute',
-      top: -80,
-      left: '30%'
+      top: -50,
     }} alt="logo" />
       <Form.Item<FieldType>
         label="用户名"
         name="username"
+        required={false}
         rules={[{ required: true, message: "请输入用户名" }]}
       >
         <Input style={{ width: 200 }} placeholder="请输入用户名" />
@@ -56,19 +57,18 @@ const App: React.FC = () => (
       <Form.Item<FieldType>
         label="密码"
         name="password"
+        required={false}
         rules={[{ required: true, message: "请输入密码" }]}
       >
         <Input.Password style={{ width: 200 }} placeholder="请输入密码" />
       </Form.Item>
 
       <Form.Item label={null}>
-        <Space>
-          <Button>注册</Button>
+          <Button style={{ width: '100%' }}>注册</Button>
 
-          <Button type="primary" htmlType="submit">
+          <Button style={{ width: '100%' }} type="primary" htmlType="submit">
             登录
           </Button>
-        </Space>
       </Form.Item>
     </Form>
   </div>
