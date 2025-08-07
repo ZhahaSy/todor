@@ -8,7 +8,7 @@ export const ConfigProviderConfig = {
     locale: zhCN,
     theme: {
         token: {
-            colorPrimary: '#00AEEC',
+            colorPrimary: '#E48D2C',
             borderRadius: 8,
             paddingContentHorizontal: 13,
             paddingContentVertical: 4,

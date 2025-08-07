@@ -4,6 +4,7 @@ import Conversations, { Conversation } from "@ant-design/x/es/conversations";
 
 import styles from "./index.module.less";
 import UserSelector from "./UserSelector";
+import logo from "@/assets/todor-text-no-bg.png";
 
 interface SidebarProps {
   conversations: Conversation[];
@@ -19,6 +20,7 @@ const Sidebar = ({
   onAddConversation,
 }: SidebarProps) => (
   <div className={styles.sidebar}>
+    <img src={logo} width={'100%'} alt="logo" />
     {/* Logo 和新建会话按钮 */}
     <Button onClick={onAddConversation} icon={<PlusOutlined />}>
       新建会话

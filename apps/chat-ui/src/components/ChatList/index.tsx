@@ -5,7 +5,7 @@ import styles from "./index.module.less";
 import { GetProp, Typography } from "antd";
 import markdownit from "markdown-it";
 
-import aiAvatar from "@/assets/logo.png";
+import aiAvatar from "@/assets/todor-3d-no-bg.png";
 
 interface ChatListProps {
   messages: BubbleDataType[];
