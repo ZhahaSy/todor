@@ -4,7 +4,8 @@ import { Button, Form, Input, Space } from "antd";
 import styles from "./index.module.less";
 import { login } from "@/api/user";
 import { setCookie } from "@/utils/cookie";
-
+import todor from '@/assets/todor-3d-no-bg.png'
+import todorText from '@/assets/todor-text-no-bg.png'
 type FieldType = {
   username: string;
   password: string;
@@ -22,22 +23,34 @@ const onFinishFailed: FormProps<FieldType>["onFinishFailed"] = (errorInfo) => {
 
 const App: React.FC = () => (
   <div className={styles.loginLayout}>
+    <img src={todor} width={100} style={{
+      position: 'absolute',
+      bottom: 20,
+      left: 20,
+    }} alt="logo" />
+    
     <Form
       name="basic"
-      labelCol={{ span: 8 }}
+      labelCol={{ span: 24 }}
       wrapperCol={{ span: 16 }}
-      style={{ maxWidth: 1200 }}
+      style={{ background: '#F9F7F3', padding: '20px 60px 0px', borderRadius: 10,position: 'relative' }}
       initialValues={{ remember: true }}
       onFinish={onFinish}
       onFinishFailed={onFinishFailed}
+      layout="vertical"
       autoComplete="off"
     >
+      <img src={todorText} width={150} style={{
+      position: 'absolute',
+      top: -80,
+      left: '30%'
+    }} alt="logo" />
       <Form.Item<FieldType>
         label="用户名"
         name="username"
         rules={[{ required: true, message: "请输入用户名" }]}
       >
-        <Input placeholder="请输入用户名" />
+        <Input style={{ width: 200 }} placeholder="请输入用户名" />
       </Form.Item>
 
       <Form.Item<FieldType>
@@ -45,7 +58,7 @@ const App: React.FC = () => (
         name="password"
         rules={[{ required: true, message: "请输入密码" }]}
       >
-        <Input.Password placeholder="请输入密码" />
+        <Input.Password style={{ width: 200 }} placeholder="请输入密码" />
       </Form.Item>
 
       <Form.Item label={null}>

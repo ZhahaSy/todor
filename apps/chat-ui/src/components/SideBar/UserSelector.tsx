@@ -23,7 +23,7 @@ const UserSelector = () => {
         </ul>
       }
     >
-      <Avatar size={24} />
+      <Avatar size={40} />
     </Popover>
   );
 };
