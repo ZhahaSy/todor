@@ -1,0 +1,16 @@
+{
+  "name": "@client/entities",
+  "version": "0.0.0",
+  "private": true,
+  "main": "./src/index.ts",
+  "scripts": {
+    "lint": "pnpm run lint:js && pnpm run format",
+    "lint:js": "eslint . --fix --max-warnings 0",
+    "format": "prettier --write \"**/*.{js,jsx,ts,tsx,md}\"",
+    "type-check": "tsc --noEmit --project tsconfig.json",
+    "clean": "rm -rf .turbo && rm -rf node_modules && rm -rf dist"
+  },
+  "dependencies": {
+    "react": "^19.1.1"
+  }
+}

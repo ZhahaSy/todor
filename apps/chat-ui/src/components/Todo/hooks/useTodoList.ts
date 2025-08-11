@@ -1,6 +1,6 @@
-import { useCallback, useEffect, useState } from "react";
-import { TodoItemEntity } from "../../../entities/todo";
-import * as TodoApi from "../../../api/todo";
+import { useEffect, useState } from "react";
+import { TodoItemEntity } from "@client/entities";
+import * as TodoApi from "@client/api";
 
 export interface UseTodoListReturn {
   todoList: TodoItemEntity[];

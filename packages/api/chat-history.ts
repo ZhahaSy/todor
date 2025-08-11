@@ -1,4 +1,4 @@
-import request from "../request";
+import request from "@client/request";
 
 export const getChatHistory = async () => {
   const data = await request.get("/chat-history");

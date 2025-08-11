@@ -7,6 +7,7 @@
     "start": "turbo run start --parallel",
     "start:c": "turbo run dev --filter=chat-ui...",
     "start:s": "turbo run start --filter=chat-service...",
+    "start:cm": "turbo run start --filter=chat-ui-mobile...",
     "lint": "turbo run lint",
     "format": "prettier --write \"**/*.{ts,tsx,md}\"",
     "check-types": "turbo run check-types"

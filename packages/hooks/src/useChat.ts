@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { addChatHistory, getChatHistory } from "../api/chat-history";
+import { addChatHistory, getChatHistory } from "@client/api";
 
 export interface HistRecordItem {
   role: "local" | "ai";

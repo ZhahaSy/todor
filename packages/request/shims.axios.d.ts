@@ -1,6 +1,11 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-import { BaseResponse } from '@/entities/Base';
+/* eslint-disable @typescript-eslint/ban-ts-comment */
 
+/* eslint-disable @typescript-eslint/no-explicit-any */
+export interface BaseResponse<T> {
+    data?: T;
+    message: string;
+    code: number;
+}
 declare module 'axios' {
     export interface AxiosRequestConfig {
         /**

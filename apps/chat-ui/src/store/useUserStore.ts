@@ -1,6 +1,6 @@
 import { create } from "zustand";
 import { User } from "../entities/user";
-import { getUserList } from "../api/user";
+import { getUserList } from "@client/api";
 
 interface UserState {
   user?: User;

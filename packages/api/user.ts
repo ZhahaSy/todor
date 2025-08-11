@@ -1,5 +1,5 @@
-import { User } from "../entities/user";
-import request from "../request";
+import { User } from "@client/entities";
+import request from "@client/request";
 
 
 export const getUserList = async () => {

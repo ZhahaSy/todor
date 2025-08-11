@@ -1,8 +1,8 @@
 import React from "react";
 import type { FormProps } from "antd";
-import { Button, Form, Input, Space } from "antd";
+import { Button, Form, Input } from "antd";
 import styles from "./index.module.less";
-import { login } from "@/api/user";
+import { login } from "@client/api";
 import { setCookie } from "@/utils/cookie";
 import todor from '@/assets/todor-3d-no-bg.png'
 import todorText from '@/assets/todor-text-no-bg.png'

@@ -1,5 +1,5 @@
-import { TodoItemEntity } from "../entities/todo";
-import request from "../request";
+import { TodoItemEntity } from "@client/entities";
+import request from "@client/request";
 
 export const getTodoList = async (params: {
   todoMonth?: string;
