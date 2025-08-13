@@ -3,9 +3,9 @@ import type { FormProps } from "antd";
 import { Button, Form, Input } from "antd";
 import styles from "./index.module.less";
 import { login } from "@client/api";
-import { setCookie } from "@/utils/cookie";
-import todor from '@/assets/todor-3d-no-bg.png'
-import todorText from '@/assets/todor-text-no-bg.png'
+import { setCookie } from "@client/utils";
+import todor from "../assets/todor-3d-no-bg.png";
+import todorText from "../assets/todor-text-no-bg.png";
 type FieldType = {
   username: string;
   password: string;
@@ -23,17 +23,26 @@ const onFinishFailed: FormProps<FieldType>["onFinishFailed"] = (errorInfo) => {
 
 const App: React.FC = () => (
   <div className={styles.loginLayout}>
-    <img src={todor} width={100} style={{
-      position: 'absolute',
-      bottom: 20,
-      left: 20,
-    }} alt="logo" />
-    
+    <img
+      src={todor}
+      width={100}
+      style={{
+        position: "absolute",
+        bottom: 20,
+        left: 20,
+      }}
+      alt="logo"
+    />
+
     <Form
       name="basic"
       labelCol={{ span: 24 }}
       wrapperCol={{ span: 16 }}
-      style={{ margin: '20px 60px 0px', borderRadius: 10,position: 'relative' }}
+      style={{
+        margin: "20px 60px 0px",
+        borderRadius: 10,
+        position: "relative",
+      }}
       initialValues={{ remember: true }}
       onFinish={onFinish}
       onFinishFailed={onFinishFailed}
@@ -41,10 +50,15 @@ const App: React.FC = () => (
       autoComplete="off"
       size="large"
     >
-      <img src={todorText} width={150} style={{
-      position: 'absolute',
-      top: -50,
-    }} alt="logo" />
+      <img
+        src={todorText}
+        width={150}
+        style={{
+          position: "absolute",
+          top: -50,
+        }}
+        alt="logo"
+      />
       <Form.Item<FieldType>
         label="用户名"
         name="username"
@@ -64,11 +78,11 @@ const App: React.FC = () => (
       </Form.Item>
 
       <Form.Item label={null}>
-          <Button style={{ width: '100%' }}>注册</Button>
+        <Button style={{ width: "100%" }}>注册</Button>
 
-          <Button style={{ width: '100%' }} type="primary" htmlType="submit">
-            登录
-          </Button>
+        <Button style={{ width: "100%" }} type="primary" htmlType="submit">
+          登录
+        </Button>
       </Form.Item>
     </Form>
   </div>

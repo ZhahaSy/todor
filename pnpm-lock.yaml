@@ -320,6 +320,9 @@ importers:
       react-dom:
         specifier: ^19.1.0
         version: 19.1.1(react@19.1.1)
+      react-router-dom:
+        specifier: ^7.6.3
+        version: 7.6.3(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
     devDependencies:
       '@client/hooks':
         specifier: workspace:*
@@ -414,6 +417,18 @@ importers:
       react-router-dom:
         specifier: ^7.6.3
         version: 7.6.3(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+    devDependencies:
+      '@client/api':
+        specifier: workspace:*
+        version: link:../api
+      '@client/utils':
+        specifier: workspace:*
+        version: link:../utils
+      '@types/markdown-it':
+        specifier: ^14.1.1
+        version: 14.1.2
+
+  packages/utils: {}
 
 packages:
 
@@ -11416,6 +11431,12 @@ snapshots:
       react-dom: 18.3.1(react@18.3.1)
       react-router: 7.6.3(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
 
+  react-router-dom@7.6.3(react-dom@19.1.1(react@19.1.1))(react@19.1.1):
+    dependencies:
+      react: 19.1.1
+      react-dom: 19.1.1(react@19.1.1)
+      react-router: 7.6.3(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
+
   react-router@7.6.3(react-dom@18.3.1(react@18.3.1))(react@18.3.1):
     dependencies:
       cookie: 1.0.2
@@ -11423,6 +11444,14 @@ snapshots:
       set-cookie-parser: 2.7.1
     optionalDependencies:
       react-dom: 18.3.1(react@18.3.1)
+
+  react-router@7.6.3(react-dom@19.1.1(react@19.1.1))(react@19.1.1):
+    dependencies:
+      cookie: 1.0.2
+      react: 19.1.1
+      set-cookie-parser: 2.7.1
+    optionalDependencies:
+      react-dom: 19.1.1(react@19.1.1)
 
   react@18.3.1:
     dependencies:

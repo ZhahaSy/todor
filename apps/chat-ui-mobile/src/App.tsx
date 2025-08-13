@@ -1,8 +1,8 @@
 import "./App.css";
-import { SenderPanel, ChatList } from "@client/ui";
 import { App as AntdApp, ConfigProvider } from 'antd';
 import zhCN from 'antd/locale/zh_CN';
-import { useChat, useSendMessage } from "@client/hooks";
+import { Outlet, RouterProvider } from "react-router-dom";
+import routers from '@/router';
 
 export const ConfigProviderConfig = {
     locale: zhCN,
@@ -19,13 +19,10 @@ export const ConfigProviderConfig = {
 };
 
 const App = () => {
-    const { messages, addMessage } = useChat();
-    const { handleSubmit, handleCancel, handleRetry, loading } = useSendMessage(addMessage);
     return (
         <ConfigProvider {...ConfigProviderConfig}>
             <AntdApp className='app'>
-                <ChatList messages={messages} loading={loading} onRetry={handleRetry} />
-                <SenderPanel onSubmit={handleSubmit} onCancel={handleCancel} sending={loading} />
+               <RouterProvider router={routers} />
             </AntdApp>
         </ConfigProvider>
     );

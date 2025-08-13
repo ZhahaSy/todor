@@ -1,6 +1,6 @@
 import { createBrowserRouter, redirect, RouteObject } from "react-router-dom"
 import BasicLayout from "@/layout/BasicLayout";
-import Home from "@/pages/chat";
+import Home from "@/pages/chat/index";
 import {loginPage as Login} from "@client/ui";
 
 type RouterType = ReturnType<typeof createBrowserRouter>;
