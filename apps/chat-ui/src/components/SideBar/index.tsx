@@ -13,32 +13,29 @@ interface SidebarProps {
   onAddConversation: () => void;
 }
 
-const Sidebar = ({
-  conversations,
-  activeKey,
-  onConversationChange,
-  onAddConversation,
-}: SidebarProps) => (
+const Sidebar = (props: SidebarProps) => (
   <div className={styles.sidebar}>
-    <img src={logo} width={'100%'} alt="logo" />
+    {/* <img src={logo} width={'100%'} alt="logo" /> */}
     {/* Logo 和新建会话按钮 */}
-    <Button onClick={onAddConversation} icon={<PlusOutlined />}>
+    {/* <Button onClick={onAddConversation} icon={<PlusOutlined />}>
       新建会话
-    </Button>
+    </Button> */}
 
     {/* 会话列表 */}
-    <Conversations
-      className={styles.conversationList}
-      items={conversations}
-      activeKey={activeKey}
-      onActiveChange={onConversationChange}
-    />
+    <div className={styles.conversationList}>
+      {/* <Conversations
+        className={styles.conversationList}
+        items={conversations}
+        activeKey={activeKey}
+        onActiveChange={onConversationChange}
+      /> */}
+    </div>
 
     {/* 底部栏 */}
     <div className={styles.footerBar}>
       {/* 增加用户选择器 */}
       <UserSelector />
-      <Button icon={<QuestionCircleOutlined />} />
+      {/* <Button icon={<QuestionCircleOutlined />} /> */}
     </div>
   </div>
 );
