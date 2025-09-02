@@ -1,0 +1,89 @@
+// reset.less 或 theme.less
+// 基础颜色
+@primary-color: #3F87FF; // 主强调色，取渐变蓝色的起始值
+@info-color: @primary-color;
+@success-color: #4CAF50; // 绿色，用于完成状态或成功提示
+@processing-color: @primary-color;
+@error-color: #FF5252;   // 红色，用于错误或紧急状态
+@warning-color: #FFA726; // 橙色，用于警告状态
+
+// 布局和背景
+@body-background: #1A1D29;       // 全局主背景色
+@component-background: #2E3241;  // 组件（如卡片、弹窗）背景色
+@background-color-light: #333747; // 较浅的背景色，用于一些次级背景
+
+// 文本颜色
+@heading-color: #FFFFFF;         // 标题颜色
+@text-color: #E0E0E0;            // 主要文本颜色
+@text-color-secondary: #A0A4B1;  // 次要文本颜色
+
+// 禁用状态颜色
+@disabled-color: fade(@text-color-secondary, 50%); // 禁用文本颜色
+@disabled-bg: fade(@component-background, 70%);     // 禁用背景色
+
+// 边框颜色
+@border-color-base: #3C4254;      // 基础边框颜色，比组件背景稍深
+@border-color-split: #4C536B;     // 分割线颜色
+
+// 阴影
+@box-shadow-base: 0 2px 8px rgba(0, 0, 0, 0.15); // 默认阴影可以保留或调整
+@shadow-1-down: 0 6px 16px 0 rgba(0, 0, 0, 0.28), 0 3px 6px -4px rgba(0, 0, 0, 0.36), 0 9px 28px 8px rgba(0, 0, 0, 0.2); // 深色模式下阴影需要更深
+
+// 输入框
+@input-bg: @background-color-light; // 输入框背景色
+@input-border-color: @border-color-base; // 输入框边框色
+@input-placeholder-color: @text-color-secondary; // 输入框占位符颜色
+
+// 按钮
+@btn-default-bg: @component-background; // 默认按钮背景色
+@btn-default-border: @border-color-base; // 默认按钮边框色
+@btn-primary-color: #FFFFFF; // 主要按钮文本色
+// 对于渐变按钮，Antd 没有直接的变量支持，需要在自定义样式中实现。
+// 如果要模拟渐变，可以考虑使用 box-shadow 或 background-image
+// 例如，可以覆盖 .ant-btn-primary 的样式
+
+// 链接
+@link-color: @primary-color; // 链接颜色
+@link-hover-color: lighten(@link-color, 10%); // 链接悬停颜色
+@link-active-color: darken(@link-color, 10%); // 链接激活颜色
+
+// Menu
+@menu-dark-bg: @body-background; // 暗色菜单背景
+@menu-dark-inline-submenu-bg: lighten(@menu-dark-bg, 5%); // 暗色菜单子菜单背景
+@menu-dark-selected-item-bg: lighten(@primary-color, 5%); // 暗色菜单选中项背景
+
+// Table
+@table-header-bg: @background-color-light; // 表格头部背景
+@table-row-hover-bg: lighten(@component-background, 3%); // 表格行hover背景
+@table-selected-row-bg: lighten(@component-background, 5%); // 表格选中行背景
+
+// Pagination
+@pagination-item-bg: @component-background; // 分页器项背景
+@pagination-item-active-bg: @primary-color; // 分页器选中项背景
+
+// Card
+@card-head-background: @component-background; // 卡片头部背景
+@card-background: @component-background; // 卡片背景
+
+// Modal
+@modal-header-bg: @component-background; // 弹窗头部背景
+@modal-content-bg: @component-background; // 弹窗内容背景
+@modal-header-border-color-split: @border-color-base; // 弹窗头部边框
+
+// Popover
+@popover-background: @component-background; // 气泡卡片背景
+
+// Tooltip
+@tooltip-bg: #4C536B; // 工具提示背景色，可以自定义为深色
+
+// DatePicker
+@picker-basic-cell-hover-color: lighten(@component-background, 3%); // 日期选择器hover
+@picker-basic-cell-active-with-range-color: lighten(@primary-color, 10%); // 日期选择器范围选中
+
+// Drawer
+@drawer-bg: @component-background; // 抽屉背景
+
+// Tag
+@tag-default-bg: @background-color-light; // 默认标签背景
+@tag-default-color: @text-color; // 默认标签文本色
+// 对于自定义的标签颜色，需要在组件中使用 style 或 className

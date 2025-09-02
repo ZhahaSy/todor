@@ -1,9 +1,10 @@
 import { Avatar, Popover } from "antd";
 import useUserStore from "../../store/useUserStore";
 import { User } from "../../entities/user";
+import aiAvatar from "@/assets/todor-2d-no-bg.png";
 
 const UserSelector = () => {
-  const { userList, setUser } = useUserStore();
+  const { userList, setUser, user } = useUserStore();
 
   return (
     <Popover
@@ -16,14 +17,17 @@ const UserSelector = () => {
               onClick={() => setUser(item)}
               key={item.id}
             >
-              <Avatar size={24} />
+              <Avatar size={24} src={item.avatar || aiAvatar} />
               <div>{item.name}</div>
             </li>
           ))}
         </ul>
       }
     >
-      <Avatar size={40} />
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8, paddingLeft: 24 }}>
+        <Avatar size={24} src={user?.avatar || aiAvatar} />
+        <div>{user?.name}</div>
+      </div>
     </Popover>
   );
 };

@@ -1,14 +1,16 @@
 import { createBrowserRouter, redirect, RouteObject } from "react-router-dom"
-import BasicLayout from "@/layout/BasicLayout";
+import ProjectLayout from "@/layout/ProjectLayout";
 import Home from "@/pages/chat";
 import {loginPage as Login} from "@client/ui";
+import Todo from "@/pages/todo";
+import Setting from "@/pages/setting";
 
 type RouterType = ReturnType<typeof createBrowserRouter>;
 
 const routes: RouteObject[] = [
     {
         path: '/',
-        element: <BasicLayout />,
+        element: <ProjectLayout />,
         children: [
             {
                 index: true,
@@ -21,10 +23,19 @@ const routes: RouteObject[] = [
                 element: <Home />,
             },
             {
-                path: '/login',
-                element: <Login />,
+                path: '/todo',
+                element: <Todo />,
+            },
+            {
+                path: '/setting',
+                element: <Setting />,
             }
+
         ]
+    },
+    {
+        path: '/login',
+        element: <Login />,
     }
 ]
 
