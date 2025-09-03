@@ -1,4 +1,4 @@
-import { Button, Card, Col, Flex, Row, Space } from "antd";
+import { Button, Card, Col, Flex, Row, Space, Typography } from "antd";
 import LevelTag from "./LevelTag";
 import TypeTag from "./TypeTag";
 import { EditFilled, CloseCircleFilled } from "@ant-design/icons";
@@ -43,7 +43,7 @@ const CardView = (props:UseTodoListReturn) => {
             <Card.Meta
               description={
                 <>
-                  <div>{todo.content}</div>
+                  <Typography.Text ellipsis={{tooltip: todo.content}}>{todo.content}</Typography.Text>
                   <div>{todo.todoTime}</div>
                 </>
               }

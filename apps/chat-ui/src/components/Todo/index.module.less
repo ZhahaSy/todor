@@ -3,30 +3,30 @@
   height: 100%;
   box-sizing: border-box;
   position: relative;
-  .todoCard {
-    margin-bottom: 20px;
-    .cardContent {
-      background-color: rgba(255, 255, 255, 0.05);
-      backdrop-filter: blur(9px);
-      -webkit-backdrop-filter: blur(9px);
-      border: 1px solid rgba(255, 255, 255, 0.18);
-      box-shadow: rgba(142, 142, 142, 0.19) 0px 6px 15px 0px;
-      -webkit-box-shadow: rgba(142, 142, 142, 0.19) 0px 6px 15px 0px;
-      border-radius: 13px;
-      -webkit-border-radius: 13px;
+}
+.todoCard {
+  margin-bottom: 20px;
+  .cardContent {
+    background-color: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(9px);
+    -webkit-backdrop-filter: blur(9px);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    box-shadow: rgba(142, 142, 142, 0.19) 0px 6px 15px 0px;
+    -webkit-box-shadow: rgba(142, 142, 142, 0.19) 0px 6px 15px 0px;
+    border-radius: 13px;
+    -webkit-border-radius: 13px;
+  }
+  .todoCardCompleted {
+    color: #f3f3f3;
+    * {
+      text-decoration: line-through;
     }
-    .todoCardCompleted {
-      color: #f3f3f3;
-      * {
-        text-decoration: line-through;
-      }
-    }
   }
-  .viewSelector {
-    width: 120px;
-  }
-  .todoSearch {
-    min-width: 600px;
-    margin-bottom: 20px;
-  }
+}
+.viewSelector {
+  width: 120px;
+}
+.todoSearch {
+  min-width: 600px;
+  margin-bottom: 20px;
 }
