@@ -1,6 +1,6 @@
 import React from "react";
 import type { FormProps } from "antd";
-import { Button, Form, Input } from "antd";
+import { Button, Form, Input, Space } from "antd";
 import styles from "./index.module.less";
 import { login } from "@client/api";
 import { setCookie } from "@client/utils";
@@ -14,7 +14,7 @@ type FieldType = {
 const onFinish: FormProps<FieldType>["onFinish"] = async (values) => {
   const res = await login(values);
   setCookie("token", res.token, 7);
-  window.location.href = "/";
+  window.location.replace("/");
 };
 
 const onFinishFailed: FormProps<FieldType>["onFinishFailed"] = (errorInfo) => {
@@ -78,11 +78,13 @@ const App: React.FC = () => (
       </Form.Item>
 
       <Form.Item label={null}>
-        <Button style={{ width: "100%" }}>注册</Button>
+        <Space>
+          <Button style={{ width: "100%" }}>注册</Button>
 
-        <Button style={{ width: "100%" }} type="primary" htmlType="submit">
-          登录
-        </Button>
+          <Button style={{ width: "100%" }} type="primary" htmlType="submit">
+            登录
+          </Button>
+        </Space>
       </Form.Item>
     </Form>
   </div>

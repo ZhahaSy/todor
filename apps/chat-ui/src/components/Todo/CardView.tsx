@@ -8,7 +8,7 @@ import { UseTodoListReturn } from "./hooks/useTodoList";
 const CardView = (props:UseTodoListReturn) => {
   const { todoList, updateTodoStatus, deleteTodo } = props;
   return (
-    <Row gutter={20}>
+    <Row gutter={10}>
       {todoList.map((todo) => (
         <Col className={Styles.todoCard} span={12}>
           <Card

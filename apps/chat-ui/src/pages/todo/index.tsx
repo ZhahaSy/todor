@@ -1,38 +1,22 @@
 import FastChat from "@/components/FastChat";
 import CardView from "@/components/Todo/CardView";
 import useTodoList from "@/components/Todo/hooks/useTodoList";
-import TypeSelector from "@/components/Todo/TypeSelector";
-import { SearchOutlined } from "@ant-design/icons";
-import { Button, Input } from "antd";
+import SearchForm from "./SearchForm";
 
-const todo = () => {
-  // eslint-disable-next-line react-hooks/rules-of-hooks
+import { Form } from "antd";
+
+const Todo = () => {
+  const [formRef] = Form.useForm();
+
   const todoActionsAndData = useTodoList({
     readyOn: true,
-  });
+  }, formRef);
   return (
-    <div style={{ paddingTop: 12, overflow: "auto" }}>
-      <TypeSelector variant="borderless" mode="tags" />
-      <Input.Search
-        style={{ position: "sticky", top: 12, marginBottom: 30, zIndex: 1 }}
-        styles={{
-          input: {
-            height: "50px",
-          },
-          suffix: {
-            height: "50px",
-          },
-        }}
-        enterButton={
-          <Button style={{ height: "50px", width: "50px" }}>
-            <SearchOutlined />
-          </Button>
-        }
-        placeholder="输入关键词"
-      />
+    <div style={{ marginRight: 20, paddingTop: 12, overflow: "auto", width: '100%' }}>
+      <SearchForm formRef={formRef} onValuesChange={(value) => todoActionsAndData.getTodoList(value)} />
       <CardView {...todoActionsAndData} />
       <FastChat />
     </div>
   );
 };
-export default todo;
+export default Todo;

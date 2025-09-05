@@ -18,14 +18,20 @@ export class TodoService {
   async getTodoList({
     todoMonth,
     type,
+    keyword,
+    status,
   }: {
     todoMonth?: string;
     type?: ('work' | 'life' | 'study' | 'all')[];
+    keyword?: string;
+    status?: string;
   }) {
     return await this.todoRepository.find({
       where: {
         isDeleted: false,
         // 可选数据
+        title: keyword ? Like(`%${keyword}%`) : undefined,
+        content: keyword ? Like(`%${keyword}%`) : undefined,
         todoTime: todoMonth ? Like(`${todoMonth}%`) : undefined,
         // 类型
         type: type?.includes('all')
@@ -33,7 +39,10 @@ export class TodoService {
           : type && type.length > 0
             ? In(type.filter((t) => t !== 'all'))
             : undefined,
+        // 状态
+        status: status ? status : 'active',
       },
+      // 状态
       order: { status: 'ASC', createTime: 'DESC' },
     });
   }

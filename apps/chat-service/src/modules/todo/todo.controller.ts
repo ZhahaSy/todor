@@ -20,11 +20,15 @@ export class TodoController {
   async getTodoList(
     @Query('todoMonth') todoMonth?: string,
     @Query('type') type?: string,
+    @Query('keyword') keyword?: string,
+    @Query('status') status?: string,
   ) {
     return ResOp.success(
       await this.todoService.getTodoList({
         todoMonth,
         type: type?.split(',') as ('work' | 'life' | 'study' | 'all')[],
+        keyword,
+        status,
       }),
     );
   }

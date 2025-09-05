@@ -48,7 +48,7 @@ const Sidebar = (props: SidebarProps) => {
       {/* top 栏 */}
       <div className={styles.topBar}>
         {/* 增加用户选择器 */}
-        <UserSelector />
+        <UserSelector isShowName={!collapsed} />
         {/* <Button icon={<QuestionCircleOutlined />} /> */}
       </div>
 

@@ -3,7 +3,10 @@ import useUserStore from "../../store/useUserStore";
 import { User } from "../../entities/user";
 import aiAvatar from "@/assets/todor-2d-no-bg.png";
 
-const UserSelector = () => {
+interface UserSelectorProps {
+  isShowName?: boolean;
+}
+const UserSelector = ({isShowName}: UserSelectorProps) => {
   const { userList, setUser, user } = useUserStore();
 
   return (
@@ -26,7 +29,7 @@ const UserSelector = () => {
     >
       <div style={{ display: 'flex', alignItems: 'center', gap: 8, paddingLeft: 24 }}>
         <Avatar size={24} src={user?.avatar || aiAvatar} />
-        <div>{user?.name}</div>
+         {isShowName && <div>{user?.name}</div>}
       </div>
     </Popover>
   );
