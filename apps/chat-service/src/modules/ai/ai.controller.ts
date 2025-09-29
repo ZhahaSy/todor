@@ -36,10 +36,10 @@ export class AiController {
     // 从请求中获取用户信息
     const userInfo = await this.userService.findOne({ id: req.user.id });
 
-    const { structured: result } = await this.aiService.process(
-      sendMessageDto.input,
+    const { structured: result } = await this.aiService.process({
+      input: sendMessageDto.input,
       userInfo,
-    );
+    });
 
     // 保存到待办事项
     await this.todoService.create({

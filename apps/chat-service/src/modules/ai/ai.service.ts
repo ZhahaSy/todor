@@ -33,10 +33,32 @@ class PromptBuilder {
   }
 }
 
+interface InputData {
+  input: string;
+  userInfo: User;
+}
+
+interface OutputStructured {
+  title: string;
+  content: string;
+  type: string;
+  priority: string;
+  todoTime: string;
+  isUrgent: boolean;
+  originInput: string;
+  originOutput: string;
+}
+
+interface OutputData {
+  originOutput: string;
+  structured: OutputStructured;
+}
+
 @Injectable()
 export class AiService {
-  private readonly chain: any;
-  private readonly schema = zod.object({
+  // 定义 chain 属性的类型：接收 input 和 userInfo，返回包含 originOutput 和 structured 的结果
+  private readonly chain: RunnableSequence<InputData, OutputData>;
+  private readonly schema: zod.Schema<Partial<OutputStructured>> = zod.object({
     title: zod.string().describe('待办标题'),
     content: zod.string().describe('待办描述'),
     type: zod
@@ -107,12 +129,12 @@ export class AiService {
 
     this.chain = RunnableSequence.from([
       // 动态注入用户信息
-      ({ input, userInfo }) => ({
-        input,
+      (inputData: InputData) => ({
+        input: inputData.input,
         info: {
-          age: userInfo.age,
-          gender: userInfo.gender,
-          hobby: userInfo.hobby,
+          age: inputData.userInfo.age,
+          gender: inputData.userInfo.gender,
+          hobby: inputData.userInfo.hobby,
         },
         date: new Date().toLocaleString(),
       }),
@@ -127,7 +149,7 @@ export class AiService {
     ]);
   }
 
-  async process(input: string, userInfo: User) {
-    return this.chain.invoke({ input, userInfo });
+  async process(inputData: InputData) {
+    return this.chain.invoke(inputData);
   }
 }
