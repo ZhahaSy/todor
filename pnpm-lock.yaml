@@ -13,7 +13,7 @@ importers:
         version: 3.8.5(react@19.1.1)
       langchain:
         specifier: ^0.3.27
-        version: 0.3.27(@langchain/core@0.3.58(openai@4.104.0(encoding@0.1.13)(zod@3.25.64)))(@langchain/deepseek@0.0.1(@langchain/core@0.3.58(openai@4.104.0(encoding@0.1.13)(zod@3.25.64)))(encoding@0.1.13))(axios@1.9.0)(encoding@0.1.13)(openai@4.104.0(encoding@0.1.13)(zod@3.25.64))(typeorm@0.3.22)
+        version: 0.3.27(@langchain/core@0.3.58(openai@4.104.0(encoding@0.1.13)(zod@3.25.64)))(@langchain/deepseek@0.0.1(@langchain/core@0.3.58(openai@4.104.0(encoding@0.1.13)(zod@3.25.64)))(encoding@0.1.13))(axios@1.9.0)(encoding@0.1.13)(openai@4.104.0(encoding@0.1.13)(zod@3.25.64))(typeorm@0.3.22(reflect-metadata@0.2.0)(sqlite3@5.1.7)(ts-node@10.9.1(@types/node@20.3.1)(typescript@5.8.2)))
     devDependencies:
       prettier:
         specifier: ^3.5.3
@@ -51,6 +51,9 @@ importers:
       '@nestjs/platform-express':
         specifier: ^11.0.1
         version: 11.0.1(@nestjs/common@11.0.1(class-validator@0.14.2)(reflect-metadata@0.2.0)(rxjs@7.8.1))(@nestjs/core@11.0.1)
+      '@nestjs/schedule':
+        specifier: ^6.0.1
+        version: 6.0.1(@nestjs/common@11.0.1(class-validator@0.14.2)(reflect-metadata@0.2.0)(rxjs@7.8.1))(@nestjs/core@11.0.1(@nestjs/common@11.0.1(class-validator@0.14.2)(reflect-metadata@0.2.0)(rxjs@7.8.1))(@nestjs/platform-express@11.0.1)(reflect-metadata@0.2.0)(rxjs@7.8.1))
       '@nestjs/swagger':
         specifier: ^11.2.0
         version: 11.2.0(@nestjs/common@11.0.1(class-validator@0.14.2)(reflect-metadata@0.2.0)(rxjs@7.8.1))(@nestjs/core@11.0.1(@nestjs/common@11.0.1(class-validator@0.14.2)(reflect-metadata@0.2.0)(rxjs@7.8.1))(@nestjs/platform-express@11.0.1)(reflect-metadata@0.2.0)(rxjs@7.8.1))(class-validator@0.14.2)(reflect-metadata@0.2.0)
@@ -78,6 +81,12 @@ importers:
       nest-winston:
         specifier: ^1.10.2
         version: 1.10.2(@nestjs/common@11.0.1(class-validator@0.14.2)(reflect-metadata@0.2.0)(rxjs@7.8.1))(winston@3.17.0)
+      node-schedule:
+        specifier: ^2.1.1
+        version: 2.1.1
+      nodemailer:
+        specifier: ^7.0.9
+        version: 7.0.9
       passport:
         specifier: ^0.7.0
         version: 0.7.0
@@ -183,22 +192,22 @@ importers:
         version: 6.0.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@ant-design/x':
         specifier: ^1.1.1
-        version: 1.1.1(antd@5.24.8(moment@2.30.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+        version: 1.1.1(antd@5.24.8(luxon@3.7.2)(moment@2.30.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@langchain/core':
         specifier: ^0.3.47
-        version: 0.3.47(openai@4.104.0(encoding@0.1.13)(zod@3.25.64))
+        version: 0.3.47(openai@4.104.0(encoding@0.1.13)(zod@3.25.28))
       '@langchain/deepseek':
         specifier: ^0.0.1
-        version: 0.0.1(@langchain/core@0.3.47(openai@4.104.0(encoding@0.1.13)(zod@3.25.64)))(encoding@0.1.13)
+        version: 0.0.1(@langchain/core@0.3.47(openai@4.104.0(encoding@0.1.13)(zod@3.25.28)))(encoding@0.1.13)
       ahooks:
         specifier: ^3.8.5
         version: 3.8.5(react@18.3.1)
       antd:
         specifier: ^5.24.8
-        version: 5.24.8(moment@2.30.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+        version: 5.24.8(luxon@3.7.2)(moment@2.30.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       antd-style:
         specifier: ^3.7.1
-        version: 3.7.1(@types/react@18.3.20)(antd@5.24.8(moment@2.30.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+        version: 3.7.1(@types/react@18.3.20)(antd@5.24.8(luxon@3.7.2)(moment@2.30.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       axios:
         specifier: ^1.9.0
         version: 1.9.0
@@ -307,7 +316,7 @@ importers:
         version: 6.0.0(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
       '@ant-design/x':
         specifier: ^1.1.1
-        version: 1.1.1(antd@5.24.8(moment@2.30.1)(react-dom@19.1.1(react@19.1.1))(react@19.1.1))(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
+        version: 1.1.1(antd@5.24.8(luxon@3.7.2)(moment@2.30.1)(react-dom@19.1.1(react@19.1.1))(react@19.1.1))(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
       '@tauri-apps/api':
         specifier: ^2
         version: 2.7.0
@@ -316,10 +325,10 @@ importers:
         version: 2.4.0
       antd:
         specifier: ^5.24.8
-        version: 5.24.8(moment@2.30.1)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
+        version: 5.24.8(luxon@3.7.2)(moment@2.30.1)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
       antd-style:
         specifier: ^3.7.1
-        version: 3.7.1(@types/react@19.1.9)(antd@5.24.8(moment@2.30.1)(react-dom@19.1.1(react@19.1.1))(react@19.1.1))(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
+        version: 3.7.1(@types/react@19.1.9)(antd@5.24.8(luxon@3.7.2)(moment@2.30.1)(react-dom@19.1.1(react@19.1.1))(react@19.1.1))(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
       react:
         specifier: ^19.1.0
         version: 19.1.1
@@ -347,13 +356,13 @@ importers:
         version: 19.1.7(@types/react@19.1.9)
       '@vitejs/plugin-react':
         specifier: ^4.6.0
-        version: 4.7.0(vite@7.1.1(less@4.3.0)(terser@5.42.0)(yaml@2.8.0))
+        version: 4.7.0(vite@7.1.1(@types/node@20.3.1)(less@4.3.0)(terser@5.42.0)(yaml@2.8.0))
       typescript:
         specifier: ~5.8.3
         version: 5.8.3
       vite:
         specifier: ^7.0.4
-        version: 7.1.1(less@4.3.0)(terser@5.42.0)(yaml@2.8.0)
+        version: 7.1.1(@types/node@20.3.1)(less@4.3.0)(terser@5.42.0)(yaml@2.8.0)
 
   packages/api:
     devDependencies:
@@ -383,7 +392,7 @@ importers:
     dependencies:
       antd:
         specifier: ^5.24.8
-        version: 5.24.8(moment@2.30.1)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
+        version: 5.24.8(luxon@3.7.2)(moment@2.30.1)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
       axios:
         specifier: ^1.9.0
         version: 1.9.0
@@ -398,13 +407,13 @@ importers:
         version: 6.0.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@ant-design/x':
         specifier: ^1.1.1
-        version: 1.1.1(antd@5.24.8(moment@2.30.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+        version: 1.1.1(antd@5.24.8(luxon@3.7.2)(moment@2.30.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       antd:
         specifier: ^5.24.8
-        version: 5.24.8(moment@2.30.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+        version: 5.24.8(luxon@3.7.2)(moment@2.30.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       antd-style:
         specifier: ^3.7.1
-        version: 3.7.1(@types/react@18.3.20)(antd@5.24.8(moment@2.30.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+        version: 3.7.1(antd@5.24.8(luxon@3.7.2)(moment@2.30.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       less:
         specifier: ^4.3.0
         version: 4.3.0
@@ -1402,6 +1411,12 @@ packages:
       '@nestjs/common': ^11.0.0
       '@nestjs/core': ^11.0.0
 
+  '@nestjs/schedule@6.0.1':
+    resolution: {integrity: sha512-v3yO6cSPAoBSSyH67HWnXHzuhPhSNZhRmLY38JvCt2sqY8sPMOODpcU1D79iUMFf7k16DaMEbL4Mgx61ZhiC8Q==}
+    peerDependencies:
+      '@nestjs/common': ^10.0.0 || ^11.0.0
+      '@nestjs/core': ^10.0.0 || ^11.0.0
+
   '@nestjs/schematics@11.0.0':
     resolution: {integrity: sha512-wts8lG0GfNWw3Wk9aaG5I/wcMIAdm7HjjeThQfUZhJxeIFT82Z3F5+0cYdHH4ii2pYQGiCSrR1VcuMwPiHoecg==}
     peerDependencies:
@@ -1853,6 +1868,9 @@ packages:
 
   '@types/linkify-it@5.0.0':
     resolution: {integrity: sha512-sVDA58zAw4eWAffKOaQH5/5j3XeayukzDk+ewSsnv3p4yJEZHCCzMDiZM8e0OUrRvmpGZ85jf4yDHkHsgBNr9Q==}
+
+  '@types/luxon@3.7.1':
+    resolution: {integrity: sha512-H3iskjFIAn5SlJU7OuxUmTEpebK6TKB8rxZShDslBMZJ5u9S//KM1sbdAisiSrqwLQncVjnpi2OK2J51h+4lsg==}
 
   '@types/markdown-it@14.1.2':
     resolution: {integrity: sha512-promo4eFwuiW+TfGxhi+0x3czqTYJkG8qB17ZUJiVF10Xm7NLVRSLUsfRTU/6h1e24VvRnXCx+hG7li58lkzog==}
@@ -2626,6 +2644,14 @@ packages:
 
   create-require@1.1.1:
     resolution: {integrity: sha512-dcKFX3jn0MpIaXjisoRvexIJVEKzaq7z2rZKxf+MSr9TkdmHmsU4m2lcLojrj/FHl8mk5VxMmYA+ftRkP/3oKQ==}
+
+  cron-parser@4.9.0:
+    resolution: {integrity: sha512-p0SaNjrHOnQeR8/VnfGbmg9te2kfyYSQ7Sc/j/6DtPL3JQvKxmjO9TSjNFpujqV3vEYYBvNNvXSxzyksBWAx1Q==}
+    engines: {node: '>=12.0.0'}
+
+  cron@4.3.3:
+    resolution: {integrity: sha512-B/CJj5yL3sjtlun6RtYHvoSB26EmQ2NUmhq9ZiJSyKIM4K/fqfh9aelDFlIayD2YMeFZqWLi9hHV+c+pq2Djkw==}
+    engines: {node: '>=18.x'}
 
   cross-spawn@7.0.6:
     resolution: {integrity: sha512-uV2QOWP2nWzsy2aMp8aRibhi9dlzF5Hgh5SHaB9OiTGEyDTiJJyx0uy51QXdyWbtAHNua4XJzUKca3OzKUd3vA==}
@@ -3831,6 +3857,9 @@ packages:
     resolution: {integrity: sha512-TFYA4jnP7PVbmlBIfhlSe+WKxs9dklXMTEGcBCIvLhE/Tn3H6Gk1norupVW7m5Cnd4bLcr08AytbyV/xj7f/kQ==}
     engines: {node: '>= 12.0.0'}
 
+  long-timeout@0.1.1:
+    resolution: {integrity: sha512-BFRuQUqc7x2NWxfJBCyUrN8iYUYznzL9JROmRz1gZ6KlOIgmoD+njPVbb+VNn2nGMKggMsK79iUNErillsrx7w==}
+
   loose-envify@1.4.0:
     resolution: {integrity: sha512-lyuxPGr/Wfhrlem2CL/UcnUc1zcqKAImBDzukY7Y5F/yQiNdko6+fRLevlw1HgMySw7f611UIY408EtxRSoK3Q==}
     hasBin: true
@@ -3848,6 +3877,10 @@ packages:
   lru-cache@6.0.0:
     resolution: {integrity: sha512-Jo6dJ04CmSjuznwJSS3pUeWmd/H0ffTlkXXgwZi+eq1UCmqQwCh+eLsYOYCwY991i2Fah4h1BEMCx4qThGbsiA==}
     engines: {node: '>=10'}
+
+  luxon@3.7.2:
+    resolution: {integrity: sha512-vtEhXh/gNjI9Yg1u4jX/0YVPMvxzHuGgCm6tC5kZyb08yjGWGnqAjGJvcXbqQR2P3MyMEFnRbpcdFS6PBcLqew==}
+    engines: {node: '>=12'}
 
   magic-string@0.30.12:
     resolution: {integrity: sha512-Ea8I3sQMVXr8JhN4z+H/d8zwo+tYDgHE9+5G4Wnrwhs0gaK9fXTKx0Tw5Xwsd/bCPTTZNRAdpyzvoeORe9LYpw==}
@@ -4118,6 +4151,14 @@ packages:
 
   node-releases@2.0.19:
     resolution: {integrity: sha512-xxOWJsBKtzAq7DY0J+DTzuz58K8e7sJbdgwkbMWQe8UYB6ekmsQ45q0M/tJDsGaZmbC+l7n57UV8Hl5tHxO9uw==}
+
+  node-schedule@2.1.1:
+    resolution: {integrity: sha512-OXdegQq03OmXEjt2hZP33W2YPs/E5BcFQks46+G2gAxs4gHOIVD1u7EqlYLYSKsaIpyKCK9Gbk0ta1/gjRSMRQ==}
+    engines: {node: '>=6'}
+
+  nodemailer@7.0.9:
+    resolution: {integrity: sha512-9/Qm0qXIByEP8lEV2qOqcAW7bRpL8CR9jcTwk3NBnHJNmP9fIJ86g2fgmIXqHY+nj55ZEMwWqYAT2QTDpRUYiQ==}
+    engines: {node: '>=6.0.0'}
 
   nopt@5.0.0:
     resolution: {integrity: sha512-Tbj67rffqceeLpcRXrT7vKAN8CwfPeIBgM7E6iBkmKLV7bEMwpGgYLGv0jACUsECaa/vuxP0IjEont6umdMgtQ==}
@@ -5029,6 +5070,9 @@ packages:
   socks@2.8.5:
     resolution: {integrity: sha512-iF+tNDQla22geJdTyJB1wM/qrX9DMRwWrciEPwWLPRWAUEM8sQiyxgckLxWT1f7+9VabJS0jTGGr4QgBuvi6Ww==}
     engines: {node: '>= 10.0.0', npm: '>= 3.0.0'}
+
+  sorted-array-functions@1.3.0:
+    resolution: {integrity: sha512-2sqgzeFlid6N4Z2fUQ1cvFmTOLRi/sEDzSQ0OKYchqgoPmQBVyM3959qYx3fpS6Esef80KjmpgPeEr028dP3OA==}
 
   source-map-js@1.2.1:
     resolution: {integrity: sha512-UXWMKhLOwVKb728IUtQPXxfYU+usdybtUrK/8uGE8CQMvrhOpwvzDBwj0QhSL7MQc7vIsISBG8VQ8+IDQxpfQA==}
@@ -5997,7 +6041,7 @@ snapshots:
       resize-observer-polyfill: 1.5.1
       throttle-debounce: 5.0.2
 
-  '@ant-design/x@1.1.1(antd@5.24.8(moment@2.30.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)':
+  '@ant-design/x@1.1.1(antd@5.24.8(luxon@3.7.2)(moment@2.30.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)':
     dependencies:
       '@ant-design/colors': 7.2.1
       '@ant-design/cssinjs': 1.23.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
@@ -6005,14 +6049,14 @@ snapshots:
       '@ant-design/fast-color': 2.0.6
       '@ant-design/icons': 5.6.1(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@babel/runtime': 7.27.6
-      antd: 5.24.8(moment@2.30.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      antd: 5.24.8(luxon@3.7.2)(moment@2.30.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       classnames: 2.5.1
       rc-motion: 2.9.5(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       rc-util: 5.44.4(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       react: 18.3.1
       react-dom: 18.3.1(react@18.3.1)
 
-  '@ant-design/x@1.1.1(antd@5.24.8(moment@2.30.1)(react-dom@19.1.1(react@19.1.1))(react@19.1.1))(react-dom@19.1.1(react@19.1.1))(react@19.1.1)':
+  '@ant-design/x@1.1.1(antd@5.24.8(luxon@3.7.2)(moment@2.30.1)(react-dom@19.1.1(react@19.1.1))(react@19.1.1))(react-dom@19.1.1(react@19.1.1))(react@19.1.1)':
     dependencies:
       '@ant-design/colors': 7.2.1
       '@ant-design/cssinjs': 1.23.0(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
@@ -6020,7 +6064,7 @@ snapshots:
       '@ant-design/fast-color': 2.0.6
       '@ant-design/icons': 5.6.1(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
       '@babel/runtime': 7.27.6
-      antd: 5.24.8(moment@2.30.1)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
+      antd: 5.24.8(luxon@3.7.2)(moment@2.30.1)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
       classnames: 2.5.1
       rc-motion: 2.9.5(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
       rc-util: 5.44.4(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
@@ -6382,6 +6426,20 @@ snapshots:
       react: 19.1.1
     optionalDependencies:
       '@types/react': 19.1.9
+    transitivePeerDependencies:
+      - supports-color
+
+  '@emotion/react@11.14.0(react@18.3.1)':
+    dependencies:
+      '@babel/runtime': 7.27.6
+      '@emotion/babel-plugin': 11.13.5
+      '@emotion/cache': 11.14.0
+      '@emotion/serialize': 1.3.3
+      '@emotion/use-insertion-effect-with-fallbacks': 1.2.0(react@18.3.1)
+      '@emotion/utils': 1.4.2
+      '@emotion/weak-memoize': 0.4.0
+      hoist-non-react-statics: 3.3.2
+      react: 18.3.1
     transitivePeerDependencies:
       - supports-color
 
@@ -6951,23 +7009,6 @@ snapshots:
     transitivePeerDependencies:
       - openai
 
-  '@langchain/core@0.3.47(openai@4.104.0(encoding@0.1.13)(zod@3.25.64))':
-    dependencies:
-      '@cfworker/json-schema': 4.1.1
-      ansi-styles: 5.2.0
-      camelcase: 6.3.0
-      decamelize: 1.2.0
-      js-tiktoken: 1.0.20
-      langsmith: 0.3.31(openai@4.104.0(encoding@0.1.13)(zod@3.25.64))
-      mustache: 4.2.0
-      p-queue: 6.6.2
-      p-retry: 4.6.2
-      uuid: 10.0.0
-      zod: 3.25.28
-      zod-to-json-schema: 3.24.5(zod@3.25.28)
-    transitivePeerDependencies:
-      - openai
-
   '@langchain/core@0.3.58(openai@4.104.0(encoding@0.1.13)(zod@3.25.64))':
     dependencies:
       '@cfworker/json-schema': 4.1.1
@@ -6994,15 +7035,6 @@ snapshots:
       - encoding
       - ws
 
-  '@langchain/deepseek@0.0.1(@langchain/core@0.3.47(openai@4.104.0(encoding@0.1.13)(zod@3.25.64)))(encoding@0.1.13)':
-    dependencies:
-      '@langchain/core': 0.3.47(openai@4.104.0(encoding@0.1.13)(zod@3.25.64))
-      '@langchain/openai': 0.4.9(@langchain/core@0.3.47(openai@4.104.0(encoding@0.1.13)(zod@3.25.64)))(encoding@0.1.13)
-      zod: 3.25.28
-    transitivePeerDependencies:
-      - encoding
-      - ws
-
   '@langchain/deepseek@0.0.1(@langchain/core@0.3.58(openai@4.104.0(encoding@0.1.13)(zod@3.25.64)))(encoding@0.1.13)':
     dependencies:
       '@langchain/core': 0.3.58(openai@4.104.0(encoding@0.1.13)(zod@3.25.64))
@@ -7016,17 +7048,6 @@ snapshots:
   '@langchain/openai@0.4.9(@langchain/core@0.3.47(openai@4.104.0(encoding@0.1.13)(zod@3.25.28)))(encoding@0.1.13)':
     dependencies:
       '@langchain/core': 0.3.47(openai@4.104.0(encoding@0.1.13)(zod@3.25.28))
-      js-tiktoken: 1.0.20
-      openai: 4.104.0(encoding@0.1.13)(zod@3.25.28)
-      zod: 3.25.28
-      zod-to-json-schema: 3.24.5(zod@3.25.28)
-    transitivePeerDependencies:
-      - encoding
-      - ws
-
-  '@langchain/openai@0.4.9(@langchain/core@0.3.47(openai@4.104.0(encoding@0.1.13)(zod@3.25.64)))(encoding@0.1.13)':
-    dependencies:
-      '@langchain/core': 0.3.47(openai@4.104.0(encoding@0.1.13)(zod@3.25.64))
       js-tiktoken: 1.0.20
       openai: 4.104.0(encoding@0.1.13)(zod@3.25.28)
       zod: 3.25.28
@@ -7154,6 +7175,12 @@ snapshots:
       tslib: 2.8.1
     transitivePeerDependencies:
       - supports-color
+
+  '@nestjs/schedule@6.0.1(@nestjs/common@11.0.1(class-validator@0.14.2)(reflect-metadata@0.2.0)(rxjs@7.8.1))(@nestjs/core@11.0.1(@nestjs/common@11.0.1(class-validator@0.14.2)(reflect-metadata@0.2.0)(rxjs@7.8.1))(@nestjs/platform-express@11.0.1)(reflect-metadata@0.2.0)(rxjs@7.8.1))':
+    dependencies:
+      '@nestjs/common': 11.0.1(class-validator@0.14.2)(reflect-metadata@0.2.0)(rxjs@7.8.1)
+      '@nestjs/core': 11.0.1(@nestjs/common@11.0.1(class-validator@0.14.2)(reflect-metadata@0.2.0)(rxjs@7.8.1))(@nestjs/platform-express@11.0.1)(reflect-metadata@0.2.0)(rxjs@7.8.1)
+      cron: 4.3.3
 
   '@nestjs/schematics@11.0.0(chokidar@4.0.3)(typescript@5.7.3)':
     dependencies:
@@ -7625,6 +7652,8 @@ snapshots:
 
   '@types/linkify-it@5.0.0': {}
 
+  '@types/luxon@3.7.1': {}
+
   '@types/markdown-it@14.1.2':
     dependencies:
       '@types/linkify-it': 5.0.0
@@ -7888,7 +7917,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@vitejs/plugin-react@4.7.0(vite@7.1.1(less@4.3.0)(terser@5.42.0)(yaml@2.8.0))':
+  '@vitejs/plugin-react@4.7.0(vite@7.1.1(@types/node@20.3.1)(less@4.3.0)(terser@5.42.0)(yaml@2.8.0))':
     dependencies:
       '@babel/core': 7.28.0
       '@babel/plugin-transform-react-jsx-self': 7.27.1(@babel/core@7.28.0)
@@ -7896,7 +7925,7 @@ snapshots:
       '@rolldown/pluginutils': 1.0.0-beta.27
       '@types/babel__core': 7.20.5
       react-refresh: 0.17.0
-      vite: 7.1.1(less@4.3.0)(terser@5.42.0)(yaml@2.8.0)
+      vite: 7.1.1(@types/node@20.3.1)(less@4.3.0)(terser@5.42.0)(yaml@2.8.0)
     transitivePeerDependencies:
       - supports-color
 
@@ -8098,7 +8127,7 @@ snapshots:
 
   ansis@3.9.0: {}
 
-  antd-style@3.7.1(@types/react@18.3.20)(antd@5.24.8(moment@2.30.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1):
+  antd-style@3.7.1(@types/react@18.3.20)(antd@5.24.8(luxon@3.7.2)(moment@2.30.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1):
     dependencies:
       '@ant-design/cssinjs': 1.23.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@babel/runtime': 7.27.6
@@ -8107,7 +8136,7 @@ snapshots:
       '@emotion/react': 11.14.0(@types/react@18.3.20)(react@18.3.1)
       '@emotion/serialize': 1.3.3
       '@emotion/utils': 1.4.2
-      antd: 5.24.8(moment@2.30.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      antd: 5.24.8(luxon@3.7.2)(moment@2.30.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       react: 18.3.1
       use-merge-value: 1.2.0(react@18.3.1)
     transitivePeerDependencies:
@@ -8115,7 +8144,7 @@ snapshots:
       - react-dom
       - supports-color
 
-  antd-style@3.7.1(@types/react@19.1.9)(antd@5.24.8(moment@2.30.1)(react-dom@19.1.1(react@19.1.1))(react@19.1.1))(react-dom@19.1.1(react@19.1.1))(react@19.1.1):
+  antd-style@3.7.1(@types/react@19.1.9)(antd@5.24.8(luxon@3.7.2)(moment@2.30.1)(react-dom@19.1.1(react@19.1.1))(react@19.1.1))(react-dom@19.1.1(react@19.1.1))(react@19.1.1):
     dependencies:
       '@ant-design/cssinjs': 1.23.0(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
       '@babel/runtime': 7.27.6
@@ -8124,7 +8153,7 @@ snapshots:
       '@emotion/react': 11.14.0(@types/react@19.1.9)(react@19.1.1)
       '@emotion/serialize': 1.3.3
       '@emotion/utils': 1.4.2
-      antd: 5.24.8(moment@2.30.1)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
+      antd: 5.24.8(luxon@3.7.2)(moment@2.30.1)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
       react: 19.1.1
       use-merge-value: 1.2.0(react@19.1.1)
     transitivePeerDependencies:
@@ -8132,7 +8161,24 @@ snapshots:
       - react-dom
       - supports-color
 
-  antd@5.24.8(moment@2.30.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1):
+  antd-style@3.7.1(antd@5.24.8(luxon@3.7.2)(moment@2.30.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1):
+    dependencies:
+      '@ant-design/cssinjs': 1.23.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      '@babel/runtime': 7.27.6
+      '@emotion/cache': 11.14.0
+      '@emotion/css': 11.13.5
+      '@emotion/react': 11.14.0(react@18.3.1)
+      '@emotion/serialize': 1.3.3
+      '@emotion/utils': 1.4.2
+      antd: 5.24.8(luxon@3.7.2)(moment@2.30.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      react: 18.3.1
+      use-merge-value: 1.2.0(react@18.3.1)
+    transitivePeerDependencies:
+      - '@types/react'
+      - react-dom
+      - supports-color
+
+  antd@5.24.8(luxon@3.7.2)(moment@2.30.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1):
     dependencies:
       '@ant-design/colors': 7.2.1
       '@ant-design/cssinjs': 1.23.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
@@ -8164,7 +8210,7 @@ snapshots:
       rc-motion: 2.9.5(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       rc-notification: 5.6.4(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       rc-pagination: 5.1.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
-      rc-picker: 4.11.3(dayjs@1.11.13)(moment@2.30.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      rc-picker: 4.11.3(dayjs@1.11.13)(luxon@3.7.2)(moment@2.30.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       rc-progress: 4.0.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       rc-rate: 2.13.1(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       rc-resize-observer: 1.4.3(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
@@ -8190,7 +8236,7 @@ snapshots:
       - luxon
       - moment
 
-  antd@5.24.8(moment@2.30.1)(react-dom@19.1.1(react@19.1.1))(react@19.1.1):
+  antd@5.24.8(luxon@3.7.2)(moment@2.30.1)(react-dom@19.1.1(react@19.1.1))(react@19.1.1):
     dependencies:
       '@ant-design/colors': 7.2.1
       '@ant-design/cssinjs': 1.23.0(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
@@ -8222,7 +8268,7 @@ snapshots:
       rc-motion: 2.9.5(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
       rc-notification: 5.6.4(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
       rc-pagination: 5.1.0(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
-      rc-picker: 4.11.3(dayjs@1.11.13)(moment@2.30.1)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
+      rc-picker: 4.11.3(dayjs@1.11.13)(luxon@3.7.2)(moment@2.30.1)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
       rc-progress: 4.0.0(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
       rc-rate: 2.13.1(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
       rc-resize-observer: 1.4.3(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
@@ -8718,6 +8764,15 @@ snapshots:
       - ts-node
 
   create-require@1.1.1: {}
+
+  cron-parser@4.9.0:
+    dependencies:
+      luxon: 3.7.2
+
+  cron@4.3.3:
+    dependencies:
+      '@types/luxon': 3.7.1
+      luxon: 3.7.2
 
   cross-spawn@7.0.6:
     dependencies:
@@ -10045,7 +10100,7 @@ snapshots:
 
   kuler@2.0.0: {}
 
-  langchain@0.3.27(@langchain/core@0.3.58(openai@4.104.0(encoding@0.1.13)(zod@3.25.64)))(@langchain/deepseek@0.0.1(@langchain/core@0.3.58(openai@4.104.0(encoding@0.1.13)(zod@3.25.64)))(encoding@0.1.13))(axios@1.9.0)(encoding@0.1.13)(openai@4.104.0(encoding@0.1.13)(zod@3.25.64))(typeorm@0.3.22):
+  langchain@0.3.27(@langchain/core@0.3.58(openai@4.104.0(encoding@0.1.13)(zod@3.25.64)))(@langchain/deepseek@0.0.1(@langchain/core@0.3.58(openai@4.104.0(encoding@0.1.13)(zod@3.25.64)))(encoding@0.1.13))(axios@1.9.0)(encoding@0.1.13)(openai@4.104.0(encoding@0.1.13)(zod@3.25.64))(typeorm@0.3.22(reflect-metadata@0.2.0)(sqlite3@5.1.7)(ts-node@10.9.1(@types/node@20.3.1)(typescript@5.8.2))):
     dependencies:
       '@langchain/core': 0.3.58(openai@4.104.0(encoding@0.1.13)(zod@3.25.64))
       '@langchain/openai': 0.5.13(@langchain/core@0.3.58(openai@4.104.0(encoding@0.1.13)(zod@3.25.64)))(encoding@0.1.13)
@@ -10063,7 +10118,7 @@ snapshots:
     optionalDependencies:
       '@langchain/deepseek': 0.0.1(@langchain/core@0.3.58(openai@4.104.0(encoding@0.1.13)(zod@3.25.64)))(encoding@0.1.13)
       axios: 1.9.0
-      typeorm: 0.3.22(reflect-metadata@0.2.0)(sqlite3@5.1.7)(ts-node@10.9.1(@types/node@20.3.1)(typescript@5.7.2))
+      typeorm: 0.3.22(reflect-metadata@0.2.0)(sqlite3@5.1.7)(ts-node@10.9.1(@types/node@20.3.1)(typescript@5.8.2))
     transitivePeerDependencies:
       - encoding
       - openai
@@ -10180,6 +10235,8 @@ snapshots:
       safe-stable-stringify: 2.5.0
       triple-beam: 1.4.1
 
+  long-timeout@0.1.1: {}
+
   loose-envify@1.4.0:
     dependencies:
       js-tokens: 4.0.0
@@ -10196,6 +10253,8 @@ snapshots:
     dependencies:
       yallist: 4.0.0
     optional: true
+
+  luxon@3.7.2: {}
 
   magic-string@0.30.12:
     dependencies:
@@ -10461,6 +10520,14 @@ snapshots:
   node-int64@0.4.0: {}
 
   node-releases@2.0.19: {}
+
+  node-schedule@2.1.1:
+    dependencies:
+      cron-parser: 4.9.0
+      long-timeout: 0.1.1
+      sorted-array-functions: 1.3.0
+
+  nodemailer@7.0.9: {}
 
   nopt@5.0.0:
     dependencies:
@@ -11105,7 +11172,7 @@ snapshots:
       react: 19.1.1
       react-dom: 19.1.1(react@19.1.1)
 
-  rc-picker@4.11.3(dayjs@1.11.13)(moment@2.30.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1):
+  rc-picker@4.11.3(dayjs@1.11.13)(luxon@3.7.2)(moment@2.30.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1):
     dependencies:
       '@babel/runtime': 7.27.6
       '@rc-component/trigger': 2.2.6(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
@@ -11117,9 +11184,10 @@ snapshots:
       react-dom: 18.3.1(react@18.3.1)
     optionalDependencies:
       dayjs: 1.11.13
+      luxon: 3.7.2
       moment: 2.30.1
 
-  rc-picker@4.11.3(dayjs@1.11.13)(moment@2.30.1)(react-dom@19.1.1(react@19.1.1))(react@19.1.1):
+  rc-picker@4.11.3(dayjs@1.11.13)(luxon@3.7.2)(moment@2.30.1)(react-dom@19.1.1(react@19.1.1))(react@19.1.1):
     dependencies:
       '@babel/runtime': 7.27.6
       '@rc-component/trigger': 2.2.6(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
@@ -11131,6 +11199,7 @@ snapshots:
       react-dom: 19.1.1(react@19.1.1)
     optionalDependencies:
       dayjs: 1.11.13
+      luxon: 3.7.2
       moment: 2.30.1
 
   rc-progress@4.0.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1):
@@ -11773,6 +11842,8 @@ snapshots:
       smart-buffer: 4.2.0
     optional: true
 
+  sorted-array-functions@1.3.0: {}
+
   source-map-js@1.2.1: {}
 
   source-map-support@0.5.13:
@@ -12068,6 +12139,25 @@ snapshots:
       v8-compile-cache-lib: 3.0.1
       yn: 3.1.1
 
+  ts-node@10.9.1(@types/node@20.3.1)(typescript@5.8.2):
+    dependencies:
+      '@cspotcode/source-map-support': 0.8.1
+      '@tsconfig/node10': 1.0.11
+      '@tsconfig/node12': 1.0.11
+      '@tsconfig/node14': 1.0.3
+      '@tsconfig/node16': 1.0.4
+      '@types/node': 20.3.1
+      acorn: 8.15.0
+      acorn-walk: 8.3.4
+      arg: 4.1.3
+      create-require: 1.1.1
+      diff: 4.0.2
+      make-error: 1.3.6
+      typescript: 5.8.2
+      v8-compile-cache-lib: 3.0.1
+      yn: 3.1.1
+    optional: true
+
   tsconfig-paths-webpack-plugin@4.2.0:
     dependencies:
       chalk: 4.1.2
@@ -12158,6 +12248,29 @@ snapshots:
       ts-node: 10.9.1(@types/node@20.3.1)(typescript@5.7.2)
     transitivePeerDependencies:
       - supports-color
+
+  typeorm@0.3.22(reflect-metadata@0.2.0)(sqlite3@5.1.7)(ts-node@10.9.1(@types/node@20.3.1)(typescript@5.8.2)):
+    dependencies:
+      '@sqltools/formatter': 1.2.5
+      ansis: 3.17.0
+      app-root-path: 3.1.0
+      buffer: 6.0.3
+      dayjs: 1.11.13
+      debug: 4.4.1
+      dotenv: 16.5.0
+      glob: 10.4.5
+      reflect-metadata: 0.2.0
+      sha.js: 2.4.11
+      sql-highlight: 6.1.0
+      tslib: 2.8.1
+      uuid: 11.1.0
+      yargs: 17.7.2
+    optionalDependencies:
+      sqlite3: 5.1.7
+      ts-node: 10.9.1(@types/node@20.3.1)(typescript@5.8.2)
+    transitivePeerDependencies:
+      - supports-color
+    optional: true
 
   typescript-eslint@8.26.1(eslint@9.22.0)(typescript@5.7.2):
     dependencies:
@@ -12254,7 +12367,7 @@ snapshots:
       terser: 5.42.0
       yaml: 2.8.0
 
-  vite@7.1.1(less@4.3.0)(terser@5.42.0)(yaml@2.8.0):
+  vite@7.1.1(@types/node@20.3.1)(less@4.3.0)(terser@5.42.0)(yaml@2.8.0):
     dependencies:
       esbuild: 0.25.5
       fdir: 6.4.6(picomatch@4.0.3)
@@ -12263,6 +12376,7 @@ snapshots:
       rollup: 4.43.0
       tinyglobby: 0.2.14
     optionalDependencies:
+      '@types/node': 20.3.1
       fsevents: 2.3.3
       less: 4.3.0
       terser: 5.42.0

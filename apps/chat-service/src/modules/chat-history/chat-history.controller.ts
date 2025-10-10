@@ -11,8 +11,6 @@ export class ChatHistoryController {
 
   @Post()
   async create(@Body() createChatDto: CreateChatDto) {
-    console.log('createChatDto', createChatDto);
-
     return ResOp.success(await this.chatService.create(createChatDto));
   }
 

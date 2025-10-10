@@ -17,6 +17,7 @@ import { ResOp } from '@/common/model/response.model';
 import { TodoService } from '../todo/todo.service';
 import { JwtAuthGuard } from '@/common/guard/jwt.auth';
 import { UserService } from '../user/user.service';
+import { AdvancedSchedulerService } from '../schedule/advanced-scheduler.service';
 
 @ApiTags('AI接口')
 @UseGuards(JwtAuthGuard)
@@ -26,6 +27,7 @@ export class AiController {
     private readonly aiService: AiService,
     private readonly todoService: TodoService, // 新增依赖注入
     private readonly userService: UserService, // 新增依赖注入
+    private readonly scheduleService: AdvancedSchedulerService, // 新增依赖注入
   ) {}
 
   @HttpCode(HttpStatus.OK)
@@ -50,6 +52,13 @@ export class AiController {
       todoTime: result.todoTime,
       isUrgent: result.isUrgent,
     });
+    await this.scheduleService.scheduleOneTimeEmail(
+      new Date().toISOString(),
+      new Date(result.todoTime), // 东八区时间
+      userInfo.email,
+      '待办事项提醒: ' + result.title,
+      `您有一条待办事项：${result.content}`,
+    );
     return ResOp.success(result.originOutput);
   }
 }

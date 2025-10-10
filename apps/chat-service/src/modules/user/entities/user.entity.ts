@@ -90,4 +90,11 @@ export class User {
     default: false,
   })
   deleted: boolean;
+
+  @Column({
+    comment: '邮箱',
+    length: 255,
+    default: '',
+  })
+  email: string;
 }
