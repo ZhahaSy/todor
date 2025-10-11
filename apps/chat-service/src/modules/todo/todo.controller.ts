@@ -57,13 +57,6 @@ export class TodoController {
   @Post('/create')
   async createTodo(@Body() createTodoDto: Partial<Todo>, @Request() req) {
     const userInfo = await this.userService.findOne({ id: req.user.id });
-    console.log(
-      createTodoDto.id,
-      new Date(createTodoDto.todoTime),
-      userInfo.email,
-      '待办事项提醒: ' + createTodoDto.title,
-      `您有一条待办事项：${createTodoDto.content}`,
-    );
     await this.scheduleService.scheduleOneTimeEmail(
       createTodoDto.id,
       new Date(createTodoDto.todoTime),
