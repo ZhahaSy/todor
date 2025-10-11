@@ -1,5 +1,8 @@
 import { message } from "antd";
-import axios, { AxiosRequestConfigPluginOriginalData } from "axios";
+import axios from "axios";
+import type { AxiosRequestConfigPluginOriginalData } from 'axios';
+
+import './shims.axios.d.ts';
 
 const CodeMessage: Record<number, string> = {
   200: "服务器成功返回请求的数据。",

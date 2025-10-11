@@ -31,9 +31,9 @@ export const useChat = (): ReturnType => {
 
   const getMessages = async () => {
     try {
-      const data = await getChatHistory();
-      setMessages(data || []);  
-      return data || [];
+      const {data = []} = await getChatHistory();
+      setMessages(data);  
+      return data;
     } catch (error) {
       console.error("Failed to get messages:", error);
       return [];

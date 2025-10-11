@@ -13,8 +13,8 @@ const useUserStore = create<UserState>()((set) => ({
   user: {} as User,
   userList: [],
   getUserList: async () => {
-    const userList = await getUserList();
-    set({ userList, user: userList[0] });
+    const data = await getUserList();
+    set({ userList: data, user: data[0] || {} as User });
   },
   setUser: (user: User) => {
     set({ user });

@@ -9,12 +9,9 @@ import {
 } from "@ant-design/icons";
 import { Button, Menu } from "antd";
 import { useState } from "react";
-import logo from "@/assets/todor-text-no-bg.png";
 import { useNavigate } from "react-router-dom";
 
-interface SidebarProps {}
-
-const Sidebar = (props: SidebarProps) => {
+const Sidebar = () => {
   const [collapsed, setCollapsed] = useState(false);
   const toggleCollapsed = () => {
     setCollapsed(!collapsed);

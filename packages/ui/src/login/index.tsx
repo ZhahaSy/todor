@@ -1,4 +1,3 @@
-import React from "react";
 import type { FormProps } from "antd";
 import { Button, Form, Input, Space } from "antd";
 import styles from "./index.module.less";
@@ -21,7 +20,7 @@ const onFinishFailed: FormProps<FieldType>["onFinishFailed"] = (errorInfo) => {
   console.log("Failed:", errorInfo);
 };
 
-const App: React.FC = () => (
+const App = () => (
   <div className={styles.loginLayout}>
     <img
       src={todor}

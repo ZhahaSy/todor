@@ -10,10 +10,10 @@ const Todo = () => {
 
   const todoActionsAndData = useTodoList({
     readyOn: true,
-  }, formRef);
+  });
   return (
     <div style={{ marginRight: 20, paddingTop: 12, overflow: "auto", width: '100%' }}>
-      <SearchForm formRef={formRef} onValuesChange={(value) => todoActionsAndData.getTodoList(value)} />
+      <SearchForm form={formRef} onValuesChange={(value) => todoActionsAndData.getTodoList(value)} />
       <CardView {...todoActionsAndData} />
       <FastChat />
     </div>

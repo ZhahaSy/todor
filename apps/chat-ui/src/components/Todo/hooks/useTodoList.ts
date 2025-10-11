@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { TodoItemEntity } from "@client/entities";
 import * as TodoApi from "@client/api";
-import { FormInstance } from "antd";
 
 export interface UseTodoListReturn {
   todoList: TodoItemEntity[];
@@ -29,7 +28,7 @@ const useTodoList = ({
     keyword?: string;
     status?: string;
   };
-}, formRef: FormInstance) => {
+}) => {
   const [todoList, setTodoList] = useState<TodoItemEntity[]>([]);
   const getTodoList = async (params?: {
     todoMonth?: string;
@@ -41,7 +40,7 @@ const useTodoList = ({
       ...getListParams,
       ...params,
     });
-    setTodoList(res);
+    setTodoList(res || []);
   };
 
   const addTodo = async (

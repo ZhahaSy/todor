@@ -1,12 +1,10 @@
 import { Flex, FloatButton, Modal } from "antd";
 
-import { useRef, useState } from "react";
-
-import { useDrag } from "ahooks";
+import { DragEventHandler, useRef, useState } from "react";
 
 import { FloatButtonElement } from "antd/es/float-button/interface";
 import { MessageFilled } from "@ant-design/icons";
-import { Bubble, Sender } from "@ant-design/x";
+import { Bubble } from "@ant-design/x";
 import { SenderPanel } from "@client/ui";
 import { useSendMessage } from "@client/hooks";
 
@@ -24,9 +22,7 @@ const FastChat = () => {
     bottom: "20%",
   });
 
-  const onDrag = (e) => {
-    console.log(e);
-
+  const onDrag: DragEventHandler<FloatButtonElement> = (e) => {
     setPosition({
       left: e.pageX + "px",
       top: e.pageY + "px",
@@ -58,7 +54,6 @@ const FastChat = () => {
           transition: "none",
           transform: "none",
         }}
-        draggable
         onDragEnd={onDrag}
         description={<MessageFilled />}
       ></FloatButton>

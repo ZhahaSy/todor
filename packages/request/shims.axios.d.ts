@@ -38,7 +38,7 @@ declare module 'axios' {
 
     export interface AxiosInstance {
         <T>(config: AxiosRequestConfig): Promise<T>;
-        <T>(config: AxiosRequestConfigPluginOriginalData): Promise<BaseResponse<T>>;
+        <T>(config: AxiosRequestConfigPluginOriginalData<T>): Promise<BaseResponse<T>>;
 
         request<T = any, D = any>(config: AxiosRequestConfig<D>): Promise<T>;
         // request<T = any, R = BaseResponse<T>, D = any>(config: AxiosRequestConfigPluginOriginalData<D>): Promise<R>;

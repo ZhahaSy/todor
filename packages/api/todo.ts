@@ -5,7 +5,7 @@ export const getTodoList = async (params: {
   todoMonth?: string;
   type?: ("work" | "life" | "study" | "all")[];
 }) => {
-  const data = await request.get("/todo/list", { params });
+  const data = await request.get<TodoItemEntity[]>("/todo/list", { params });
   return data;
 };
 export const addTodo = async (data: Partial<TodoItemEntity>) => {

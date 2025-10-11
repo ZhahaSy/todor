@@ -2,7 +2,7 @@ import { sendMessage } from "@client/api";
 import { useState } from "react";
 
 export const useSendMessage = (
-  addMessage: (content: string, type: string) => void
+  addMessage: (content: string, type: "local" | "ai") => void
 ) => {
   const [loading, setLoading] = useState(false);
 
@@ -45,4 +45,4 @@ export const useSendMessage = (
     handleRetry,
     loading,
   };
-}
+};
