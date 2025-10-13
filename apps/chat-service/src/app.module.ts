@@ -18,14 +18,15 @@ import { UserModule } from './modules/user/user.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { MessageModule } from './modules/message/message.module';
 import { ScheduleModule } from './modules/schedule/schedule.module';
+import { env } from 'process';
 
 @Module({
   imports: [
     TypeOrmModule.forRoot({
       type: 'sqlite',
-      database: 'chat.db',
+      database: '.dbs/chat.db',
       entities: [__dirname + '/**/*.entity{.ts,.js}'],
-      synchronize: true, // 开发环境使用，生产环境需关闭
+      synchronize: env.NODE_ENV === 'development' ? true : false, // 开发环境使用，生产环境需关闭
     }),
 
     ConfigModule.forRoot({
