@@ -1,4 +1,4 @@
-import { User } from "@client/entities";
+import { CreateUserDto, User } from "@client/entities";
 import request from "@client/request";
 
 
@@ -11,4 +11,8 @@ export const login = async (params: {
     password: string;
 }) => {
     return request.post<{token: string}>('/user/login', params);
+}
+
+export const createUser = async (params: CreateUserDto) => {
+    return request.post<{token: string}>('/user/create', params);
 }

@@ -35,30 +35,35 @@ export class User {
   @Column({
     comment: '工作',
     length: 255,
+    default: '',
   })
   job: string;
 
   @Column({
     comment: '公司地址',
     length: 255,
+    default: '',
   })
   work_address: string;
 
   @Column({
     comment: '居住地',
     length: 255,
+    default: '',
   })
   address: string;
 
   @Column({
     comment: '爱好',
     length: 255,
+    default: '',
   })
   hobby: string;
 
   @Column({
     comment: '生活作息表',
     length: 255,
+    default: '',
   })
   schedule: string;
 

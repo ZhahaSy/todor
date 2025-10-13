@@ -26,7 +26,7 @@ import { env } from 'process';
       type: 'sqlite',
       database: '.dbs/chat.db',
       entities: [__dirname + '/**/*.entity{.ts,.js}'],
-      synchronize: env.NODE_ENV === 'development' ? true : false, // 开发环境使用，生产环境需关闭
+      synchronize: true, // 开发环境使用，生产环境需关闭
     }),
 
     ConfigModule.forRoot({

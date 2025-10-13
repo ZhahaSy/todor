@@ -20,7 +20,7 @@ const onFinishFailed: FormProps<FieldType>["onFinishFailed"] = (errorInfo) => {
   console.log("Failed:", errorInfo);
 };
 
-const App = () => (
+const App = (props: { onSignIn: () => void }) => (
   <div className={styles.loginLayout}>
     <img
       src={todor}
@@ -55,6 +55,7 @@ const App = () => (
         style={{
           position: "absolute",
           top: -50,
+          left: -5,
         }}
         alt="logo"
       />
@@ -78,11 +79,11 @@ const App = () => (
 
       <Form.Item label={null}>
         <Space>
-          <Button style={{ width: "100%" }}>注册</Button>
+          <Button style={{ width: "100%" }} onClick={props.onSignIn}>注册</Button>
 
-          <Button style={{ width: "100%" }} type="primary" htmlType="submit">
+        <Button style={{ width: "100%" }} type="primary" htmlType="submit">
             登录
-          </Button>
+        </Button>
         </Space>
       </Form.Item>
     </Form>
