@@ -24,7 +24,7 @@ async function bootstrap() {
     extraModels: [ResOp],
     ignoreGlobalPrefix: false,
   });
-  SwaggerModule.setup('api', app, document);
+  SwaggerModule.setup('swagger', app, document);
 
   const MAX_RETRY = 5; // 最大重试次数
   let port = 3000;
