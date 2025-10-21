@@ -11,13 +11,18 @@ export class ChatHistoryService {
     private readonly chatRepository: Repository<ChatHistory>,
   ) {}
 
-  async create(createChatDto: CreateChatDto): Promise<ChatHistory> {
+  async create(
+    createChatDto: CreateChatDto & { sessionId: string },
+  ): Promise<ChatHistory> {
     const newChat = this.chatRepository.create(createChatDto);
     return this.chatRepository.save(newChat);
   }
 
-  async findAll(): Promise<ChatHistory[]> {
-    const data = await this.chatRepository.find({ order: { date: 'ASC' } });
+  async findAll({ sessionId }: { sessionId: string }): Promise<ChatHistory[]> {
+    const data = await this.chatRepository.find({
+      where: { sessionId },
+      order: { date: 'ASC' },
+    });
     return data;
   }
 }

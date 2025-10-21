@@ -24,7 +24,7 @@ export const IS_DEV = process.env.RUNNING_ENV !== 'prod';
   imports: [
     TypeOrmModule.forRoot({
       type: 'sqlite',
-      database: IS_DEV ? '.dbs/chat.db' : '/home/dbs/chat.db',
+      database: IS_DEV ? 'dbs/chat.db' : '/home/dbs/chat.db',
       entities: [__dirname + '/**/*.entity{.ts,.js}'],
       synchronize: IS_DEV ? true : false, // 开发环境使用，生产环境需关闭
     }),

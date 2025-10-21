@@ -15,6 +15,14 @@ import { JwtAuthGuard } from '@/common/guard/jwt.auth';
 import { AdvancedSchedulerService } from '../schedule/advanced-scheduler.service';
 import { UserService } from '../user/user.service';
 
+// 查询参数 DTO 类
+class TodoListQuery {
+  todoMonth?: string;
+  type?: string;
+  keyword?: string;
+  status?: string;
+}
+
 @UseGuards(JwtAuthGuard)
 @Controller('todo')
 export class TodoController {
@@ -24,18 +32,15 @@ export class TodoController {
     private readonly userService: UserService, // 新增依赖注入
   ) {}
   @Get('/list')
-  async getTodoList(
-    @Query('todoMonth') todoMonth?: string,
-    @Query('type') type?: string,
-    @Query('keyword') keyword?: string,
-    @Query('status') status?: string,
-  ) {
+  async getTodoList(@Query() query: TodoListQuery, @Request() req) {
+    const { name } = await this.userService.findOne({ id: req.user.userId });
     return ResOp.success(
       await this.todoService.getTodoList({
-        todoMonth,
-        type: type?.split(',') as ('work' | 'life' | 'study' | 'all')[],
-        keyword,
-        status,
+        todoMonth: query.todoMonth,
+        type: query.type?.split(',') as ('work' | 'life' | 'study' | 'all')[],
+        keyword: query.keyword,
+        status: query.status,
+        creator: name,
       }),
     );
   }
@@ -56,7 +61,7 @@ export class TodoController {
 
   @Post('/create')
   async createTodo(@Body() createTodoDto: Partial<Todo>, @Request() req) {
-    const userInfo = await this.userService.findOne({ id: req.user.id });
+    const userInfo = await this.userService.findOne({ id: req.user.userId });
     await this.scheduleService.scheduleOneTimeEmail(
       createTodoDto.id,
       new Date(createTodoDto.todoTime),

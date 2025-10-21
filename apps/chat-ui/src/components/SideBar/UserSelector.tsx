@@ -10,28 +10,32 @@ const UserSelector = ({isShowName}: UserSelectorProps) => {
   const { userList, setUser, user } = useUserStore();
 
   return (
-    <Popover
-      trigger="click"
-      content={
-        <ul>
-          {userList?.map((item: User) => (
-            <li
-              style={{ display: "flex", gap: 8 }}
-              onClick={() => setUser(item)}
-              key={item.id}
-            >
-              <Avatar size={24} src={item.avatar || aiAvatar} />
-              <div>{item.name}</div>
-            </li>
-          ))}
-        </ul>
-      }
-    >
-      <div style={{ display: 'flex', alignItems: 'center', gap: 8, paddingLeft: 24 }}>
+    <div style={{ display: 'flex', alignItems: 'center', gap: 8, paddingLeft: 24 }}>
         <Avatar size={24} src={user?.avatar || aiAvatar} />
          {isShowName && <div>{user?.name}</div>}
       </div>
-    </Popover>
+    // <Popover
+    //   trigger="click"
+    //   content={
+    //     <ul>
+    //       {userList?.map((item: User) => (
+    //         <li
+    //           style={{ display: "flex", gap: 8 }}
+    //           onClick={() => setUser(item)}
+    //           key={item.id}
+    //         >
+    //           <Avatar size={24} src={item.avatar || aiAvatar} />
+    //           <div>{item.name}</div>
+    //         </li>
+    //       ))}
+    //     </ul>
+    //   }
+    // >
+    //   <div style={{ display: 'flex', alignItems: 'center', gap: 8, paddingLeft: 24 }}>
+    //     <Avatar size={24} src={user?.avatar || aiAvatar} />
+    //      {isShowName && <div>{user?.name}</div>}
+    //   </div>
+    // </Popover>
   );
 };
 

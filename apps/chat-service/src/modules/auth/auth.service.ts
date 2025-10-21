@@ -47,6 +47,8 @@ export class AuthService {
       sub: user.id,
     };
 
+    console.log(payload);
+
     const token = await this.jwtService.sign(payload, {
       secret: jwtConstants.secret,
     });

@@ -85,4 +85,11 @@ export class Todo {
     default: false,
   })
   isDeleted: boolean;
+
+  @Column({
+    type: 'bigint',
+    comment: '创建人',
+    default: null,
+  })
+  creator: string | null;
 }

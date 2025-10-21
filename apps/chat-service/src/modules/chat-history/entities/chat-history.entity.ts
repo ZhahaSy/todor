@@ -22,4 +22,11 @@ export class ChatHistory {
 
   @CreateDateColumn({ type: 'bigint', comment: '时间戳' })
   date: number;
+
+  @Column({
+    type: 'varchar',
+    comment: '会话ID',
+    default: null,
+  })
+  sessionId: string | null;
 }

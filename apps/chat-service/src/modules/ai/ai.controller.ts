@@ -36,7 +36,7 @@ export class AiController {
   @Post('message')
   async sendMessage(@Body() sendMessageDto: SendMessageDto, @Request() req) {
     // 从请求中获取用户信息
-    const userInfo = await this.userService.findOne({ id: req.user.id });
+    const userInfo = await this.userService.findOne({ id: req.user.userId });
 
     const { structured: result } = await this.aiService.process({
       input: sendMessageDto.input,
@@ -51,6 +51,7 @@ export class AiController {
       priority: result.priority,
       todoTime: result.todoTime,
       isUrgent: result.isUrgent,
+      creator: userInfo.name,
     });
     await this.scheduleService.scheduleOneTimeEmail(
       new Date().toISOString(),

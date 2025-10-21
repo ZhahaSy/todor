@@ -20,14 +20,18 @@ export class TodoService {
     type,
     keyword,
     status,
+    creator,
   }: {
     todoMonth?: string;
     type?: ('work' | 'life' | 'study' | 'all')[];
     keyword?: string;
     status?: string;
+    creator?: string;
   }) {
     return await this.todoRepository.find({
       where: {
+        // 必须数据
+        creator: creator ? creator : undefined,
         isDeleted: false,
         // 可选数据
         title: keyword ? Like(`%${keyword}%`) : undefined,

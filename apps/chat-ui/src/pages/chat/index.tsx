@@ -1,14 +1,10 @@
-import React, { useEffect } from "react";
+import React from "react";
 import { ChatList, SenderPanel } from "@client/ui";
 import styles from "./index.module.less";
 import { useChat, useSendMessage } from "@client/hooks";
 import Todo from "@/components/Todo";
-import useUserStore from "@/store/useUserStore";
 const Independent: React.FC = () => {
-  const { getUserList } = useUserStore();
-  useEffect(() => {
-    getUserList();
-  }, []);
+
 
   // ==================== State =================
 

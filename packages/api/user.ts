@@ -13,6 +13,10 @@ export const login = async (params: {
     return request.post<{token: string}>('/user/login', params);
 }
 
+export const getUserInfo = async () => {
+    return request.get<User>('/user/info');
+}
+
 export const createUser = async (params: CreateUserDto) => {
     return request.post<{token: string}>('/user/create', params);
 }
