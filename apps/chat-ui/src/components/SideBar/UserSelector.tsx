@@ -1,13 +1,12 @@
-import { Avatar, Popover } from "antd";
+import { Avatar } from "antd";
 import useUserStore from "../../store/useUserStore";
-import { User } from "../../entities/user";
 import aiAvatar from "@/assets/todor-2d-no-bg.png";
 
 interface UserSelectorProps {
   isShowName?: boolean;
 }
 const UserSelector = ({isShowName}: UserSelectorProps) => {
-  const { userList, setUser, user } = useUserStore();
+  const { user } = useUserStore();
 
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: 8, paddingLeft: 24 }}>
