@@ -5,10 +5,12 @@ import styles from "./index.module.less";
 import { GetProp, Typography } from "antd";
 import markdownit from "markdown-it";
 
+import MessageFooter from "./MessageFooter";
+
 import aiAvatar from "../assets/todor-2d-no-bg.png";
 
 export interface ChatListProps {
-  messages: BubbleDataType[];
+  messages: BubbleDataType & { date: string }[];
   loading: boolean;
   onRetry: () => void;
 }
@@ -52,6 +54,9 @@ const ChatList = ({ messages }: ChatListProps) => (
         items={messages.map((message) => ({
           ...message,
           messageRender: renderMarkdown,
+          footer: () => {
+            return <MessageFooter curMessage={message} />;
+          },
         }))}
         roles={roles}
         autoScroll
