@@ -44,7 +44,7 @@ export class AiController {
     });
 
     // 保存到待办事项
-    await this.todoService.create({
+    const message = await this.todoService.create({
       title: result.title,
       content: result.content,
       type: result.type,
@@ -60,6 +60,9 @@ export class AiController {
       '待办事项提醒: ' + result.title,
       `您有一条待办事项：${result.content}`,
     );
-    return ResOp.success(result.originOutput);
+    return ResOp.success({
+      output: result.originOutput,
+      messageId: message.id,
+    });
   }
 }

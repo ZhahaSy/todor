@@ -1,8 +1,11 @@
 import { sendMessage } from "@client/api";
 import { useState } from "react";
 
+import dayjs from "dayjs";
+import { HistRecordItem } from "./useChat";
+
 export const useSendMessage = (
-  addMessage: (content: string, type: "local" | "ai") => void
+  addMessage: (message: HistRecordItem) => void
 ) => {
   const [loading, setLoading] = useState(false);
 
@@ -16,16 +19,29 @@ export const useSendMessage = (
     setLoading(true); // 立即显示加载状态
 
     if (loading) return;
+    
 
     try {
+
+      const ctime = dayjs().format("YYYY-MM-DD");
       // 先添加用户消息
-      await addMessage(value, "local");
+      await addMessage({
+        content: value,
+        role: "local",
+        date: ctime,
+        id: '',
+      });
 
       // 发送消息到服务器
-      const answer = await sendMessage({ input: value });
+      const { output, messageId: aiMessageId } = await sendMessage({ input: value });
 
       // 添加AI回复
-      await addMessage(answer as unknown as string, "ai");
+      await addMessage({
+        content: output as unknown as string,
+        role: "ai",
+        date: ctime,
+        id: aiMessageId,
+      });
     } catch (error) {
       console.error("Message send failed:", error);
     } finally {

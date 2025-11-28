@@ -7,6 +7,7 @@ export const getChatHistory = async () => {
 export const addChatHistory = async (data: {
   content: string;
   role: "ai" | "local";
+  date: string;
 }) => {
   const res = await request.post("/chat-history", data);
   return res;

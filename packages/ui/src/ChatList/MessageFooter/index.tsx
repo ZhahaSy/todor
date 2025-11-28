@@ -8,9 +8,22 @@ interface MessageFooterProps {
   };
 }
 
+const isToday = (date: string) => {
+  const today = new Date();
+  const messageDate = new Date(date);
+  return (
+    messageDate.getDate() === today.getDate() &&
+    messageDate.getMonth() === today.getMonth() &&
+    messageDate.getFullYear() === today.getFullYear()
+  );
+};
+
 const MessageFooter = (props: MessageFooterProps) => {
   const { curMessage } = props;
-  const { date } = curMessage;
+  const { date = '' } = curMessage;
+  const onEdit = () => {
+    console.log("修改", curMessage);
+  };
   return (
     <div className={styles.messageFooter}>
       <Actions
@@ -19,10 +32,11 @@ const MessageFooter = (props: MessageFooterProps) => {
             key: "eidt",
             icon: <EditOutlined />,
             label: "修改",
+            onItemClick: onEdit,
           },
         ]}
       />
-      <div>{date}</div>
+      <div>{isToday(date) ? date.slice(10, 16) : date.slice(0, 10)}</div>
     </div>
   );
 };

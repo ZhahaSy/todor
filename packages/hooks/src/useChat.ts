@@ -4,6 +4,8 @@ import { addChatHistory, getChatHistory } from "@client/api";
 export interface HistRecordItem {
   role: "local" | "ai";
   content: string;
+  date: string;
+  id: string;
 }
 export type ReturnType = {
   /**
@@ -16,7 +18,7 @@ export type ReturnType = {
    * @param {string} content 聊天内容
    * @returns {Promise<boolean>} 是否成功
    */
-  addMessage: (content: string, user: "local" | "ai") => Promise<boolean>;
+  addMessage: (message: HistRecordItem) => Promise<boolean>;
 };
 
 /**
@@ -51,13 +53,14 @@ export const useChat = (): ReturnType => {
   }
 
   const addMessage = async (
-    content: string,
-    user: string
+    {role, content, date, id}: HistRecordItem
   ): Promise<boolean> => {
     try {
       const newMessage: HistRecordItem = {
-        role: user as "local" | "ai",
+        role,
         content,
+        date,
+        id,
       };
 
 
@@ -67,7 +70,7 @@ export const useChat = (): ReturnType => {
         return newDataList;
       });
 
-      // 再更新本地数据
+      // 再更新后台数据
       updateMessage(newMessage)
 
       

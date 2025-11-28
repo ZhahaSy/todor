@@ -1,9 +1,4 @@
-import {
-  Entity,
-  Column,
-  PrimaryGeneratedColumn,
-  CreateDateColumn,
-} from 'typeorm';
+import { Entity, Column, PrimaryGeneratedColumn } from 'typeorm';
 
 @Entity()
 export class ChatHistory {
@@ -20,8 +15,8 @@ export class ChatHistory {
   })
   role: string;
 
-  @CreateDateColumn({ type: 'bigint', comment: '时间戳' })
-  date: number;
+  @Column({ type: 'varchar', comment: '日期' })
+  date: string;
 
   @Column({
     type: 'varchar',
