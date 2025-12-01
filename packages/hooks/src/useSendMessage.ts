@@ -23,24 +23,25 @@ export const useSendMessage = (
 
     try {
 
-      const ctime = dayjs().format("YYYY-MM-DD");
+      const ctime = dayjs().format("YYYY-MM-DD HH:mm:ss");
+      
       // 先添加用户消息
       await addMessage({
         content: value,
         role: "local",
         date: ctime,
-        id: '',
+        todoId: '',
       });
 
       // 发送消息到服务器
-      const { output, messageId: aiMessageId } = await sendMessage({ input: value });
+      const { output, messageId: todoMessageId } = await sendMessage({ input: value });
 
       // 添加AI回复
       await addMessage({
         content: output as unknown as string,
         role: "ai",
         date: ctime,
-        id: aiMessageId,
+        todoId: todoMessageId,
       });
     } catch (error) {
       console.error("Message send failed:", error);

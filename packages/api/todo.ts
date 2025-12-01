@@ -8,6 +8,10 @@ export const getTodoList = async (params: {
   const data = await request.get<TodoItemEntity[]>("/todo/list", { params });
   return data;
 };
+export const getTodoById = async (id: string) => {
+  const data = await request.get<TodoItemEntity>(`/todo/${id}`);
+  return data;
+};
 export const addTodo = async (data: Partial<TodoItemEntity>) => {
   const res = await request.post("/todo/create", data);
   return res;

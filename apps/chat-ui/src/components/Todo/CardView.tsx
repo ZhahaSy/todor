@@ -4,9 +4,10 @@ import TypeTag from "./TypeTag";
 import { EditFilled, CloseCircleFilled } from "@ant-design/icons";
 import Styles from "./index.module.less";
 import { UseTodoListReturn } from "./hooks/useTodoList";
+import { TodoItemEntity } from "@client/entities";
 
-const CardView = (props:UseTodoListReturn) => {
-  const { todoList, updateTodoStatus, deleteTodo } = props;
+const CardView = (props:UseTodoListReturn & { onEdit: (todo: TodoItemEntity) => void }) => {
+  const { todoList, updateTodoStatus, deleteTodo, onEdit } = props;
   return (
     <Row gutter={10}>
       {todoList.map((todo) => (
@@ -31,7 +32,7 @@ const CardView = (props:UseTodoListReturn) => {
             }
             extra={
               <Space>
-                <Button danger type="text">
+                <Button danger type="text" onClick={() => onEdit(todo)}>
                   <EditFilled />
                 </Button>
                 <Button onClick={() => deleteTodo(todo.id)} type="text">

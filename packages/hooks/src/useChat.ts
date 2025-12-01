@@ -5,7 +5,7 @@ export interface HistRecordItem {
   role: "local" | "ai";
   content: string;
   date: string;
-  id: string;
+  todoId: string;
 }
 export type ReturnType = {
   /**
@@ -53,14 +53,14 @@ export const useChat = (): ReturnType => {
   }
 
   const addMessage = async (
-    {role, content, date, id}: HistRecordItem
+    {role, content, date, todoId}: HistRecordItem
   ): Promise<boolean> => {
     try {
       const newMessage: HistRecordItem = {
         role,
         content,
         date,
-        id,
+        todoId,
       };
 
 

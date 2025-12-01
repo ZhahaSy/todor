@@ -24,4 +24,11 @@ export class ChatHistory {
     default: null,
   })
   sessionId: string | null;
+
+  @Column({
+    type: 'varchar',
+    comment: '关联的todo项ID',
+    default: null,
+  })
+  todoId: string | null;
 }
