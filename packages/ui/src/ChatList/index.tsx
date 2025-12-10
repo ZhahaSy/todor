@@ -9,18 +9,18 @@ import MessageFooter from "./MessageFooter";
 
 import aiAvatar from "../assets/todor-2d-no-bg.png";
 
+import { ChatHistory } from "@client/entities";
+
 export interface ChatListProps {
-  messages: BubbleDataType & { date: string }[];
+  messages: ChatHistory[];
   loading: boolean;
   onRetry: () => void;
 }
 
 const md = markdownit({ html: true, breaks: true });
 const renderMarkdown: BubbleProps["messageRender"] = (content) => (
-  <Typography>
-    {/* biome-ignore lint/security/noDangerouslySetInnerHtml: used in demo */}
-    <div dangerouslySetInnerHTML={{ __html: md.render(content) }} />
-  </Typography>
+  // {/* biome-ignore lint/security/noDangerouslySetInnerHtml: used in demo */}
+  <div dangerouslySetInnerHTML={{ __html: md.render(content) }} />
 );
 
 const roles: GetProp<typeof Bubble.List, "roles"> = {
@@ -30,6 +30,7 @@ const roles: GetProp<typeof Bubble.List, "roles"> = {
     typing: { step: 5, interval: 20 },
     styles: {
       content: {
+        textAlign: "left",
         borderRadius: 16,
       },
     },
@@ -39,6 +40,7 @@ const roles: GetProp<typeof Bubble.List, "roles"> = {
     variant: "shadow",
     styles: {
       content: {
+        textAlign: "left",
         borderRadius: 16,
         background: "yellowGreen",
       },
@@ -53,9 +55,9 @@ const ChatList = ({ messages }: ChatListProps) => (
         style={{ overflowY: "auto", height: "100%" }}
         items={messages.map((message) => ({
           ...message,
-          messageRender: renderMarkdown,
+          messageRender:renderMarkdown,
           footer: () => {
-            return <MessageFooter curMessage={message} />;
+            return  <MessageFooter curMessage={message} />;
           },
         }))}
         roles={roles}

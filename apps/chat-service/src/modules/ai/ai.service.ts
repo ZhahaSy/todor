@@ -61,9 +61,7 @@ export class AiService {
     IntentResult
   >;
   private readonly intentRecognitionSchema = zod.object({
-    intent: zod
-      .string()
-      .describe('用户意图，返回具体意图类型如：todo, chat, reminder等'),
+    intent: zod.string().describe('用户意图，返回具体意图类型：todo | chat'),
     // [key: string]: zod.ZodAny, // 允许扩展其他字段
   });
 
