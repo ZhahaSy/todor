@@ -6,6 +6,30 @@ import { RunnableSequence } from '@langchain/core/runnables';
 import zod from 'zod';
 import { User } from '../user/entities/user.entity';
 
+// 基础输入输出接口
+export interface InputData {
+  input: string;
+  userInfo: User;
+}
+
+export interface IntentResult {
+  intent?: string;
+  [key: string]: any; // 允许扩展其他字段
+}
+
+export interface ProcessedResult {
+  output: string;
+  intent: string;
+  data?: any;
+}
+
+// 意图处理接口
+export interface IntentHandler {
+  getIntent(): string;
+  process(inputData: InputData): Promise<ProcessedResult>;
+}
+
+// PromptBuilder类保持不变
 class PromptBuilder {
   private prompts: Record<string, any> = {};
 
@@ -27,87 +51,20 @@ class PromptBuilder {
       ['human', '{input}'],
     ]);
   }
-
-  getPromptValues() {
-    return { ...this.prompts };
-  }
-}
-
-interface InputData {
-  input: string;
-  userInfo: User;
-}
-
-interface OutputStructured {
-  title: string;
-  content: string;
-  type: string;
-  priority: string;
-  todoTime: string;
-  isUrgent: boolean;
-  originInput: string;
-  originOutput: string;
-}
-
-interface OutputData {
-  originOutput: string;
-  structured: OutputStructured;
 }
 
 @Injectable()
 export class AiService {
-  // 定义 chain 属性的类型：接收 input 和 userInfo，返回包含 originOutput 和 structured 的结果
-  private readonly chain: RunnableSequence<InputData, OutputData>;
-  private readonly schema: zod.Schema<Partial<OutputStructured>> = zod.object({
-    title: zod.string().describe('待办标题'),
-    content: zod.string().describe('待办描述'),
-    type: zod
+  private readonly intentHandlers: Map<string, IntentHandler> = new Map();
+  private readonly intentRecognitionChain: RunnableSequence<
+    InputData,
+    IntentResult
+  >;
+  private readonly intentRecognitionSchema = zod.object({
+    intent: zod
       .string()
-      .describe('生活｜工作｜学习')
-      .transform((v) => {
-        switch (v) {
-          case '生活':
-            return 'life';
-          case '工作':
-            return 'work';
-          case '学习':
-            return 'study';
-          default:
-            return 'work';
-        }
-      }),
-    priority: zod
-      .string()
-      .describe('低｜中｜高')
-      .transform((v) => {
-        switch (v) {
-          case '低':
-            return 'low';
-          case '中':
-            return 'medium';
-          case '高':
-            return 'high';
-          default:
-            return 'medium';
-        }
-      }),
-    todoTime: zod
-      .string()
-      .describe(
-        '请输入具体时间，格式为：YYYY-MM-DD HH:mm' +
-          `当前时间：${new Date().toLocaleString()}`,
-      ),
-    isUrgent: zod.boolean().describe('是否紧急'),
-    originInput: zod.string().describe('原始输入'),
-    originOutput: zod
-      .string()
-      .describe(
-        `✅ 已接收：{type}类待办\n` +
-          `📌 标题：{title}\n` +
-          `📋 内容：{content}\n` +
-          `⏰ 时间：{todoTime}\n` +
-          `🚨 是否紧急：{isUrgent}\n`,
-      ),
+      .describe('用户意图，返回具体意图类型如：todo, chat, reminder等'),
+    // [key: string]: zod.ZodAny, // 允许扩展其他字段
   });
 
   constructor(private configService: ConfigService) {
@@ -118,7 +75,7 @@ export class AiService {
       .addPrompt(
         'info',
         '用户档案：\n年龄：{age}\n性别：{gender}\n兴趣：{hobby}',
-        {}, // 移除硬编码用户信息
+        {},
       );
 
     const model = new ChatDeepSeek({
@@ -127,8 +84,8 @@ export class AiService {
       temperature: 0.2,
     });
 
-    this.chain = RunnableSequence.from([
-      // 动态注入用户信息
+    // 仅负责意图识别的chain
+    this.intentRecognitionChain = RunnableSequence.from([
       (inputData: InputData) => ({
         input: inputData.input,
         info: {
@@ -139,17 +96,47 @@ export class AiService {
         date: new Date().toLocaleString(),
       }),
       promptBuilder.buildSystemMessage(
-        '处理规则：\n1. 自动识别紧急程度\n2. 生成结构化响应\n3. 提供详细解释\n4. 提供原始输入和输出\n5. 提供具体时间\n6. 提供具体内容\n7. 提供具体标题',
+        '任务：仅识别用户的意图，返回一个字符串表示意图类型。\n' +
+          '意图类型包括但不限于：\n' +
+          '1. todo: 用户需要创建待办事项\n' +
+          '2. chat: 用户只是想聊天\n' +
+          '3. reminder: 用户需要设置提醒\n' +
+          '\n请仅返回意图类型，不需要其他解释。',
       ),
-      model.withStructuredOutput(this.schema),
-      {
-        originOutput: (output: any) => output.originOutput,
-        structured: (output: any) => output,
-      },
+      model.withStructuredOutput(this.intentRecognitionSchema),
     ]);
   }
 
-  async process(inputData: InputData) {
-    return this.chain.invoke(inputData);
+  // 注册意图处理器
+  registerIntentHandler(handler: IntentHandler): void {
+    this.intentHandlers.set(handler.getIntent(), handler);
+  }
+
+  // 仅负责识别意图
+  async recognizeIntent(inputData: InputData): Promise<string> {
+    const result = await this.intentRecognitionChain.invoke(inputData);
+    return result.intent;
+  }
+
+  // 主处理方法
+  async process(inputData: InputData): Promise<ProcessedResult> {
+    // 1. 识别意图
+    const intent = await this.recognizeIntent(inputData);
+
+    console.log('识别到的意图:', intent);
+
+    // 2. 获取对应的处理器
+    const handler = this.intentHandlers.get(intent);
+
+    if (!handler) {
+      // 如果没有对应的处理器，使用默认处理器或返回错误
+      return {
+        output: `抱歉，我暂时无法处理这种类型的请求`,
+        intent: 'unknown',
+      };
+    }
+
+    // 3. 使用处理器处理请求
+    return handler.process(inputData);
   }
 }

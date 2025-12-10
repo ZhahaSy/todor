@@ -8,7 +8,7 @@ import {
   Request,
 } from '@nestjs/common';
 
-import { AiService } from './ai.service';
+import { AiService, InputData, ProcessedResult } from './ai.service';
 
 import { SendMessageDto } from './dto/send-message.dto';
 
@@ -25,44 +25,68 @@ import { AdvancedSchedulerService } from '../schedule/advanced-scheduler.service
 export class AiController {
   constructor(
     private readonly aiService: AiService,
-    private readonly todoService: TodoService, // 新增依赖注入
-    private readonly userService: UserService, // 新增依赖注入
-    private readonly scheduleService: AdvancedSchedulerService, // 新增依赖注入
+    private readonly todoService: TodoService,
+    private readonly userService: UserService,
+    private readonly scheduleService: AdvancedSchedulerService,
   ) {}
 
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: '发送消息', description: '向AI发送消息并获取回复' })
+  @ApiOperation({
+    summary: '发送消息',
+    description: '向AI发送消息并获取回复，自动识别用户意图并调用相应处理逻辑',
+  })
   @ApiBody({ type: SendMessageDto })
   @Post('message')
   async sendMessage(@Body() sendMessageDto: SendMessageDto, @Request() req) {
     // 从请求中获取用户信息
     const userInfo = await this.userService.findOne({ id: req.user.userId });
 
-    const { structured: result } = await this.aiService.process({
+    // 构建输入数据
+    const inputData: InputData = {
       input: sendMessageDto.input,
       userInfo,
-    });
+    };
 
-    // 保存到待办事项
-    const message = await this.todoService.create({
-      title: result.title,
-      content: result.content,
-      type: result.type,
-      priority: result.priority,
-      todoTime: result.todoTime,
-      isUrgent: result.isUrgent,
-      creator: userInfo.name,
-    });
-    await this.scheduleService.scheduleOneTimeEmail(
-      new Date().toISOString(),
-      new Date(result.todoTime), // 东八区时间
-      userInfo.email,
-      '待办事项提醒: ' + result.title,
-      `您有一条待办事项：${result.content}`,
-    );
+    // 调用AI服务处理消息（内部已包含意图识别和处理）
+    const processedResult: ProcessedResult =
+      await this.aiService.process(inputData);
+
+    // 根据意图执行额外业务逻辑
+    if (processedResult.intent === 'todo' && processedResult.data) {
+      // 当意图是todo时，保存到待办事项
+      const todoData = processedResult.data;
+      const message = await this.todoService.create({
+        title: todoData.title,
+        content: todoData.content,
+        type: todoData.type || 'work',
+        priority: todoData.priority || 'medium',
+        todoTime: todoData.todoTime,
+        isUrgent: todoData.isUrgent || false,
+        creator: userInfo.name,
+        originInput: sendMessageDto.input,
+        originOutput: processedResult.output,
+      });
+
+      // 安排提醒邮件
+      await this.scheduleService.scheduleOneTimeEmail(
+        new Date().toISOString(),
+        new Date(todoData.todoTime), // 东八区时间
+        userInfo.email,
+        '待办事项提醒: ' + todoData.title,
+        `您有一条待办事项：${todoData.content}`,
+      );
+
+      return ResOp.success({
+        output: processedResult.output,
+        messageId: message.id,
+        intent: processedResult.intent,
+      });
+    }
+
+    // 对于其他意图，直接返回结果
     return ResOp.success({
-      output: result.originOutput,
-      messageId: message.id,
+      output: processedResult.output,
+      intent: processedResult.intent,
     });
   }
 }
