@@ -1,6 +1,5 @@
 import { Injectable } from '@nestjs/common';
 import { ChatDeepSeek } from '@langchain/deepseek';
-import { ChatPromptTemplate } from '@langchain/core/prompts';
 import { ConfigService } from '@nestjs/config';
 import zod from 'zod';
 import { BaseIntentHandler } from './base.intent-handler';
@@ -62,13 +61,17 @@ export class TodoIntentHandler extends BaseIntentHandler {
       temperature: 0.2,
     });
 
-    const prompt = ChatPromptTemplate.fromMessages([
-      ['system', '你是一个待办事项提取助手，请从用户输入中提取待办信息。'],
-      ['human', '{input}'],
-    ]);
+    const prompt = this.buildPrompt(
+      '你是一个待办事项提取助手，请从用户输入中提取待办信息。',
+    );
 
     const chain = prompt.pipe(model.withStructuredOutput(todoSchema));
-    const structuredData = await chain.invoke({ input: inputData.input });
+    const structuredData = await chain.invoke({
+      input: inputData.input,
+      age: inputData.userInfo.age,
+      gender: inputData.userInfo.gender,
+      hobby: inputData.userInfo.hobby,
+    });
 
     // 生成用户友好的输出
     const output =

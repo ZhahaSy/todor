@@ -32,7 +32,7 @@ const MessageFooter = (props: MessageFooterProps) => {
               key: "eidt",
               icon: <EditOutlined />,
               label: "修改",
-              onItemClick: () => onEdit(curMessage.todoId),
+              onItemClick: () => curMessage.todoId && onEdit(curMessage.todoId),
             },
           ]}
         />

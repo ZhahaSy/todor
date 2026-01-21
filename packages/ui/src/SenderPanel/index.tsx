@@ -1,6 +1,7 @@
 import { Sender } from "@ant-design/x";
 
 import styles from "./index.module.less";
+import { useState } from "react";
 
 
 export interface SenderPanelProps {
@@ -10,12 +11,18 @@ export interface SenderPanelProps {
 }
 
 const SenderPanel = ({  onSubmit, onCancel, sending }: SenderPanelProps) => {
+  const [value, setValue] = useState('');
   return (
     <Sender
+      value={value}
+      onChange={setValue}
       loading={sending}
       disabled={sending}
       className={styles.sender}
-      onSubmit={onSubmit}
+      onSubmit={(value) => {
+         setValue('');
+         onSubmit(value);
+      }}
       onCancel={onCancel}
       placeholder="输入问题或使用技能"
     />
