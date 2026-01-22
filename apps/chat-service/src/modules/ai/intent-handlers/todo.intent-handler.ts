@@ -68,6 +68,7 @@ export class TodoIntentHandler extends BaseIntentHandler {
     const chain = prompt.pipe(model.withStructuredOutput(todoSchema));
     const structuredData = await chain.invoke({
       input: inputData.input,
+      name: inputData.userInfo.name,
       age: inputData.userInfo.age,
       gender: inputData.userInfo.gender,
       hobby: inputData.userInfo.hobby,
