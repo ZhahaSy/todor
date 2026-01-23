@@ -3,10 +3,14 @@ import { ChatDeepSeek } from '@langchain/deepseek';
 import { ConfigService } from '@nestjs/config';
 import { BaseIntentHandler } from './base.intent-handler';
 import { InputData, ProcessedResult } from '../ai.service';
+import { RedisService } from '../../redis/redis.service';
 
 @Injectable()
 export class ChatIntentHandler extends BaseIntentHandler {
-  constructor(private configService: ConfigService) {
+  constructor(
+    private configService: ConfigService,
+    private redisService: RedisService,
+  ) {
     super();
   }
 
@@ -21,11 +25,21 @@ export class ChatIntentHandler extends BaseIntentHandler {
       temperature: 0.7,
     });
 
-    const prompt = this.buildPrompt(
-      '你是todor，一个专业的私人助手。你可以：\n1. 帮助用户管理待办事项（添加、删除、更新、查看待办列表）\n2. 与用户进行自然、友好的日常对话\n3. 提供及时、准确的信息和建议\n4. 保持对话的连贯性和上下文理解\n请以亲切、专业的语气与用户交流。',
-    );
+    // Create memory using base class method (默认使用全局记忆，支持跨意图访问)
+    const memory = this.createMemory(this.redisService.getClient(), inputData);
 
-    console.log(prompt);
+    // Load chat history using base class method
+    const chatHistory = await this.loadChatHistory(memory);
+
+    // Build prompt with history using base class method
+    const systemMessage = `你是todor，一个专业的私人助手。你可以：
+1. 帮助用户管理待办事项（添加、删除、更新、查看待办列表）
+2. 与用户进行自然、友好的日常对话
+3. 提供及时、准确的信息和建议
+4. 保持对话的连贯性和上下文理解
+请以亲切、专业的语气与用户交流。`;
+
+    const prompt = this.buildPromptWithHistory(systemMessage, chatHistory);
 
     const chain = prompt.pipe(model);
     const response = await chain.invoke({
@@ -40,6 +54,10 @@ export class ChatIntentHandler extends BaseIntentHandler {
       typeof response.content === 'string'
         ? response.content
         : JSON.stringify(response.content);
+
+    // Save the conversation to memory using base class method
+    await this.saveToMemory(memory, inputData.input, content);
+
     return this.formatResponse(content, this.getIntent());
   }
 }

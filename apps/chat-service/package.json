@@ -20,6 +20,7 @@
     "test:e2e": "jest --config ./test/jest-e2e.json"
   },
   "dependencies": {
+    "@langchain/community": "^1.1.6",
     "@langchain/core": "^0.3.47",
     "@langchain/deepseek": "^0.0.1",
     "@nestjs/common": "^11.0.1",
@@ -37,6 +38,7 @@
     "crypto": "^1.0.1",
     "dotenv": "^16.5.0",
     "emailjs": "^4.0.3",
+    "ioredis": "^5.9.2",
     "nest-winston": "^1.10.2",
     "node-schedule": "^2.1.1",
     "nodemailer": "^7.0.9",

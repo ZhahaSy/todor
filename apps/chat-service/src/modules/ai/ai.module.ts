@@ -6,9 +6,10 @@ import { AiController } from './ai.controller';
 import { ScheduleModule } from '../schedule/schedule.module';
 import { TodoModule } from '../todo/todo.module';
 import { UserModule } from '../user/user.module';
+import { RedisModule } from '../redis/redis.module';
 
 @Module({
-  imports: [TodoModule, UserModule, ScheduleModule],
+  imports: [TodoModule, UserModule, ScheduleModule, RedisModule],
   controllers: [AiController],
   providers: [
     AiService,
