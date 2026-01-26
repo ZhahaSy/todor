@@ -1,10 +1,21 @@
 import { useRequest } from "ahooks";
-import { Form, Input, Radio, Switch, DatePicker, FormInstance, Checkbox } from "antd";
+import {
+  Form,
+  Input,
+  Radio,
+  Switch,
+  DatePicker,
+  FormInstance,
+  Checkbox,
+  Row,
+  Col,
+  Select,
+} from "antd";
 import { getTodoById } from "../../../api";
 import dayjs from "dayjs";
+import { VEditor } from "../VEditor";
 
 const Textarea = Input.TextArea;
-
 
 interface EditTodoFormProps {
   todoId: string;
@@ -20,37 +31,58 @@ const EditTodoForm = (props: EditTodoFormProps) => {
     todoTime: data?.todoTime ? dayjs(data?.todoTime) : undefined,
   });
   return (
-    <Form form={form} labelCol={{ span: 6 }} wrapperCol={{ span: 18 }}>
-      <Form.Item noStyle name="id" />
-      <Form.Item label="标题" name="title">
-        <Input />
-      </Form.Item>
-      <Form.Item label="内容" name="content">
-        <Textarea />
-      </Form.Item>
-      <Form.Item label="类型" name="type">
-        <Checkbox.Group
-          options={[
-            { label: "工作", value: "work" },
-            { label: "生活", value: "life" },
-            { label: "学习", value: "study" },
-          ]}
-        />
-      </Form.Item>
-      <Form.Item label="是否紧急" name="isUrgent">
-        <Switch />
-      </Form.Item>
-      <Form.Item label="状态" name="status">
-        <Radio.Group
-          options={[
-            { label: "未完成", value: "active" },
-            { label: "已完成", value: "completed" },
-          ]}
-        />
-      </Form.Item>
-      <Form.Item label="截止时间" name="todoTime">
-        <DatePicker showTime format="YYYY-MM-DD HH:mm:ss" />
-      </Form.Item>
+    <Form form={form} layout="vertical" labelAlign="left">
+      <Row gutter={16}>
+        <Col>
+          <Form.Item noStyle name="id" />
+        </Col>
+
+        <Col span={24}>
+          <Form.Item label="标题" name="title">
+            <Input />
+          </Form.Item>
+        </Col>
+        <Col span={24}>
+          <Form.Item label="内容" name="content">
+            <VEditor />
+          </Form.Item>
+        </Col>
+        <Col {...{ sm: 24, md: 12, xs: 8 }}>
+          <Form.Item layout="horizontal" label="类型" name="type">
+
+            <Select
+              style={{ width: '100%' }}
+              mode="multiple"
+              options={[
+                { label: "工作", value: "work" },
+                { label: "生活", value: "life" },
+                { label: "学习", value: "study" },
+              ]}
+            />
+          </Form.Item>
+        </Col>
+        <Col {...{ sm: 24, md: 12, xs: 8 }}>
+          <Form.Item layout="horizontal" label="是否紧急" name="isUrgent">
+            <Switch />
+          </Form.Item>
+        </Col>
+        <Col {...{ sm: 24, md: 12, xs: 8 }}>
+          <Form.Item layout="horizontal" label="状态" name="status">
+            <Select
+              style={{ width: '100%' }}
+              options={[
+                { label: "未完成", value: "active" },
+                { label: "已完成", value: "completed" },
+              ]}
+            />
+          </Form.Item>
+        </Col>
+        <Col {...{ sm: 24, md: 12, xs: 8 }}>
+          <Form.Item layout="horizontal" label="截止时间" name="todoTime">
+            <DatePicker style={{ width: '100%' }} showTime format="YYYY-MM-DD HH:mm:ss" />
+          </Form.Item>
+        </Col>
+      </Row>
     </Form>
   );
 };

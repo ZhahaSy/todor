@@ -20,6 +20,7 @@ const useEditForm = () => {
       okText: "确认",
       okType: "primary",
       onOk: onEditOk,
+      width: '80%',
     });
   };
   return {

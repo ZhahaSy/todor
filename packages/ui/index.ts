@@ -18,3 +18,4 @@ export type { SenderPanelProps, ChatListProps };
 export { EditTodoForm, useEditForm };
 
 export { loginPage, SignIn }
+export { VEditor } from "./src/VEditor";
