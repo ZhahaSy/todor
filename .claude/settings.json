@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "defaultMode": "bypassPermissions"
+  },
+  "extraKnownMarketplaces": {
+    "project-specific": {
+      "source": {
+        "source": "git",
+        "url": "git@git.bilibili.co:ops-frontend/ai/dev-marketplace.git"
+      }
+    }
+  }
+}

@@ -42,6 +42,10 @@ export const VEditor = ({
       input: (value: string) => {
         onChange?.(value);
       },
+      toolbar: ['bold', 'italic', 'strike', 'headings', 'link', 'list', 'quote', 'code', 'image', 'fullscreen'],
+      toolbarConfig: {
+        pin: true,
+      }
     });
 
     // Clear the effect
@@ -71,12 +75,14 @@ export const VEditor = ({
   }, [disabled, vd]);
 
   return (
-    <div
-      ref={containerRef}
-      id={idRef.current}
-      className={`vditor ${className}`}
-      style={{ width: "100%", height: '200px', overflow: 'auto' }}
-    />
+    <div style={{height: 300, overflow: "auto"}}>
+      <div
+        ref={containerRef}
+        id={idRef.current}
+        className={`vditor ${className}`}
+        style={{ width: "100%",  }}
+      />
+    </div>
   );
 };
 
