@@ -3,6 +3,7 @@ import {
   Controller,
   Get,
   Post,
+  Put,
   Query,
   Request,
   Response,
@@ -11,6 +12,8 @@ import {
 import { Response as ExpressResponse } from 'express';
 import { UserService } from './user.service';
 import { CreateUserDto } from './dto/create-user.dto';
+import { UpdateUserDto } from './dto/update-user.dto';
+import { ChangePasswordDto } from './dto/change-password.dto';
 import { ResOp } from '@/common/model/response.model';
 import { LoginDto } from './dto/login.dto';
 import { JwtAuthGuard } from '@/common/guard/jwt.auth';
@@ -59,5 +62,38 @@ export class UserController {
     return ResOp.success(
       await this.userService.findOne({ id: req.user.userId }),
     );
+  }
+
+  /**
+   * 更新用户信息
+   */
+  @UseGuards(JwtAuthGuard)
+  @Put('/update')
+  async updateUserInfo(@Request() req, @Body() updateUserDto: UpdateUserDto) {
+    return await this.userService.updateUserInfo(req.user.userId, updateUserDto);
+  }
+
+  /**
+   * 修改密码
+   */
+  @UseGuards(JwtAuthGuard)
+  @Post('/change-password')
+  async changePassword(
+    @Request() req,
+    @Body() changePasswordDto: ChangePasswordDto,
+  ) {
+    return await this.userService.changePassword(
+      req.user.userId,
+      changePasswordDto,
+    );
+  }
+
+  /**
+   * 导出用户数据
+   */
+  @UseGuards(JwtAuthGuard)
+  @Get('/export-data')
+  async exportUserData(@Request() req) {
+    return await this.userService.exportUserData(req.user.userId);
   }
 }
