@@ -1,12 +1,12 @@
 import { ExtractJwt, Strategy } from 'passport-jwt';
 import { PassportStrategy } from '@nestjs/passport';
 import { Injectable, UnauthorizedException } from '@nestjs/common';
-import { jwtConstants } from './constants';
+import { ConfigService } from '@nestjs/config';
 import { Request } from 'express';
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
-  constructor() {
+  constructor(private configService: ConfigService) {
     super({
       // 自定义token提取函数，优先从cookie中获取，其次从Authorization头获取
       jwtFromRequest: (request: Request) => {
@@ -20,7 +20,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
         return ExtractJwt.fromAuthHeaderAsBearerToken()(request);
       },
       ignoreExpiration: false,
-      secretOrKey: jwtConstants.secret,
+      secretOrKey: configService.get<string>('JWT_SECRET'),
     });
   }
 
@@ -30,10 +30,13 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
       throw new UnauthorizedException('无效的token');
     }
     return {
-      username: payload.username,
       userId: payload.sub,
-      realName: payload.realName,
-      role: payload.role,
+      username: payload.username,
+      name: payload.name,
+      email: payload.email,
+      age: payload.age,
+      gender: payload.gender,
+      hobby: payload.hobby,
     };
   }
 }

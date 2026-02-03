@@ -1,9 +1,22 @@
-import { IsString, IsOptional, IsNumber, IsIn } from 'class-validator';
+import {
+  IsString,
+  IsOptional,
+  IsNumber,
+  IsIn,
+  MaxLength,
+  MinLength,
+} from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 
 export class SendMessageDto {
-  @ApiProperty({ description: '用户输入内容' })
+  @ApiProperty({
+    description: '用户输入内容',
+    minLength: 1,
+    maxLength: 10000,
+  })
   @IsString()
+  @MinLength(1, { message: '输入内容不能为空' })
+  @MaxLength(10000, { message: '输入内容不能超过10000个字符' })
   readonly input: string;
 
   @ApiProperty({ description: '用户年龄', required: false })

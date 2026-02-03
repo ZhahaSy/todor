@@ -1,10 +1,11 @@
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, Entity, PrimaryGeneratedColumn, Index } from 'typeorm';
 
 @Entity()
 export class User {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
+  @Index() // 添加索引：登录时通过用户名查询
   @Column({
     comment: '用户名',
     length: 255,
@@ -68,25 +69,23 @@ export class User {
   schedule: string;
 
   @Column({
-    comment: '是否删除',
-    default: false,
-  })
-  @Column({
     comment: '是否登录',
     default: false,
   })
   logging: boolean;
 
   @Column({
-    comment: '密码',
+    comment: '密码哈希',
     length: 255,
     default: '',
   })
   hashPwd: string;
+
   @Column({
-    comment: '盐',
+    comment: '盐（已废弃，Argon2不需要）',
     length: 255,
     default: '',
+    nullable: true,
   })
   salt: string;
 
@@ -96,6 +95,7 @@ export class User {
   })
   deleted: boolean;
 
+  @Index() // 添加索引：可能通过邮箱查询用户
   @Column({
     comment: '邮箱',
     length: 255,

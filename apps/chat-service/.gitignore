@@ -52,6 +52,11 @@ report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
 .dbs
 dbs
 
+# Environment variables
+.env
+.env.local
+.env.*.local
+
 # lock
 package-lock.json
 pnpm-lock.yaml

@@ -1,8 +1,8 @@
-import { forwardRef, Inject, Injectable } from '@nestjs/common';
+import { forwardRef, Inject, Injectable, Logger } from '@nestjs/common';
 import { User } from './entities/user.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { makeSalt, encryptPassword } from '@/utils/cryptogram';
+import { encryptPassword } from '@/utils/cryptogram';
 import { CreateUserDto } from './dto/create-user.dto';
 import { AuthService } from '../auth/auth.service';
 import { LoginDto } from './dto/login.dto';
@@ -14,22 +14,31 @@ import {
 
 @Injectable()
 export class UserService {
+  private readonly logger = new Logger(UserService.name);
+
   constructor(
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
     @Inject(forwardRef(() => AuthService))
     private readonly authService: AuthService,
   ) {}
+
   async create(createUserDto: Partial<CreateUserDto>) {
     const { password } = createUserDto;
-    const salt = makeSalt();
-    const hashPwd = encryptPassword(password, salt);
-    const newUser = await this.userRepository.create({
-      ...createUserDto,
-      salt,
-      hashPwd,
-    });
-    return await this.userRepository.save(newUser);
+
+    try {
+      // 使用 Argon2 加密密码（自动处理盐值）
+      const hashPwd = await encryptPassword(password);
+      const newUser = this.userRepository.create({
+        ...createUserDto,
+        hashPwd,
+        salt: '', // Argon2 不需要单独的盐值字段
+      });
+      return await this.userRepository.save(newUser);
+    } catch (error) {
+      this.logger.error(`创建用户失败: ${error.message}`, error.stack);
+      throw error;
+    }
   }
 
   async getUserList() {

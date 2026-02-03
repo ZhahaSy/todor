@@ -1,4 +1,4 @@
-import { Entity, Column, PrimaryGeneratedColumn } from 'typeorm';
+import { Entity, Column, PrimaryGeneratedColumn, Index } from 'typeorm';
 
 @Entity()
 export class ChatHistory {
@@ -18,6 +18,7 @@ export class ChatHistory {
   @Column({ type: 'varchar', comment: '日期' })
   date: string;
 
+  @Index() // 添加索引：按会话ID查询聊天历史
   @Column({
     type: 'varchar',
     comment: '会话ID',
@@ -25,6 +26,7 @@ export class ChatHistory {
   })
   sessionId: string | null;
 
+  @Index() // 添加索引：通过todoId关联查询
   @Column({
     type: 'varchar',
     comment: '关联的todo项ID',

@@ -1,14 +1,13 @@
 import { Injectable } from '@nestjs/common';
-import { ChatDeepSeek } from '@langchain/deepseek';
-import { ConfigService } from '@nestjs/config';
 import { BaseIntentHandler } from './base.intent-handler';
 import { InputData, ProcessedResult } from '../ai.service';
 import { RedisService } from '../../redis/redis.service';
+import { AiModelProvider } from '../ai-model.provider';
 
 @Injectable()
 export class ChatIntentHandler extends BaseIntentHandler {
   constructor(
-    private configService: ConfigService,
+    private aiModelProvider: AiModelProvider,
     private redisService: RedisService,
   ) {
     super();
@@ -19,11 +18,8 @@ export class ChatIntentHandler extends BaseIntentHandler {
   }
 
   async process(inputData: InputData): Promise<ProcessedResult> {
-    const model = new ChatDeepSeek({
-      apiKey: this.configService.get('DEEPSEEK_API_KEY'),
-      model: this.configService.get('AI_MODEL'),
-      temperature: 0.7,
-    });
+    // 使用 AI 模型提供者获取模型实例（temperature=0.7 用于聊天）
+    const model = this.aiModelProvider.getModel(0.7);
 
     // Create memory using base class method (默认使用全局记忆，支持跨意图访问)
     const memory = this.createMemory(this.redisService.getClient(), inputData);

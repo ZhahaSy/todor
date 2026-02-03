@@ -33,7 +33,8 @@ export class TodoController {
   ) {}
   @Get('/list')
   async getTodoList(@Query() query: TodoListQuery, @Request() req) {
-    const { name } = await this.userService.findOne({ id: req.user.userId });
+    // 直接从 JWT payload 中获取用户名，避免数据库查询
+    const name = req.user.name;
     return ResOp.success(
       await this.todoService.getTodoList({
         todoMonth: query.todoMonth,
@@ -61,11 +62,12 @@ export class TodoController {
 
   @Post('/create')
   async createTodo(@Body() createTodoDto: Partial<Todo>, @Request() req) {
-    const userInfo = await this.userService.findOne({ id: req.user.userId });
+    // 直接从 JWT payload 中获取用户邮箱，避免数据库查询
+    const userEmail = req.user.email;
     await this.scheduleService.scheduleOneTimeEmail(
       createTodoDto.id,
       new Date(createTodoDto.todoTime),
-      userInfo.email,
+      userEmail,
       '待办事项提醒: ' + createTodoDto.title,
       `您有一条待办事项：${createTodoDto.content}`,
     );

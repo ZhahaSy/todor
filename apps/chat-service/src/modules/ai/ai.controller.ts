@@ -38,13 +38,20 @@ export class AiController {
   @ApiBody({ type: SendMessageDto })
   @Post('message')
   async sendMessage(@Body() sendMessageDto: SendMessageDto, @Request() req) {
-    // 从请求中获取用户信息
-    const userInfo = await this.userService.findOne({ id: req.user.userId });
+    // 直接从 JWT payload 中获取用户信息，避免数据库查询
+    const userInfo = {
+      id: req.user.userId,
+      name: req.user.name,
+      email: req.user.email,
+      age: req.user.age,
+      gender: req.user.gender,
+      hobby: req.user.hobby,
+    };
 
     // 构建输入数据
     const inputData: InputData = {
       input: sendMessageDto.input,
-      userInfo,
+      userInfo: userInfo as any, // 将简化的用户信息传递给 AI 服务
     };
 
     // 调用AI服务处理消息（内部已包含意图识别和处理）

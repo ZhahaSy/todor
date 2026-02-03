@@ -5,8 +5,10 @@ import {
   Post,
   Query,
   Request,
+  Response,
   UseGuards,
 } from '@nestjs/common';
+import { Response as ExpressResponse } from 'express';
 import { UserService } from './user.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { ResOp } from '@/common/model/response.model';
@@ -32,8 +34,23 @@ export class UserController {
     return ResOp.success(await this.userService.findOne({ id }));
   }
   @Post('/login')
-  async login(@Body() loginDto: LoginDto) {
+  async login(
+    @Body() loginDto: LoginDto,
+    @Response({ passthrough: true }) res: ExpressResponse,
+  ) {
     const result = await this.userService.login(loginDto);
+
+    // 如果登录成功，将 token 设置到 Cookie
+    if (result.code === 0 && 'data' in result && result.data?.token) {
+      res.cookie('token', result.data.token, {
+        httpOnly: true, // 防止 XSS 攻击
+        secure: process.env.NODE_ENV === 'production', // 生产环境使用 HTTPS
+        sameSite: 'lax', // 防止 CSRF 攻击
+        maxAge: 30 * 24 * 60 * 60 * 1000, // 30 天
+        path: '/',
+      });
+    }
+
     return result;
   }
   @UseGuards(JwtAuthGuard)

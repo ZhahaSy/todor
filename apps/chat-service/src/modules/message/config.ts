@@ -1,6 +1,6 @@
 export const mailConfig = {
-  host: 'smtp.qq.com',
-  port: 465,
-  authUser: '1194497234@qq.com',
-  authPass: 'dziphgwhgyjzgcfe',
+  host: process.env.MAIL_HOST || 'smtp.qq.com',
+  port: parseInt(process.env.MAIL_PORT || '465', 10),
+  authUser: process.env.MAIL_USER || '',
+  authPass: process.env.MAIL_PASS || '',
 };

@@ -22,7 +22,8 @@ export class ChatHistoryController {
 
   @Post()
   async create(@Body() createChatDto: CreateChatDto, @Request() req) {
-    const { name } = await this.userService.findOne({ id: req.user.userId });
+    // 直接从 JWT payload 中获取用户名，避免数据库查询
+    const name = req.user.name;
     const res = await this.chatService.create({
       ...createChatDto,
       sessionId: name,
@@ -32,7 +33,8 @@ export class ChatHistoryController {
 
   @Get()
   async findAll(@Request() req) {
-    const { name } = await this.userService.findOne({ id: req.user.userId });
+    // 直接从 JWT payload 中获取用户名，避免数据库查询
+    const name = req.user.name;
     const data = await this.chatService.findAll({ sessionId: name });
     return ResOp.success(data);
   }

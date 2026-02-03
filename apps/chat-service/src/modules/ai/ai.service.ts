@@ -1,10 +1,9 @@
 import { Injectable } from '@nestjs/common';
-import { ChatDeepSeek } from '@langchain/deepseek';
 import { ChatPromptTemplate } from '@langchain/core/prompts';
-import { ConfigService } from '@nestjs/config';
 import { RunnableSequence } from '@langchain/core/runnables';
 import zod from 'zod';
 import { User } from '../user/entities/user.entity';
+import { AiModelProvider } from './ai-model.provider';
 
 // 基础输入输出接口
 export interface InputData {
@@ -65,7 +64,7 @@ export class AiService {
     // [key: string]: zod.ZodAny, // 允许扩展其他字段
   });
 
-  constructor(private configService: ConfigService) {
+  constructor(private aiModelProvider: AiModelProvider) {
     const promptBuilder = new PromptBuilder()
       .addPrompt('date', '当前时间：{date}', {
         date: () => new Date().toLocaleString(),
@@ -76,11 +75,8 @@ export class AiService {
         {},
       );
 
-    const model = new ChatDeepSeek({
-      apiKey: this.configService.get('DEEPSEEK_API_KEY'),
-      model: this.configService.get('AI_MODEL'),
-      temperature: 0.2,
-    });
+    // 使用 AI 模型提供者获取模型实例（temperature=0.2 用于意图识别）
+    const model = this.aiModelProvider.getModel(0.2);
 
     // 仅负责意图识别的chain
     this.intentRecognitionChain = RunnableSequence.from([

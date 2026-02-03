@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { AiService } from './ai.service';
+import { AiModelProvider } from './ai-model.provider';
 import { ChatIntentHandler } from './intent-handlers/chat.intent-handler';
 import { TodoIntentHandler } from './intent-handlers/todo.intent-handler';
 import { AiController } from './ai.controller';
@@ -12,13 +13,13 @@ import { RedisModule } from '../redis/redis.module';
   imports: [TodoModule, UserModule, ScheduleModule, RedisModule],
   controllers: [AiController],
   providers: [
+    AiModelProvider,
     AiService,
     ChatIntentHandler,
     TodoIntentHandler,
     // 在这里注册新的意图处理器
   ],
-  // controllers: [AiController],
-  exports: [AiService],
+  exports: [AiService, AiModelProvider],
 })
 export class AiModule {
   constructor(

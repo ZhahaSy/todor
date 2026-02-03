@@ -2,7 +2,6 @@ import type { FormProps } from "antd";
 import { Button, Form, Input, Space } from "antd";
 import styles from "./index.module.less";
 import { login } from "@client/api";
-import { setCookie } from "@client/utils";
 import todor from "../assets/todor-3d-no-bg.png";
 import todorText from "../assets/todor-text-no-bg.png";
 type FieldType = {
@@ -11,8 +10,8 @@ type FieldType = {
 };
 
 const onFinish: FormProps<FieldType>["onFinish"] = async (values) => {
-  const res = await login(values);
-  setCookie("token", res.token, 7);
+  await login(values);
+  // Cookie 已由后端自动设置（HttpOnly, Secure）
   window.location.replace("/");
 };
 

@@ -3,6 +3,7 @@ import {
   CreateDateColumn,
   Entity,
   PrimaryGeneratedColumn,
+  Index,
 } from 'typeorm';
 
 @Entity()
@@ -30,6 +31,7 @@ export class Todo {
   })
   originOutput: string | null;
 
+  @Index() // 添加索引：按类型筛选待办
   @Column({
     type: 'varchar',
     comment: 'todo 类型',
@@ -53,6 +55,7 @@ export class Todo {
   })
   isUrgent: boolean;
 
+  @Index() // 添加索引：按状态筛选待办
   @Column({
     type: 'varchar',
     comment: 'todo 状态',
@@ -79,6 +82,7 @@ export class Todo {
   })
   createTime: number;
 
+  @Index() // 添加索引：过滤已删除的待办
   @Column({
     type: 'boolean',
     comment: '是否删除',
@@ -86,6 +90,7 @@ export class Todo {
   })
   isDeleted: boolean;
 
+  @Index() // 添加索引：查询特定用户的待办
   @Column({
     type: 'bigint',
     comment: '创建人',
