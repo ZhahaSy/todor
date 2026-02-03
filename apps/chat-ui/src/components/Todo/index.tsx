@@ -9,6 +9,7 @@ import ViewSelector from "./ViewSelector";
 import CardView from "./CardView";
 import CalendarView from "./CalendarView";
 import TypeSelector from "./TypeSelector";
+import { useEditForm } from "@client/ui";
 
 const Todo = () => {
   const [open, setOpen] = useState(false);
@@ -19,6 +20,8 @@ const Todo = () => {
 
   const view = Form.useWatch("view", form);
   const type = Form.useWatch("type", form);
+
+  const { onEdit, contextHolder } = useEditForm();
 
   const getListParams = useMemo(() => ({
     todoMonth: view === "calendar" ? calendarData : undefined,
@@ -115,7 +118,7 @@ const Todo = () => {
 
             {/* 列表 */}
             {view === "card" ? (
-              <CardView {...todoActionsAndData} />
+              <CardView onEdit={(todo) => onEdit(todo.id)} {...todoActionsAndData} />
             ) : (
               <CalendarView
                 onChange={(val) => {
@@ -127,6 +130,7 @@ const Todo = () => {
           </Flex>
         </div>
       </Modal>
+      {contextHolder}
     </>
   );
 };

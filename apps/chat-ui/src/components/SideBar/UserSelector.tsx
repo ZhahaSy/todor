@@ -10,7 +10,7 @@ const UserSelector = ({isShowName}: UserSelectorProps) => {
 
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: 8, paddingLeft: 24 }}>
-        <Avatar size={24} src={user?.avatar || aiAvatar} />
+        <Avatar size={24} src={aiAvatar} />
          {isShowName && <div>{user?.name}</div>}
       </div>
     // <Popover

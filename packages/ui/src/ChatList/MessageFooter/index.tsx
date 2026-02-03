@@ -20,19 +20,19 @@ const isToday = (date: string) => {
 
 const MessageFooter = (props: MessageFooterProps) => {
   const { curMessage } = props;
-  const { date = "" } = curMessage;
+  const { date = "", todoId } = curMessage;
   const { onEdit, contextHolder } = useEditForm();
 
   return (
     <div className={styles.messageFooter}>
-      {curMessage.role === "ai" ? (
+      {curMessage.role === "ai" && todoId ? (
         <Actions
           items={[
             {
               key: "eidt",
               icon: <EditOutlined />,
               label: "修改",
-              onItemClick: () => curMessage.todoId && onEdit(curMessage.todoId),
+              onItemClick: () => onEdit(todoId),
             },
           ]}
         />

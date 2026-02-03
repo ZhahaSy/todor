@@ -1,8 +1,7 @@
 import { Bubble, BubbleProps, Welcome } from "@ant-design/x";
-import { BubbleDataType } from "@ant-design/x/es/bubble/BubbleList";
 
 import styles from "./index.module.less";
-import { GetProp, Typography } from "antd";
+import { GetProp } from "antd";
 import markdownit from "markdown-it";
 
 import MessageFooter from "./MessageFooter";

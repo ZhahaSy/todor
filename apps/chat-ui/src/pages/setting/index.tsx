@@ -15,7 +15,6 @@ import {
 } from 'antd';
 import {
   UserOutlined,
-  SettingOutlined,
   LockOutlined,
   DatabaseOutlined,
   DownloadOutlined,

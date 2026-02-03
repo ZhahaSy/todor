@@ -1,7 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import Vditor from "vditor";
 import "vditor/dist/index.css";
-import type { InputRef } from "antd";
 
 interface VEditorProps {
   value?: string;

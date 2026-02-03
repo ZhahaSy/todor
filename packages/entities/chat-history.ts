@@ -3,4 +3,6 @@ export interface ChatHistory {
   role?: 'ai' | 'local';
   todoId?: string;
   messages?: string[];
+  date?: string;
+  content?: string;
 }

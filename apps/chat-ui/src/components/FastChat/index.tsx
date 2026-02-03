@@ -32,9 +32,9 @@ const FastChat = () => {
   const [content, setContent] = useState("");
 
   const { handleSubmit, handleCancel, loading } = useSendMessage(
-    (content, type) => {
-      if (type === "local") return;
-      setContent(content);
+    (message) => {
+      if (message.role === "local") return;
+      setContent(message.content);
     }
   );
 
