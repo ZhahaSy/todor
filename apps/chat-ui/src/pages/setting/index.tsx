@@ -4,7 +4,6 @@ import {
   Form,
   Input,
   Button,
-  Select,
   InputNumber,
   message,
   Tabs,
@@ -220,69 +219,6 @@ const Setting = () => {
     </Card>
   );
 
-  // 账户安全表单
-  const SecurityTab = () => (
-    <Card title={<><LockOutlined /> 账户安全</>}>
-      <Form
-        form={passwordForm}
-        layout="vertical"
-        onFinish={handleChangePassword}
-        style={{ maxWidth: 600 }}
-      >
-        <Form.Item
-          label="旧密码"
-          name="oldPassword"
-          rules={[
-            { required: true, message: '请输入旧密码' },
-            { min: 6, message: '密码长度不能小于 6 位' },
-          ]}
-        >
-          <Input.Password placeholder="请输入旧密码" />
-        </Form.Item>
-
-        <Form.Item
-          label="新密码"
-          name="newPassword"
-          rules={[
-            { required: true, message: '请输入新密码' },
-            { min: 6, message: '密码长度不能小于 6 位' },
-          ]}
-        >
-          <Input.Password placeholder="请输入新密码" />
-        </Form.Item>
-
-        <Form.Item
-          label="确认密码"
-          name="confirmPassword"
-          dependencies={['newPassword']}
-          rules={[
-            { required: true, message: '请确认新密码' },
-            ({ getFieldValue }) => ({
-              validator(_, value) {
-                if (!value || getFieldValue('newPassword') === value) {
-                  return Promise.resolve();
-                }
-                return Promise.reject(new Error('两次输入的密码不一致'));
-              },
-            }),
-          ]}
-        >
-          <Input.Password placeholder="请再次输入新密码" />
-        </Form.Item>
-
-        <Form.Item>
-          <Button
-            type="primary"
-            htmlType="submit"
-            loading={passwordLoading}
-            block
-          >
-            修改密码
-          </Button>
-        </Form.Item>
-      </Form>
-    </Card>
-  );
 
   // 数据管理
   const DataTab = () => (
