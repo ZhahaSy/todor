@@ -15,14 +15,13 @@ import {
 } from 'antd';
 import {
   UserOutlined,
-  LockOutlined,
   DatabaseOutlined,
   DownloadOutlined,
   DeleteOutlined,
 } from '@ant-design/icons';
 import useUserStore from '@/store/useUserStore';
-import { updateUserInfo, changePassword, exportUserData } from '@client/api';
-import type { UpdateUserDto, ChangePasswordDto } from '@client/entities';
+import { updateUserInfo, exportUserData } from '@client/api';
+import type { UpdateUserDto } from '@client/entities';
 
 const { TabPane } = Tabs;
 const { TextArea } = Input;
@@ -30,9 +29,7 @@ const { TextArea } = Input;
 const Setting = () => {
   const { user, getUserInfo } = useUserStore();
   const [profileForm] = Form.useForm();
-  const [passwordForm] = Form.useForm();
   const [loading, setLoading] = useState(false);
-  const [passwordLoading, setPasswordLoading] = useState(false);
 
   // 加载用户信息
   useEffect(() => {
