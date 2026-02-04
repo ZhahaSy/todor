@@ -4,9 +4,9 @@
   "type": "module",
   "scripts": {
     "build": "turbo run build",
-    "build:c": "turbo run dev --filter=chat-ui...",
-    "build:s": "turbo run start --filter=chat-service...",
-    "build:cm": "turbo run start --filter=chat-ui-mobile...",
+    "build:c": "turbo run build --filter=chat-ui...",
+    "build:s": "turbo run build --filter=chat-service...",
+    "build:cm": "turbo run build --filter=chat-ui-mobile...",
     "start": "turbo run start --parallel",
     "start:c": "turbo run dev --filter=chat-ui...",
     "start:s": "turbo run start --filter=chat-service...",
