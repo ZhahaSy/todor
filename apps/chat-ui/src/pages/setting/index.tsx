@@ -73,24 +73,6 @@ const Setting = () => {
   };
 
   // 修改密码
-  const handleChangePassword = async (values: ChangePasswordDto) => {
-    try {
-      setPasswordLoading(true);
-      await changePassword(values);
-      message.success('密码修改成功，请重新登录');
-      passwordForm.resetFields();
-
-      // 3秒后跳转到登录页
-      setTimeout(() => {
-        window.location.href = '/login';
-      }, 3000);
-    } catch (error: unknown) {
-      const errorMessage = error instanceof Error ? error.message : '修改失败，请重试';
-      message.error(errorMessage);
-    } finally {
-      setPasswordLoading(false);
-    }
-  };
 
   // 导出数据
   const handleExportData = async () => {
