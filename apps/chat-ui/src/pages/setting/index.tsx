@@ -12,6 +12,7 @@ import {
   Space,
   Divider,
   Popconfirm,
+  Radio,
 } from 'antd';
 import {
   UserOutlined,
@@ -134,11 +135,11 @@ const Setting = () => {
         style={{ maxWidth: 600 }}
       >
         <Form.Item
-          label="姓名"
+          label="用户名"
           name="name"
           rules={[{ required: true, message: '请输入姓名' }]}
         >
-          <Input placeholder="请输入姓名" />
+          <Input disabled placeholder="请输入用户名" />
         </Form.Item>
 
         <Form.Item
@@ -165,10 +166,10 @@ const Setting = () => {
           name="gender"
           rules={[{ required: true, message: '请选择性别' }]}
         >
-          <Select placeholder="请选择性别">
-            <Select.Option value="male">男</Select.Option>
-            <Select.Option value="female">女</Select.Option>
-          </Select>
+          <Radio.Group name="gender">
+            <Radio value="male">男</Radio>
+            <Radio value="female">女</Radio>  
+          </Radio.Group>
         </Form.Item>
 
         <Form.Item
@@ -323,7 +324,7 @@ const Setting = () => {
 
   return (
     <div style={{ width: '100%', height: '100%', overflow: 'auto' }}>
-      <Tabs defaultActiveKey="profile" style={{ marginBottom: 24, width: '100%' }}>
+      <Tabs defaultActiveKey="profile" style={{ marginBottom: 24, width: '100%', position: 'sticky', top: 0, left: 0, right: 0 }}>
         <TabPane
           tab={
             <span>
@@ -335,7 +336,7 @@ const Setting = () => {
         >
           <ProfileTab />
         </TabPane>
-        <TabPane
+        {/* <TabPane
           tab={
             <span>
               <LockOutlined />
@@ -345,7 +346,7 @@ const Setting = () => {
           key="security"
         >
           <SecurityTab />
-        </TabPane>
+        </TabPane> */}
         <TabPane
           tab={
             <span>
