@@ -8,6 +8,8 @@ module.exports = {
       exec_mode: 'fork',
       env: {
         NODE_ENV: 'production',
+        RUNNING_ENV: 'prod',
+        DB_DATABASE: '/var/data/chat-service/chat.db',
       },
       // 日志配置
       out_file: `${__dirname}/logs/out.log`,
