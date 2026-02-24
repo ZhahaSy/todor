@@ -116,10 +116,13 @@ rsync -avz \
   "$SERVICE_DIR/ecosystem.config.js" \
   "$REMOTE_HOST:$REMOTE_DIR/"
 
-# 若服务器还没有 .env 文件则上传示例 (不覆盖已有的)
-ssh "$REMOTE_HOST" "[[ -f '$REMOTE_DIR/.env' ]]" || \
-  rsync -avz "$SERVICE_DIR/.env.example" "$REMOTE_HOST:$REMOTE_DIR/.env" && \
-  warn ".env 不存在，已上传 .env.example，请登录服务器填写真实配置: ssh $REMOTE_HOST 'nano $REMOTE_DIR/.env'"
+# 上传 .env 文件
+if [[ -f "$SERVICE_DIR/.env" ]]; then
+  rsync -avz "$SERVICE_DIR/.env" "$REMOTE_HOST:$REMOTE_DIR/.env"
+  info ".env 已上传"
+else
+  warn "本地未找到 .env 文件，跳过上传"
+fi
 
 # ─── 远程安装生产依赖 & 创建数据库目录 ──────────────────────────────────────
 ssh "$REMOTE_HOST" bash <<REMOTE_SETUP
