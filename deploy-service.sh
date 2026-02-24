@@ -78,8 +78,20 @@ fi
 if [[ ! -f "$SERVICE_DIR/.env" ]]; then
   error "未找到 .env 文件，请在 $SERVICE_DIR 下创建 .env"
 fi
-mkdir -p "$SERVICE_DIR/dbs"
+mkdir -p /var/data/chat-service
+mkdir -p /var/data/chat-service/backups
 mkdir -p "$SERVICE_DIR/logs"
+
+# 备份数据库（若存在）
+DB_FILE="/var/data/chat-service/chat.db"
+if [[ -f "$DB_FILE" ]]; then
+  BACKUP_FILE="/var/data/chat-service/backups/chat_$(date +%Y%m%d_%H%M%S).db"
+  cp "$DB_FILE" "$BACKUP_FILE"
+  info "数据库已备份: $BACKUP_FILE"
+  # 只保留最近 7 份备份
+  ls -t /var/data/chat-service/backups/chat_*.db 2>/dev/null | tail -n +8 | xargs rm -f
+fi
+
 info "检查通过"
 
 # ─── Step 4: PM2 启动/重载 ───────────────────────────────────────────────────
