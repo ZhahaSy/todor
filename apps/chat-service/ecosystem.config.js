@@ -3,15 +3,15 @@ module.exports = {
     {
       name: 'chat-service',
       script: 'dist/main.js',
-      cwd: '/home/app/chat-service',
+      cwd: __dirname,           // 动态指向 ecosystem.config.js 所在目录
       instances: 1,
       exec_mode: 'fork',
       env: {
         NODE_ENV: 'production',
       },
       // 日志配置
-      out_file: '/home/app/logs/chat-service-out.log',
-      error_file: '/home/app/logs/chat-service-error.log',
+      out_file: `${__dirname}/logs/out.log`,
+      error_file: `${__dirname}/logs/error.log`,
       log_date_format: 'YYYY-MM-DD HH:mm:ss',
       merge_logs: true,
       // 进程监控

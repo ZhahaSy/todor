@@ -58,11 +58,12 @@ fi
 # ─── Step 2: 构建 ────────────────────────────────────────────────────────────
 if ! $SKIP_BUILD; then
   step "Step 2/4  构建 chat-service"
-  cd "$SERVICE_DIR"
+  cd "$SCRIPT_DIR"
   if ! command -v pnpm &>/dev/null; then
     error "未找到 pnpm，请先安装: npm install -g pnpm"
   fi
-  pnpm install --prod
+  pnpm install                        # 安装全部依赖（含 devDependencies，构建需要）
+  cd "$SERVICE_DIR"
   pnpm build
   info "构建完成"
 else
@@ -77,7 +78,8 @@ fi
 if [[ ! -f "$SERVICE_DIR/.env" ]]; then
   error "未找到 .env 文件，请在 $SERVICE_DIR 下创建 .env"
 fi
-mkdir -p /home/dbs
+mkdir -p "$SERVICE_DIR/dbs"
+mkdir -p "$SERVICE_DIR/logs"
 info "检查通过"
 
 # ─── Step 4: PM2 启动/重载 ───────────────────────────────────────────────────
