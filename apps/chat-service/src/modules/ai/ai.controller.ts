@@ -81,8 +81,8 @@ export class AiController {
 
       // 安排提醒邮件
       await this.scheduleService.scheduleOneTimeEmail(
-        new Date().toISOString(),
-        new Date(todoData.todoTime), // 东八区时间
+        message.id,
+        new Date(todoData.todoTime),
         userInfo.email,
         '待办事项提醒: ' + todoData.title,
         `您有一条待办事项：${todoData.content}`,

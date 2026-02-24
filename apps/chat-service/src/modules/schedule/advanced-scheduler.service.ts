@@ -1,47 +1,90 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 import * as schedule from 'node-schedule';
 import { EmailService } from '../message/email.service';
-
-interface FailedEmailTask {
-  taskId: string;
-  to: string;
-  subject: string;
-  content: string;
-  failedAt: Date;
-  error: string;
-  attempts: number;
-}
+import { ScheduledTask } from './entities/scheduled-task.entity';
 
 @Injectable()
-export class AdvancedSchedulerService {
+export class AdvancedSchedulerService implements OnModuleInit {
   private readonly logger = new Logger(AdvancedSchedulerService.name);
   private jobs: Map<string, schedule.Job> = new Map();
-  private deadLetterQueue: FailedEmailTask[] = [];
 
-  // 重试配置
   private readonly maxRetries = 3;
-  private readonly retryDelay = 5000; // 5秒
+  private readonly retryDelay = 5000; // 5秒基础延迟，指数退避
 
-  constructor(private readonly mailService: EmailService) {}
+  constructor(
+    private readonly mailService: EmailService,
+    @InjectRepository(ScheduledTask)
+    private readonly taskRepository: Repository<ScheduledTask>,
+  ) {}
 
   /**
-   * 安排一次性邮件发送任务（带重试机制）
+   * 应用启动时从数据库恢复所有待执行任务
    */
-  scheduleOneTimeEmail(
+  async onModuleInit() {
+    const pendingTasks = await this.taskRepository.find({
+      where: { status: 'pending' },
+    });
+
+    this.logger.log(`🔄 恢复 ${pendingTasks.length} 个待执行任务`);
+
+    for (const task of pendingTasks) {
+      const targetDate = new Date(Number(task.scheduledAt));
+      if (targetDate > new Date()) {
+        this.scheduleJob(
+          task.taskId,
+          targetDate,
+          task.to,
+          task.subject,
+          task.content,
+        );
+      } else {
+        // 时间已过（服务重启期间错过），立即补发
+        this.logger.warn(`⚠️ 任务 [${task.taskId}] 调度时间已过，立即补发`);
+        void this.sendEmailWithRetry(
+          task.taskId,
+          task.to,
+          task.subject,
+          task.content,
+        );
+      }
+    }
+  }
+
+  /**
+   * 安排一次性邮件发送任务
+   */
+  async scheduleOneTimeEmail(
     taskId: string,
     targetDate: Date,
     to: string,
     subject: string,
     content: string,
   ) {
-    const job = schedule.scheduleJob(targetDate, async () => {
-      await this.sendEmailWithRetry(taskId, to, subject, content);
+    if (targetDate <= new Date()) {
+      this.logger.warn(`⚠️ 任务 [${taskId}] 调度时间已过，跳过`);
+      return { taskId, status: 'skipped', message: '调度时间已过' };
+    }
+
+    // 持久化到数据库，重启后可恢复
+    await this.taskRepository.save({
+      taskId,
+      to,
+      subject,
+      content,
+      scheduledAt: targetDate.getTime(),
+      status: 'pending',
+      attempts: 0,
+      failedReason: null,
     });
 
-    this.jobs.set(taskId, job);
+    this.scheduleJob(taskId, targetDate, to, subject, content);
+
     this.logger.log(
       `📅 已安排邮件任务 [${taskId}] - 发送时间: ${targetDate.toLocaleString()}`,
     );
+
     return {
       taskId,
       scheduledTime: targetDate,
@@ -51,7 +94,23 @@ export class AdvancedSchedulerService {
   }
 
   /**
-   * 带重试机制的邮件发送
+   * 注册 node-schedule 任务（内存中）
+   */
+  private scheduleJob(
+    taskId: string,
+    targetDate: Date,
+    to: string,
+    subject: string,
+    content: string,
+  ) {
+    const job = schedule.scheduleJob(targetDate, async () => {
+      await this.sendEmailWithRetry(taskId, to, subject, content);
+    });
+    this.jobs.set(taskId, job);
+  }
+
+  /**
+   * 带指数退避重试的邮件发送
    */
   private async sendEmailWithRetry(
     taskId: string,
@@ -70,9 +129,11 @@ export class AdvancedSchedulerService {
         await this.mailService.sendMail(to, subject, content);
 
         this.logger.log(`✅ 邮件发送成功 [${taskId}]`);
-
-        // 成功后移除任务
         this.jobs.delete(taskId);
+        await this.taskRepository.update(
+          { taskId },
+          { status: 'sent', attempts: attempt },
+        );
         return;
       } catch (error) {
         lastError = error;
@@ -81,131 +142,101 @@ export class AdvancedSchedulerService {
           `⚠️ 邮件发送失败 [${taskId}] - 尝试 ${attempt}/${this.maxRetries}: ${error.message}`,
         );
 
-        // 如果不是最后一次尝试，等待后重试
         if (attempt < this.maxRetries) {
-          const delay = this.retryDelay * attempt; // 指数退避
+          // 指数退避：5s, 10s, 20s
+          const delay = this.retryDelay * Math.pow(2, attempt - 1);
           this.logger.debug(`等待 ${delay}ms 后重试...`);
           await this.delay(delay);
         }
       }
     }
 
-    // 所有重试都失败，保存到死信队列
+    // 所有重试均失败，写入数据库死信记录
     this.logger.error(
-      `❌ 邮件发送最终失败 [${taskId}] - 已保存到死信队列`,
+      `❌ 邮件发送最终失败 [${taskId}] - 已标记为 failed`,
       lastError.stack,
     );
-
-    await this.saveToDLQ({
-      taskId,
-      to,
-      subject,
-      content,
-      failedAt: new Date(),
-      error: lastError.message,
-      attempts: this.maxRetries,
-    });
-
-    // 清理任务
     this.jobs.delete(taskId);
-  }
-
-  /**
-   * 保存到死信队列
-   */
-  private async saveToDLQ(failedTask: FailedEmailTask): Promise<void> {
-    this.deadLetterQueue.push(failedTask);
-
-    this.logger.error(
-      `💀 死信队列记录: ${JSON.stringify({
-        taskId: failedTask.taskId,
-        to: failedTask.to,
-        subject: failedTask.subject,
-        failedAt: failedTask.failedAt.toISOString(),
-        error: failedTask.error,
-      })}`,
+    await this.taskRepository.update(
+      { taskId },
+      {
+        status: 'failed',
+        attempts: this.maxRetries,
+        failedReason: lastError.message,
+      },
     );
-
-    // TODO: 可以在这里将失败任务持久化到数据库
-    // await this.todoRepository.update(failedTask.taskId, {
-    //   reminderStatus: 'failed',
-    //   reminderError: failedTask.error
-    // });
   }
 
   /**
-   * 获取死信队列
+   * 获取死信队列（status = failed 的持久化记录）
    */
-  getDeadLetterQueue(): FailedEmailTask[] {
-    return [...this.deadLetterQueue];
+  async getDeadLetterQueue(): Promise<ScheduledTask[]> {
+    return this.taskRepository.find({ where: { status: 'failed' } });
   }
 
   /**
-   * 重新尝试死信队列中的任务
+   * 重新尝试死信任务（带完整重试逻辑）
    */
   async retryDeadLetterTask(taskId: string): Promise<boolean> {
-    const taskIndex = this.deadLetterQueue.findIndex(
-      (task) => task.taskId === taskId,
-    );
+    const task = await this.taskRepository.findOne({
+      where: { taskId, status: 'failed' },
+    });
 
-    if (taskIndex === -1) {
+    if (!task) {
       this.logger.warn(`未找到死信任务: ${taskId}`);
       return false;
     }
 
-    const task = this.deadLetterQueue[taskIndex];
     this.logger.log(`🔄 重试死信任务 [${taskId}]`);
 
-    try {
-      await this.mailService.sendMail(task.to, task.subject, task.content);
-      this.logger.log(`✅ 死信任务重试成功 [${taskId}]`);
+    // 先重置状态为 pending，再走完整重试流程
+    await this.taskRepository.update(
+      { taskId },
+      { status: 'pending', failedReason: null },
+    );
+    await this.sendEmailWithRetry(taskId, task.to, task.subject, task.content);
 
-      // 从死信队列中移除
-      this.deadLetterQueue.splice(taskIndex, 1);
-      return true;
-    } catch (error) {
-      this.logger.error(`❌ 死信任务重试失败 [${taskId}]: ${error.message}`);
-      return false;
-    }
-  }
-
-  /**
-   * 延迟函数
-   */
-  private delay(ms: number): Promise<void> {
-    return new Promise((resolve) => setTimeout(resolve, ms));
+    const updated = await this.taskRepository.findOne({ where: { taskId } });
+    return updated?.status === 'sent';
   }
 
   /**
    * 取消已安排的任务
    */
-  cancelScheduledTask(taskId: string): boolean {
+  async cancelScheduledTask(taskId: string): Promise<boolean> {
     const job = this.jobs.get(taskId);
     if (job) {
       job.cancel();
       this.jobs.delete(taskId);
+      await this.taskRepository.update({ taskId }, { status: 'cancelled' });
       this.logger.log(`🚫 已取消任务: ${taskId}`);
       return true;
     }
-    this.logger.warn(`未找到任务: ${taskId}`);
+    this.logger.warn(`未找到内存任务: ${taskId}`);
     return false;
   }
 
   /**
-   * 获取所有待执行的任务
+   * 获取所有内存中待执行的任务 ID
    */
   getPendingTasks(): string[] {
     return Array.from(this.jobs.keys());
   }
 
   /**
-   * 获取任务统计信息
+   * 获取统计信息
    */
-  getStats() {
+  async getStats() {
+    const failedCount = await this.taskRepository.count({
+      where: { status: 'failed' },
+    });
     return {
       pendingTasks: this.jobs.size,
-      deadLetterQueueSize: this.deadLetterQueue.length,
-      totalFailed: this.deadLetterQueue.length,
+      deadLetterQueueSize: failedCount,
     };
+  }
+
+  private delay(ms: number): Promise<void> {
+    return new Promise((resolve) => setTimeout(resolve, ms));
   }
 }

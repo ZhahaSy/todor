@@ -1,27 +1,28 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import * as nodemailer from 'nodemailer';
-import { mailConfig } from './config';
 
 @Injectable()
 export class EmailService {
-  private transporter;
+  private transporter: nodemailer.Transporter;
+  private readonly authUser: string;
 
   constructor(private readonly configService: ConfigService) {
+    this.authUser = this.configService.get<string>('MAIL_USER') || '';
     this.transporter = nodemailer.createTransport({
-      host: mailConfig.host,
-      port: mailConfig.port,
-      secure: true, // 如果是 SMTPS 连接，设置为 true
+      host: this.configService.get<string>('MAIL_HOST') || 'smtp.qq.com',
+      port: parseInt(this.configService.get<string>('MAIL_PORT') || '465', 10),
+      secure: true,
       auth: {
-        user: mailConfig.authUser,
-        pass: mailConfig.authPass,
+        user: this.authUser,
+        pass: this.configService.get<string>('MAIL_PASS') || '',
       },
     });
   }
 
   async sendMail(to: string, subject: string, text: string): Promise<void> {
     const mailOptions = {
-      from: mailConfig.authUser,
+      from: this.authUser,
       to,
       subject,
       text,

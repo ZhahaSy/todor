@@ -62,15 +62,16 @@ export class TodoController {
 
   @Post('/create')
   async createTodo(@Body() createTodoDto: Partial<Todo>, @Request() req) {
-    // 直接从 JWT payload 中获取用户邮箱，避免数据库查询
+    // 先创建 todo 拿到真实 id，再用 id 注册调度任务
+    const todo = await this.todoService.create(createTodoDto);
     const userEmail = req.user.email;
     await this.scheduleService.scheduleOneTimeEmail(
-      createTodoDto.id,
+      todo.id,
       new Date(createTodoDto.todoTime),
       userEmail,
       '待办事项提醒: ' + createTodoDto.title,
       `您有一条待办事项：${createTodoDto.content}`,
     );
-    return ResOp.success(await this.todoService.create(createTodoDto));
+    return ResOp.success(todo);
   }
 }
