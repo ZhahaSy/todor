@@ -59,8 +59,13 @@ export class AiController {
       await this.aiService.process(inputData);
 
     // 根据意图执行额外业务逻辑
-    if (processedResult.intent === 'todo' && processedResult.data) {
-      // 当意图是todo时，保存到待办事项
+    if (
+      (processedResult.intent === 'todo' ||
+        processedResult.intent === 'reminder') &&
+      processedResult.data
+    ) {
+      // 当意图是todo或reminder时，都保存到待办事项
+      // 因为从用户语义上来说，设置提醒和创建待办事项是类似的需求
       const todoData = processedResult.data;
       const message = await this.todoService.create({
         title: todoData.title,

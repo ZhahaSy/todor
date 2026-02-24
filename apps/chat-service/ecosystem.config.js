@@ -3,7 +3,7 @@ module.exports = {
     {
       name: 'chat-service',
       script: 'dist/main.js',
-      cwd: __dirname,           // 动态指向 ecosystem.config.js 所在目录
+      cwd: __dirname, // 动态指向 ecosystem.config.js 所在目录
       instances: 1,
       exec_mode: 'fork',
       env: {

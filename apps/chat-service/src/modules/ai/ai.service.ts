@@ -60,7 +60,9 @@ export class AiService {
     IntentResult
   >;
   private readonly intentRecognitionSchema = zod.object({
-    intent: zod.string().describe('用户意图，返回具体意图类型：todo | chat'),
+    intent: zod
+      .string()
+      .describe('用户意图，返回具体意图类型：todo | chat | reminder'),
     // [key: string]: zod.ZodAny, // 允许扩展其他字段
   });
 
@@ -120,7 +122,14 @@ export class AiService {
     console.log('识别到的意图:', intent);
 
     // 2. 获取对应的处理器
-    const handler = this.intentHandlers.get(intent);
+    let handler = this.intentHandlers.get(intent);
+
+    // 特殊处理：当意图是reminder时，使用todo处理器
+    // 因为从用户语义上来说，设置提醒和创建待办事项是类似的需求
+    if (!handler && intent === 'reminder') {
+      handler = this.intentHandlers.get('todo');
+      console.log('使用todo处理器处理reminder意图');
+    }
 
     if (!handler) {
       // 如果没有对应的处理器，使用默认处理器或返回错误
