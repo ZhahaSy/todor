@@ -47,7 +47,7 @@ export class UserController {
     if (result.code === 0 && 'data' in result && result.data?.token) {
       res.cookie('token', result.data.token, {
         httpOnly: true, // 防止 XSS 攻击
-        secure: process.env.NODE_ENV === 'production', // 生产环境使用 HTTPS
+        secure: process.env.COOKIE_SECURE === 'true', // 仅 HTTPS 时开启
         sameSite: 'lax', // 防止 CSRF 攻击
         maxAge: 30 * 24 * 60 * 60 * 1000, // 30 天
         path: '/',
