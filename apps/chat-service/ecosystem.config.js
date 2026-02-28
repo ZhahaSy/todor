@@ -10,6 +10,7 @@ module.exports = {
         NODE_ENV: 'production',
         RUNNING_ENV: 'prod',
         DB_DATABASE: '/var/data/chat-service/chat.db',
+        COOKIE_SECURE: 'false', // 未配置 HTTPS 时保持 false
       },
       // 日志配置
       out_file: `${__dirname}/logs/out.log`,

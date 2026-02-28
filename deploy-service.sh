@@ -104,7 +104,7 @@ fi
 
 if pm2 describe "$PM2_APP_NAME" &>/dev/null; then
   info "检测到已有进程，执行 reload（零停机）..."
-  pm2 reload "$PM2_APP_NAME" --update-env
+  pm2 reload ecosystem.config.js --update-env
 else
   info "首次启动..."
   pm2 start ecosystem.config.js
