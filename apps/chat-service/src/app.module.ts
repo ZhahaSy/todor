@@ -28,7 +28,7 @@ export const IS_DEV = process.env.RUNNING_ENV !== 'prod';
         process.env.DB_DATABASE ||
         (IS_DEV ? 'dbs/chat.db' : '/var/data/chat-service/chat.db'),
       entities: [__dirname + '/**/*.entity{.ts,.js}'],
-      synchronize: IS_DEV, // 仅开发环境自动同步；生产环境用 migration 或手动处理
+      synchronize: true, // 自动同步表结构（新表/新列），pm2 reload 已固化 env，不再有误触风险
     }),
 
     ConfigModule.forRoot({
