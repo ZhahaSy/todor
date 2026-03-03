@@ -70,7 +70,10 @@ export class UserController {
   @UseGuards(JwtAuthGuard)
   @Put('/update')
   async updateUserInfo(@Request() req, @Body() updateUserDto: UpdateUserDto) {
-    return await this.userService.updateUserInfo(req.user.userId, updateUserDto);
+    return await this.userService.updateUserInfo(
+      req.user.userId,
+      updateUserDto,
+    );
   }
 
   /**

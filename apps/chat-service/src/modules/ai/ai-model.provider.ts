@@ -43,9 +43,7 @@ export class AiModelProvider {
   getModel(temperature?: number): ChatDeepSeek {
     // 如果指定了不同的温度参数，创建新实例
     if (temperature !== undefined && temperature !== 0.7) {
-      this.logger.debug(
-        `创建临时 AI 模型实例，temperature=${temperature}`,
-      );
+      this.logger.debug(`创建临时 AI 模型实例，temperature=${temperature}`);
       return new ChatDeepSeek({
         apiKey: this.configService.get<string>('DEEPSEEK_API_KEY'),
         model: this.configService.get<string>('AI_MODEL', 'deepseek-chat'),

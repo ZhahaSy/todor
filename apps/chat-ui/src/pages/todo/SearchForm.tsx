@@ -10,20 +10,7 @@ import { SearchOutlined } from "@ant-design/icons";
 const SearchForm = (props: FormProps) => {
   return (
     <Form {...props} >
-      <Form.Item name='status'>
-        <Segmented
-          options={[
-            {
-              label: "未完成",
-              value: "active",
-            },
-            {
-              label: "已完成",
-              value: "completed",
-            },
-          ]}
-        />
-      </Form.Item>
+      
       <Form.Item name="keyword">
         <Input.Search
           style={{ position: "sticky", top: 12, zIndex: 1 }}
@@ -41,6 +28,20 @@ const SearchForm = (props: FormProps) => {
             </Button>
           }
           placeholder="输入关键词"
+        />
+      </Form.Item>
+      <Form.Item name='status'>
+        <Segmented
+          options={[
+            {
+              label: "未完成",
+              value: "active",
+            },
+            {
+              label: "已完成",
+              value: "completed",
+            },
+          ]}
         />
       </Form.Item>
     </Form>

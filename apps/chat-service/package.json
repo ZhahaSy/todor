@@ -21,7 +21,7 @@
   },
   "dependencies": {
     "@langchain/community": "^1.1.6",
-    "@langchain/core": "^0.3.47",
+    "@langchain/core": "^0.3.58",
     "@langchain/deepseek": "^0.0.1",
     "@nestjs/common": "^11.0.1",
     "@nestjs/config": "^4.0.2",
@@ -42,6 +42,7 @@
     "express-rate-limit": "^8.2.1",
     "helmet": "^8.1.0",
     "ioredis": "^5.9.2",
+    "langchain": "^0.3.27",
     "nest-winston": "^1.10.2",
     "node-schedule": "^2.1.1",
     "nodemailer": "^7.0.9",

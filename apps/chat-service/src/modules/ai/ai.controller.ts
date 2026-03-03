@@ -54,11 +54,14 @@ export class AiController {
       userInfo: userInfo as any, // 将简化的用户信息传递给 AI 服务
     };
 
+    console.log(inputData);
     // 调用AI服务处理消息（内部已包含意图识别和处理）
     const processedResult: ProcessedResult =
       await this.aiService.process(inputData);
 
-    // 根据意图执行额外业务逻辑
+    console.log(processedResult);
+
+    //根据意图执行额外业务逻辑
     if (
       (processedResult.intent === 'todo' ||
         processedResult.intent === 'reminder') &&

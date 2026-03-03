@@ -52,7 +52,9 @@ export class AuthService {
 
         if (user.hashPwd === legacyHash) {
           // 旧密码验证成功，自动迁移到 Argon2
-          this.logger.log(`✅ 用户 ${userName} 使用旧密码登录成功，开始迁移到 Argon2`);
+          this.logger.log(
+            `✅ 用户 ${userName} 使用旧密码登录成功，开始迁移到 Argon2`,
+          );
 
           const newHash = await encryptPassword(password);
           await this.userRepository.update(user.id, {

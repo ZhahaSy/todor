@@ -8,27 +8,40 @@ import { ScheduleModule } from '../schedule/schedule.module';
 import { TodoModule } from '../todo/todo.module';
 import { UserModule } from '../user/user.module';
 import { RedisModule } from '../redis/redis.module';
+import { MessageModule } from '../message/message.module';
+import { DatabaseQueryTool } from './tools/database-query.tool';
+import { SendEmailTool } from './tools/send-email.tool';
+import { CreateReminderTool } from './tools/create-reminder.tool';
 
 @Module({
-  imports: [TodoModule, UserModule, ScheduleModule, RedisModule],
+  imports: [TodoModule, UserModule, ScheduleModule, RedisModule, MessageModule],
   controllers: [AiController],
   providers: [
     AiModelProvider,
     AiService,
     ChatIntentHandler,
     TodoIntentHandler,
-    // 在这里注册新的意图处理器
+    DatabaseQueryTool,
+    SendEmailTool, // 保留 provider，待邮件功能改造后重新注册
+    CreateReminderTool,
   ],
   exports: [AiService, AiModelProvider],
 })
 export class AiModule {
   constructor(
-    private aiService: AiService,
-    private chatIntentHandler: ChatIntentHandler,
-    private todoIntentHandler: TodoIntentHandler,
+    aiService: AiService,
+    chatIntentHandler: ChatIntentHandler,
+    todoIntentHandler: TodoIntentHandler,
+    databaseQueryTool: DatabaseQueryTool,
+    createReminderTool: CreateReminderTool,
   ) {
     // 注册意图处理器
     aiService.registerIntentHandler(chatIntentHandler);
     aiService.registerIntentHandler(todoIntentHandler);
+
+    // 注册 LangChain Tools
+    (aiService as any).registerTool(databaseQueryTool);
+    // SendEmailTool 暂时下线，待改造：通讯录、对话确认、自定义发件人
+    (aiService as any).registerTool(createReminderTool);
   }
 }

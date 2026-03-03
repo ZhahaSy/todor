@@ -181,6 +181,7 @@ export class UserService {
       }
 
       // 移除敏感信息
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const { hashPwd, salt, deleted, ...userData } = user;
 
       return ResOp.success(userData, '导出成功');

@@ -27,6 +27,11 @@
   "engines": {
     "node": ">=18"
   },
+  "pnpm": {
+    "overrides": {
+      "@langchain/core": "^0.3.58"
+    }
+  },
   "dependencies": {
     "ahooks": "^3.8.5",
     "langchain": "^0.3.27"
