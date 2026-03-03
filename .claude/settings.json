@@ -1,9 +1,12 @@
 {
   "permissions": {
-    "defaultMode": "bypassPermissions",
     "allow": [
-      "Bash(pnpm lint)"
-    ]
+      "Bash(pnpm lint)",
+      "Bash(NODE_OPTIONS=\"--max-old-space-size=4096\" npx tsc --noEmit)",
+      "Bash(echo \"EXIT:$?\")",
+      "Bash(pnpm add class-transformer)"
+    ],
+    "defaultMode": "bypassPermissions"
   },
   "extraKnownMarketplaces": {
     "project-specific": {

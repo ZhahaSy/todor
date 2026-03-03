@@ -51,7 +51,8 @@ export class AiController {
     // 构建输入数据
     const inputData: InputData = {
       input: sendMessageDto.input,
-      userInfo: userInfo as any, // 将简化的用户信息传递给 AI 服务
+      userInfo: userInfo as any,
+      location: sendMessageDto.location,
     };
 
     console.log(inputData);

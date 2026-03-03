@@ -4,6 +4,20 @@ import { useState } from "react";
 import dayjs from "dayjs";
 import { HistRecordItem } from "./useChat";
 
+const getLocation = (): Promise<{ lat: number; lon: number } | undefined> => {
+  return new Promise((resolve) => {
+    if (!navigator.geolocation) {
+      resolve(undefined);
+      return;
+    }
+    navigator.geolocation.getCurrentPosition(
+      (pos) => resolve({ lat: pos.coords.latitude, lon: pos.coords.longitude }),
+      () => resolve(undefined), // 用户拒绝或超时，静默降级到 IP 定位
+      { timeout: 3000 }
+    );
+  });
+};
+
 export const useSendMessage = (
   addMessage: (message: HistRecordItem) => void
 ) => {
@@ -15,16 +29,15 @@ export const useSendMessage = (
       setLoading(false);
     }, 1000);
   };
+
   const handleSubmit = async (value: string) => {
-    setLoading(true); // 立即显示加载状态
+    setLoading(true);
 
     if (loading) return;
-    
 
     try {
-
       const ctime = dayjs().format("YYYY-MM-DD HH:mm:ss");
-      
+
       // 先添加用户消息
       await addMessage({
         content: value,
@@ -33,8 +46,12 @@ export const useSendMessage = (
         todoId: '',
       });
 
+      // 尝试获取用户精确位置（失败不影响发送，降级到 IP 定位）
+      const location = await getLocation();
+
+      console.log(location);
       // 发送消息到服务器
-      const { output, messageId: todoMessageId } = await sendMessage({ input: value });
+      const { output, messageId: todoMessageId } = await sendMessage({ input: value, location });
 
       // 添加AI回复
       await addMessage({
@@ -46,14 +63,13 @@ export const useSendMessage = (
     } catch (error) {
       console.error("Message send failed:", error);
     } finally {
-      setLoading(false); // 无论成功失败都关闭加载状态
+      setLoading(false);
     }
   };
 
   const handleCancel = () => {
     console.log("cancel");
     // TODO: 取消发送消息 暂时不做
-    // 取消发送消息的逻辑
   };
 
   return {

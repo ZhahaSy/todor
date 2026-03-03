@@ -11,6 +11,7 @@ import { AiModelProvider } from './ai-model.provider';
 export interface InputData {
   input: string;
   userInfo: User;
+  location?: { lat: number; lon: number }; // 用户精确位置，用于天气定位
 }
 
 export interface IntentResult {
@@ -109,6 +110,7 @@ export class AiService {
           '4. query: 用户想查询已有的待办列表\n' +
           '5. email: 用户想发送邮件\n' +
           '6. agent: 用户需要多步骤操作（如：创建待办并发邮件、查询后总结等）\n' +
+          '7. weather: 用户询问天气、温度、是否带伞、会不会下雨等\n' +
           '\n请仅返回意图类型，不需要其他解释。',
       ),
       model.withStructuredOutput(this.intentRecognitionSchema),
@@ -138,6 +140,14 @@ export class AiService {
   async processWithAgent(inputData: InputData): Promise<ProcessedResult> {
     const model = this.aiModelProvider.getModel(0.7);
     const tools = Array.from(this.tools.values());
+
+    // 把用户位置注入到 WeatherQueryTool，让它直接用坐标查天气
+    const weatherTool = tools.find((t) => t.name === 'weather_query') as
+      | (StructuredTool & { userLocation?: { lat: number; lon: number } })
+      | undefined;
+    if (weatherTool && inputData.location) {
+      weatherTool.userLocation = inputData.location;
+    }
 
     const agentPrompt = ChatPromptTemplate.fromMessages([
       [
@@ -192,7 +202,7 @@ export class AiService {
     this.logger.log(`识别到的意图: ${intent}`);
 
     // 2. 工具类意图直接走 Agent
-    const toolIntents = ['query', 'email', 'agent'];
+    const toolIntents = ['query', 'email', 'agent', 'weather'];
     if (toolIntents.includes(intent) && this.tools.size > 0) {
       this.logger.log(`意图 "${intent}" 转交 Agent 处理`);
       return this.processWithAgent(inputData);

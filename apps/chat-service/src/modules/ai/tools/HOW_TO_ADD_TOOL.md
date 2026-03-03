@@ -117,6 +117,7 @@ const toolIntents = ['query', 'email', 'agent', 'my_intent'];
 |---|---|---|---|
 | `DatabaseQueryTool` | `database_query` | `query` | ✅ 已启用 |
 | `CreateReminderTool` | `create_reminder` | `reminder` / `todo` | ✅ 已启用 |
+| `WeatherQueryTool` | `weather_query` | `weather` | ✅ 已启用 |
 | `SendEmailTool` | `send_email` | `email` | ⏸ 暂时下线（待改造） |
 
 ---

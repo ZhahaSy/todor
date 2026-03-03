@@ -5,8 +5,20 @@ import {
   IsIn,
   MaxLength,
   MinLength,
+  ValidateNested,
 } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
+import { Type } from 'class-transformer';
+
+class LocationDto {
+  @ApiProperty({ description: '纬度' })
+  @IsNumber()
+  readonly lat: number;
+
+  @ApiProperty({ description: '经度' })
+  @IsNumber()
+  readonly lon: number;
+}
 
 export class SendMessageDto {
   @ApiProperty({
@@ -37,4 +49,13 @@ export class SendMessageDto {
   @IsOptional()
   @IsString()
   readonly hobby?: string;
+
+  @ApiProperty({
+    description: '用户位置（经纬度），用于天气查询精确定位',
+    required: false,
+  })
+  @IsOptional()
+  @ValidateNested()
+  @Type(() => LocationDto)
+  readonly location?: LocationDto;
 }
