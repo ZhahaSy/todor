@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(ls -la /Users/zhangshuangyi/selfSpace/my-turborepo/packages/*/)",
+      "Bash(git add CLAUDE.md .claude/ apps/chat-service/chat.db pnpm-lock.yaml && git commit -m \"$\\(cat <<'EOF'\nfeat: 添加 CLAUDE.md 和 Claude Code 配置\n\nCo-Authored-By: Claude Sonnet 4.6 <noreply@anthropic.com>\nEOF\n\\)\")"
+    ]
+  }
+}
