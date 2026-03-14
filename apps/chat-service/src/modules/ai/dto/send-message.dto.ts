@@ -31,6 +31,11 @@ export class SendMessageDto {
   @MaxLength(10000, { message: '输入内容不能超过10000个字符' })
   readonly input: string;
 
+  @ApiProperty({ description: '对话模式', enum: ['chat', 'todo'], required: false })
+  @IsOptional()
+  @IsIn(['chat', 'todo'])
+  readonly mode?: string;
+
   @ApiProperty({ description: '用户年龄', required: false })
   @IsOptional()
   @IsNumber()
