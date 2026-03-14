@@ -2,7 +2,13 @@
   "permissions": {
     "allow": [
       "Bash(ls -la /Users/zhangshuangyi/selfSpace/my-turborepo/packages/*/)",
-      "Bash(git add CLAUDE.md .claude/ apps/chat-service/chat.db pnpm-lock.yaml && git commit -m \"$\\(cat <<'EOF'\nfeat: 添加 CLAUDE.md 和 Claude Code 配置\n\nCo-Authored-By: Claude Sonnet 4.6 <noreply@anthropic.com>\nEOF\n\\)\")"
+      "Bash(git add CLAUDE.md .claude/ apps/chat-service/chat.db pnpm-lock.yaml && git commit -m \"$\\(cat <<'EOF'\nfeat: 添加 CLAUDE.md 和 Claude Code 配置\n\nCo-Authored-By: Claude Sonnet 4.6 <noreply@anthropic.com>\nEOF\n\\)\")",
+      "Bash(find /Users/zhangshuangyi/selfSpace/my-turborepo/packages -name \"api*\" -o -name \"*api*\" | grep -E \"\\\\.\\(ts|tsx\\)$\")",
+      "Bash(find /Users/zhangshuangyi/selfSpace/my-turborepo/apps/chat-ui/src -name \"*store*\" -o -name \"*state*\" | grep -E \"\\\\.\\(ts|tsx\\)$\")",
+      "Bash(find /Users/zhangshuangyi/selfSpace/my-turborepo/packages/ui -name \"index.ts\" -o -name \"index.tsx\" | xargs cat)",
+      "Bash(pnpm --filter @client/ui check-types 2>&1 | head -50)",
+      "Bash(pnpm --filter chat-ui check-types 2>&1 | head -60)",
+      "Bash(cd /Users/zhangshuangyi/selfSpace/my-turborepo/apps/chat-ui && npx tsc --noEmit 2>&1 | head -60)"
     ]
   }
 }

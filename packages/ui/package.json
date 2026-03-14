@@ -17,16 +17,17 @@
     "less": "^4.3.0",
     "less-loader": "^12.2.0",
     "markdown-it": "^14.1.0",
-    "react": "^19.1.0",
-    "react-dom": "^19.1.0",
+    "react": "^19.2.4",
+    "react-dom": "^19.2.4",
     "react-router-dom": "^7.6.3",
     "vditor": "^3.11.2"
   },
   "devDependencies": {
     "@client/api": "workspace:*",
+    "@client/hooks": "workspace:*",
     "@client/utils": "workspace:*",
     "@types/markdown-it": "^14.1.1",
-    "@types/react": "19.1.8"
+    "@types/react": "^19.2.14"
   },
   "keywords": [],
   "author": "",

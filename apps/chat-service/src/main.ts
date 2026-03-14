@@ -10,7 +10,11 @@ import { rateLimit } from 'express-rate-limit';
 dotenv.config(); // 添加这行加载.env文件
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create(AppModule, {
+    bodyParser: true,
+  });
+  app.use(require('express').json({ limit: '10mb' }));
+  app.use(require('express').urlencoded({ limit: '10mb', extended: true }));
 
   // 安全响应头
   app.use(helmet());
