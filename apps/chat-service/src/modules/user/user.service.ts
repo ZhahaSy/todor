@@ -70,6 +70,11 @@ export class UserService {
       loginDto.password,
     );
 
+    this.logger.log(
+      `用户 ${loginDto.username} 登录验证结果: ${loginDto}`,
+      authResult,
+    );
+
     switch (authResult.code) {
       case Success:
         return await this.authService.certificate(authResult.data);

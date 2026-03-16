@@ -1,4 +1,5 @@
-import { Column, Entity, PrimaryGeneratedColumn, Index } from 'typeorm';
+import { Column, Entity, PrimaryGeneratedColumn, Index, OneToMany } from 'typeorm';
+import { Notification } from '../../message/entities/notification.entity';
 
 @Entity()
 export class User {
@@ -102,4 +103,7 @@ export class User {
     default: '',
   })
   email: string;
+
+  @OneToMany(() => Notification, notification => notification.user)
+  notifications: Notification[];
 }

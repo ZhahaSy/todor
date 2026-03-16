@@ -38,6 +38,7 @@ export class AdvancedSchedulerService implements OnModuleInit {
           task.to,
           task.subject,
           task.content,
+          task.userId,
         );
       } else {
         // 时间已过（服务重启期间错过），立即补发
@@ -47,13 +48,14 @@ export class AdvancedSchedulerService implements OnModuleInit {
           task.to,
           task.subject,
           task.content,
+          task.userId,
         );
       }
     }
   }
 
   /**
-   * 安排一次性邮件发送任务
+   * 安排一次性邮件发送任务（带应用内通知）
    */
   async scheduleOneTimeEmail(
     taskId: string,
@@ -61,6 +63,7 @@ export class AdvancedSchedulerService implements OnModuleInit {
     to: string,
     subject: string,
     content: string,
+    userId?: string,
   ) {
     if (targetDate <= new Date()) {
       this.logger.warn(`⚠️ 任务 [${taskId}] 调度时间已过，跳过`);
@@ -70,16 +73,17 @@ export class AdvancedSchedulerService implements OnModuleInit {
     // 持久化到数据库，重启后可恢复
     await this.taskRepository.save({
       taskId,
+      userId,
       to,
       subject,
       content,
       scheduledAt: targetDate.getTime(),
       status: 'pending',
       attempts: 0,
-      failedReason: null,
+      failedReason: '',
     });
 
-    this.scheduleJob(taskId, targetDate, to, subject, content);
+    this.scheduleJob(taskId, targetDate, to, subject, content, userId);
 
     this.logger.log(
       `📅 已安排邮件任务 [${taskId}] - 发送时间: ${targetDate.toLocaleString()}`,
@@ -102,21 +106,23 @@ export class AdvancedSchedulerService implements OnModuleInit {
     to: string,
     subject: string,
     content: string,
+    userId?: string,
   ) {
     const job = schedule.scheduleJob(targetDate, async () => {
-      await this.sendEmailWithRetry(taskId, to, subject, content);
+      await this.sendEmailWithRetry(taskId, to, subject, content, userId);
     });
     this.jobs.set(taskId, job);
   }
 
   /**
-   * 带指数退避重试的邮件发送
+   * 带指数退避重试的邮件发送（同步发送应用内通知）
    */
   private async sendEmailWithRetry(
     taskId: string,
     to: string,
     subject: string,
     content: string,
+    userId?: string,
   ): Promise<void> {
     let lastError: Error | null = null;
 
@@ -126,7 +132,8 @@ export class AdvancedSchedulerService implements OnModuleInit {
           `📧 发送邮件 [${taskId}] - 尝试 ${attempt}/${this.maxRetries}`,
         );
 
-        await this.mailService.sendMail(to, subject, content);
+        // 使用 sendMailWithNotification 同步发送邮件和应用内通知
+        await this.mailService.sendMailWithNotification(to, subject, content, userId);
 
         this.logger.log(`✅ 邮件发送成功 [${taskId}]`);
         this.jobs.delete(taskId);
@@ -192,9 +199,9 @@ export class AdvancedSchedulerService implements OnModuleInit {
     // 先重置状态为 pending，再走完整重试流程
     await this.taskRepository.update(
       { taskId },
-      { status: 'pending', failedReason: null },
+      { status: 'pending', failedReason: '' },
     );
-    await this.sendEmailWithRetry(taskId, task.to, task.subject, task.content);
+    await this.sendEmailWithRetry(taskId, task.to, task.subject, task.content, task.userId);
 
     const updated = await this.taskRepository.findOne({ where: { taskId } });
     return updated?.status === 'sent';

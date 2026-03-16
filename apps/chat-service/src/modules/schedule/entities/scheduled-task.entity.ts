@@ -5,6 +5,9 @@ export class ScheduledTask {
   @PrimaryColumn({ comment: '任务ID（与 todo.id 对应）' })
   taskId: string;
 
+  @Column({ comment: '用户ID（用于发送应用内通知）', nullable: true })
+  userId: string;
+
   @Column({ comment: '收件人邮箱' })
   to: string;
 
