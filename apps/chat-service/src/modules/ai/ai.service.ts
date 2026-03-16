@@ -1,12 +1,40 @@
-import { Injectable } from '@nestjs/common';
-import { ChatDeepSeek } from '@langchain/deepseek';
-import { ChatPromptTemplate } from '@langchain/core/prompts';
+import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { ChatPromptTemplate } from '@langchain/core/prompts';
 import { RunnableSequence } from '@langchain/core/runnables';
+import { StructuredTool } from '@langchain/core/tools';
+import { AgentExecutor, createToolCallingAgent } from 'langchain/agents';
 import zod from 'zod';
 import * as AsrSdk from 'tencentcloud-sdk-nodejs-asr';
 import { User } from '../user/entities/user.entity';
+import { AiModelProvider } from './ai-model.provider';
 
+// 基础输入输出接口
+export interface InputData {
+  input: string;
+  userInfo: User;
+  location?: { lat: number; lon: number };
+  forceIntent?: string; // 前端强制指定意图，跳过 LLM 识别
+}
+
+export interface IntentResult {
+  intent?: string;
+  [key: string]: any; // 允许扩展其他字段
+}
+
+export interface ProcessedResult {
+  output: string;
+  intent: string;
+  data?: any;
+}
+
+// 意图处理接口
+export interface IntentHandler {
+  getIntent(): string;
+  process(inputData: InputData): Promise<ProcessedResult>;
+}
+
+// PromptBuilder类保持不变
 class PromptBuilder {
   private prompts: Record<string, any> = {};
 
@@ -28,70 +56,29 @@ class PromptBuilder {
       ['human', '{input}'],
     ]);
   }
-
-  getPromptValues() {
-    return { ...this.prompts };
-  }
 }
 
 @Injectable()
 export class AiService {
-  private readonly chain: any;
-  private readonly schema = zod.object({
-    title: zod.string().describe('待办标题'),
-    content: zod.string().describe('待办描述'),
-    type: zod
-      .string()
-      .describe('生活｜工作｜学习')
-      .transform((v) => {
-        switch (v) {
-          case '生活':
-            return 'life';
-          case '工作':
-            return 'work';
-          case '学习':
-            return 'study';
-          default:
-            return 'work';
-        }
-      }),
-    priority: zod
-      .string()
-      .describe('低｜中｜高')
-      .transform((v) => {
-        switch (v) {
-          case '低':
-            return 'low';
-          case '中':
-            return 'medium';
-          case '高':
-            return 'high';
-          default:
-            return 'medium';
-        }
-      }),
-    todoTime: zod
+  private readonly logger = new Logger(AiService.name);
+  private readonly intentHandlers: Map<string, IntentHandler> = new Map();
+  private readonly tools: Map<string, StructuredTool> = new Map();
+  private readonly intentRecognitionChain: RunnableSequence<
+    InputData,
+    IntentResult
+  >;
+  private readonly intentRecognitionSchema = zod.object({
+    intent: zod
       .string()
       .describe(
-        '请输入具体时间，格式为：YYYY-MM-DD HH:mm' +
-          `当前时间：${new Date().toLocaleString()}`,
-      ),
-    isUrgent: zod.boolean().describe('是否紧急'),
-    originInput: zod.string().describe('原始输入'),
-    originOutput: zod
-      .string()
-      .describe(
-        `✅ 已接收：{type}类待办\n` +
-          `📌 标题：{title}\n` +
-          `📋 内容：{content}\n` +
-          `⏰ 时间：{todoTime}\n` +
-          `🚨 是否紧急：{isUrgent}\n`,
+        '用户意图，返回具体意图类型：todo | chat | reminder | query | email | agent',
       ),
   });
 
-  private readonly model: ChatDeepSeek;
-
-  constructor(private configService: ConfigService) {
+  constructor(
+    private aiModelProvider: AiModelProvider,
+    private configService: ConfigService,
+  ) {
     const promptBuilder = new PromptBuilder()
       .addPrompt('date', '当前时间：{date}', {
         date: () => new Date().toLocaleString(),
@@ -99,52 +86,155 @@ export class AiService {
       .addPrompt(
         'info',
         '用户档案：\n年龄：{age}\n性别：{gender}\n兴趣：{hobby}',
-        {}, // 移除硬编码用户信息
+        {},
       );
 
-    this.model = new ChatDeepSeek({
-      apiKey: this.configService.get('DEEPSEEK_API_KEY'),
-      model: this.configService.get('AI_MODEL'),
-      temperature: 0.2,
-    });
+    // 使用 AI 模型提供者获取模型实例（temperature=0.2 用于意图识别）
+    const model = this.aiModelProvider.getModel(0.2);
 
-    this.chain = RunnableSequence.from([
-      // 动态注入用户信息
-      ({ input, userInfo }) => ({
-        input,
-        info: {
-          age: userInfo.age,
-          gender: userInfo.gender,
-          hobby: userInfo.hobby,
-        },
-        date: new Date().toLocaleString(),
-      }),
-      promptBuilder.buildSystemMessage(
-        '处理规则：\n1. 自动识别紧急程度\n2. 生成结构化响应\n3. 提供详细解释\n4. 提供原始输入和输出\n5. 提供具体时间\n6. 提供具体内容\n7. 提供具体标题',
-      ),
-      this.model.withStructuredOutput(this.schema),
-      {
-        originOutput: (output: any) => output.originOutput,
-        structured: (output: any) => output,
+    // 仅负责意图识别的chain
+    this.intentRecognitionChain = RunnableSequence.from([
+      (inputData: InputData) => {
+        const mapped = {
+          input: inputData.input,
+          info: {
+            age: inputData.userInfo.age,
+            gender: inputData.userInfo.gender,
+            hobby: inputData.userInfo.hobby,
+          },
+          date: new Date().toLocaleString(),
+        };
+        console.log('[intentChain] 输入数据:', JSON.stringify(mapped));
+        return mapped;
       },
+      promptBuilder.buildSystemMessage(
+        '任务：仅识别用户的意图，返回一个字符串表示意图类型。\n' +
+          '意图类型包括但不限于：\n' +
+          '1. todo: 用户需要创建待办事项\n' +
+          '2. chat: 用户只是想聊天\n' +
+          '3. reminder: 用户需要设置提醒\n' +
+          '4. query: 用户想查询已有的待办列表\n' +
+          '5. email: 用户想发送邮件\n' +
+          '6. agent: 用户需要多步骤操作（如：创建待办并发邮件、查询后总结等）\n' +
+          '\n请仅返回意图类型，不需要其他解释。',
+      ),
+      model.withStructuredOutput(this.intentRecognitionSchema),
     ]);
   }
 
-  async process(input: string, userInfo: User) {
-    return this.chain.invoke({ input, userInfo });
+  // 注册意图处理器
+  registerIntentHandler(handler: IntentHandler): void {
+    this.intentHandlers.set(handler.getIntent(), handler);
   }
 
-  async chat(input: string, userInfo: User): Promise<string> {
-    const prompt = ChatPromptTemplate.fromMessages([
+  // 注册 LangChain Tool
+  registerTool(tool: StructuredTool): void {
+    this.tools.set(tool.name, tool);
+    this.logger.log(`工具已注册: ${tool.name}`);
+  }
+
+  // 仅负责识别意图
+  async recognizeIntent(inputData: InputData): Promise<string> {
+    this.logger.log('[recognizeIntent] 开始识别, input=' + inputData.input);
+    const result = await this.intentRecognitionChain.invoke(inputData);
+    this.logger.log('[recognizeIntent] 识别结果: ' + JSON.stringify(result));
+    return result.intent;
+  }
+
+  // 使用 Agent Executor 处理需要工具调用的请求
+  async processWithAgent(inputData: InputData): Promise<ProcessedResult> {
+    const model = this.aiModelProvider.getModel(0.7);
+    const tools = Array.from(this.tools.values());
+
+    const locationInfo = inputData.location
+      ? `用户当前位置：纬度 ${inputData.location.lat}，经度 ${inputData.location.lon}`
+      : '用户位置：未提供';
+
+    const agentPrompt = ChatPromptTemplate.fromMessages([
       [
         'system',
-        `你是一个智能AI助手，请直接回答用户问题。\n当前时间：${new Date().toLocaleString()}\n用户档案：年龄 ${userInfo.age}，性别 ${userInfo.gender}，兴趣 ${userInfo.hobby}`,
+        `你是 Todor，一个专业的 AI 私人助手。
+当前时间：${new Date().toLocaleString()}
+用户信息：姓名 ${inputData.userInfo.name}，邮箱 ${inputData.userInfo.email}
+${locationInfo}
+
+你可以使用工具来完成用户的请求。请根据用户需求选择合适的工具，并在必要时组合多个工具完成任务。
+如果需要用户邮箱，请使用：${inputData.userInfo.email}
+如果需要用户名，请使用：${inputData.userInfo.name}`,
       ],
       ['human', '{input}'],
+      ['placeholder', '{agent_scratchpad}'],
     ]);
-    const chain = prompt.pipe(this.model);
-    const result = await chain.invoke({ input });
-    return result.content as string;
+
+    const agent = createToolCallingAgent({
+      llm: model,
+      tools,
+      prompt: agentPrompt,
+    });
+
+    this.logger.log(`Agent 模型: ${model}`);
+    this.logger.log(`Agent 工具: ${tools}`);
+
+    const executor = new AgentExecutor({
+      agent,
+      tools,
+      maxIterations: 5,
+    });
+
+    const result = await executor.invoke({ input: inputData.input });
+
+    const intermediateSteps = result.intermediateSteps as Array<{
+      action: { tool: string };
+    }>;
+    const toolsUsed = intermediateSteps?.map((s) => s.action.tool) ?? [];
+
+    return {
+      output: result.output,
+      intent: 'agent',
+      data: { toolsUsed },
+    };
+  }
+
+  // 主处理方法
+  async process(inputData: InputData): Promise<ProcessedResult> {
+    // 1. 识别意图（前端强制指定时跳过 LLM 识别）
+    const intent = inputData.forceIntent ?? await this.recognizeIntent(inputData);
+    console.log(intent);
+
+    this.logger.log(`识别到的意图: ${intent}`);
+
+    // 2. 工具类意图直接走 Agent
+    const toolIntents = ['query', 'email', 'agent'];
+    if (toolIntents.includes(intent) && this.tools.size > 0) {
+      this.logger.log(`意图 "${intent}" 转交 Agent 处理`);
+      return this.processWithAgent(inputData);
+    }
+
+    // 3. 获取对应的处理器
+    let handler = this.intentHandlers.get(intent);
+
+    // 特殊处理：当意图是reminder时，使用todo处理器
+    // 因为从用户语义上来说，设置提醒和创建待办事项是类似的需求
+    if (!handler && intent === 'reminder') {
+      handler = this.intentHandlers.get('todo');
+      this.logger.log('使用todo处理器处理reminder意图');
+    }
+
+    if (!handler) {
+      // 没有对应处理器时，尝试用 Agent 兜底
+      if (this.tools.size > 0) {
+        this.logger.log(`未找到意图 "${intent}" 的处理器，转交 Agent 兜底`);
+        return this.processWithAgent(inputData);
+      }
+
+      return {
+        output: `抱歉，我暂时无法处理这种类型的请求`,
+        intent: 'unknown',
+      };
+    }
+
+    // 4. 使用处理器处理请求
+    return handler.process(inputData);
   }
 
   async recognizeAudio(

@@ -6,11 +6,13 @@ import {
   HttpStatus,
   UseGuards,
   Request,
+  BadRequestException,
 } from '@nestjs/common';
 
 import { AiService, InputData, ProcessedResult } from './ai.service';
 
 import { SendMessageDto } from './dto/send-message.dto';
+import { AsrRecognizeDto } from './dto/asr-recognize.dto';
 
 import { ApiTags, ApiOperation, ApiBody } from '@nestjs/swagger';
 import { ResOp } from '@/common/model/response.model';
@@ -49,11 +51,12 @@ export class AiController {
     };
     console.log('sendMessage-user', req.user);
 
-    // 构建输入数据
+    // 构建输入数据（mode 有值时直接映射为 forceIntent，跳过 LLM 意图识别）
     const inputData: InputData = {
       input: sendMessageDto.input,
       userInfo: userInfo as any,
       location: sendMessageDto.location,
+      forceIntent: sendMessageDto.mode,
     };
 
     console.log(inputData);
@@ -106,5 +109,22 @@ export class AiController {
       output: processedResult.output,
       intent: processedResult.intent,
     });
+  }
+
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: '语音识别', description: '将音频转换为文字（腾讯云 ASR）' })
+  @ApiBody({ type: AsrRecognizeDto })
+  @Post('asr/recognize')
+  async recognizeAudio(@Body() dto: AsrRecognizeDto) {
+    if (!dto.audioData) {
+      throw new BadRequestException('audioData is required');
+    }
+    const text = await this.aiService.recognizeAudio(
+      dto.audioData,
+      dto.format,
+      dto.dataLen,
+      dto.engSerViceType,
+    );
+    return ResOp.success(text);
   }
 }
