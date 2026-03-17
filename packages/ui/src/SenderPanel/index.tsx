@@ -10,7 +10,7 @@ export type ChatMode = "chat" | "todo" | "agent";
 const MODE_OPTIONS: { label: string; value: ChatMode }[] = [
   { label: "对话", value: "chat" },
   { label: "待办", value: "todo" },
-  { label: "Agent", value: "agent" },
+  // { label: "Agent", value: "agent" },
 ];
 
 export interface SenderPanelProps {

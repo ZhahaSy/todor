@@ -19,6 +19,7 @@ export interface ChatListProps {
   hasMore?: boolean;
   onRetry: () => void;
   onLoadMore?: () => void;
+  onDeepDive?: (index: number) => void;
 }
 
 const md = markdownit({ html: true, breaks: true });
@@ -58,6 +59,7 @@ const ChatList = ({
   loadingMore = false,
   hasMore = false,
   onLoadMore,
+  onDeepDive,
 }: ChatListProps) => {
   const scrollRef = useRef<HTMLDivElement>(null);
   // 记录触顶加载前的 scrollHeight，加载后恢复滚动位置
@@ -104,11 +106,16 @@ const ChatList = ({
             <div className={styles.noMoreTip}>没有更早的记录了</div>
           )}
           <Bubble.List
-            items={messages.map((message) => ({
+            items={messages.map((message, index) => ({
               ...message,
               messageRender: renderMarkdown,
               footer: () => {
-                return <MessageFooter curMessage={message} />;
+                return (
+                  <MessageFooter
+                    curMessage={message}
+                    onDeepDive={onDeepDive ? () => onDeepDive(index) : undefined}
+                  />
+                );
               },
             }))}
             roles={roles}
