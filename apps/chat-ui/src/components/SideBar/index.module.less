@@ -1,27 +1,28 @@
 .sidebar {
   background: #fff;
-  border-radius: 14px;
+  border-radius: 16px;
   display: flex;
   flex-direction: column;
   width: 220px;
   min-width: 220px;
   height: 100%;
-  padding: 16px 0 12px;
+  padding: 14px 0 10px;
   box-sizing: border-box;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
-  transition: width 0.2s ease;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06), 0 4px 16px rgba(0, 0, 0, 0.04);
+  transition: width 0.22s cubic-bezier(0.4, 0, 0.2, 1),
+              min-width 0.22s cubic-bezier(0.4, 0, 0.2, 1);
 
   &.collapsed {
-    width: 64px;
-    min-width: 64px;
+    width: 62px;
+    min-width: 62px;
   }
 
   .topBar {
     display: flex;
     align-items: center;
-    padding: 0 8px 12px;
-    border-bottom: 1px solid #f0f0f0;
-    margin-bottom: 8px;
+    padding: 0 10px 12px;
+    border-bottom: 1px solid #ECEEF3;
+    margin-bottom: 6px;
   }
 
   .conversationList {
@@ -29,16 +30,33 @@
     display: flex;
     flex-direction: column;
     overflow: hidden;
+
+    // 覆盖 ant Menu 选中/hover 色
+    :global {
+      .ant-menu-item:hover {
+        background: #F0F2F7 !important;
+        color: #5B6EF5 !important;
+      }
+      .ant-menu-item-selected {
+        background: #EDEFFE !important;
+        color: #5B6EF5 !important;
+        font-weight: 600;
+      }
+      .ant-menu-item-selected .anticon {
+        color: #5B6EF5 !important;
+      }
+    }
   }
 
   .collapseBtn {
-    margin: 8px 12px 0;
-    color: #8c8c8c;
-    border-radius: 8px;
+    margin: 8px 10px 0;
+    color: #9BA3B8;
+    border-radius: 10px;
+    transition: color 0.2s, background 0.2s;
 
     &:hover {
       color: #5B6EF5;
-      background: #f0f1fe;
+      background: #F0F2F7;
     }
   }
 }

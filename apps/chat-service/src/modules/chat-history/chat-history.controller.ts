@@ -3,6 +3,7 @@ import {
   Post,
   Get,
   Body,
+  Query,
   UseGuards,
   Request,
 } from '@nestjs/common';
@@ -32,10 +33,17 @@ export class ChatHistoryController {
   }
 
   @Get()
-  async findAll(@Request() req) {
-    // 直接从 JWT payload 中获取用户名，避免数据库查询
+  async findAll(
+    @Request() req,
+    @Query('limit') limit?: string,
+    @Query('offset') offset?: string,
+  ) {
     const name = req.user.name;
-    const data = await this.chatService.findAll({ sessionId: name });
+    const data = await this.chatService.findAll({
+      sessionId: name,
+      limit: limit ? parseInt(limit, 10) : 10,
+      offset: offset ? parseInt(offset, 10) : 0,
+    });
     return ResOp.success(data);
   }
 }

@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { addChatHistory, getChatHistory } from "@client/api";
 
 export interface HistRecordItem {
@@ -7,79 +7,123 @@ export interface HistRecordItem {
   date: string;
   todoId: string;
 }
+
 export type ReturnType = {
   /**
    * 聊天记录
-   * @type {HistRecordItem[]}
    */
   messages: HistRecordItem[];
   /**
+   * 是否正在加载更多历史（触顶加载）
+   */
+  loadingMore: boolean;
+  /**
+   * 是否还有更多历史记录可加载
+   */
+  hasMore: boolean;
+  /**
+   * 加载更早的历史记录（触顶调用）
+   */
+  loadMore: () => Promise<void>;
+  /**
    * 添加聊天记录
-   * @param {string} content 聊天内容
-   * @returns {Promise<boolean>} 是否成功
    */
   addMessage: (message: HistRecordItem) => Promise<boolean>;
 };
 
-/**
- * useChat
- * @param {string} chat_list_key 聊天列表键名
- * @returns {ReturnType} 返回值
- * @description 使用 localforage 存储聊天记录，并提供添加聊天记录的方法，
- *
- */
+const PAGE_SIZE = 10;
+
 export const useChat = (): ReturnType => {
   const [messages, setMessages] = useState<HistRecordItem[]>([]);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [hasMore, setHasMore] = useState(true);
+  // offset 以「已加载总数」为准（不含乐观追加的新消息）
+  const offsetRef = useRef(0);
+  // 初始化是否完成
+  const initializedRef = useRef(false);
 
-  const getMessages = async () => {
-    try {
-      const data = await getChatHistory();
-      setMessages(data);  
-      return data;
-    } catch (error) {
-      console.error("Failed to get messages:", error);
-      return [];
+  // 加载一页数据，prepend=true 时插入到头部（触顶加载历史）
+  const fetchPage = useCallback(async (offset: number, prepend: boolean) => {
+    const res = await getChatHistory({ limit: PAGE_SIZE, offset });
+    const { list, total } = res as { list: HistRecordItem[]; total: number };
+
+    if (prepend) {
+      setMessages((prev) => [...(list as HistRecordItem[]), ...prev]);
+    } else {
+      setMessages(list as HistRecordItem[]);
     }
-  }
 
-  // 初始化加载本地数据
-  useEffect(() => {
-    getMessages();
+    offsetRef.current = offset + list.length;
+    // 已加载数量 >= 总数时没有更多
+    setHasMore(offsetRef.current < total);
   }, []);
 
-  const updateMessage = async (newMessage: HistRecordItem) => {
-    
-    return await addChatHistory(newMessage)
-  }
+  // 初始化：加载最新一页（最后 PAGE_SIZE 条）
+  useEffect(() => {
+    if (initializedRef.current) return;
+    initializedRef.current = true;
 
-  const addMessage = async (
-    {role, content, date, todoId}: HistRecordItem
+    const init = async () => {
+      try {
+        await fetchPage(0, false);
+      } catch (error) {
+        console.error("Failed to init messages:", error);
+      }
+    };
+
+    init();
+  }, [fetchPage]);
+
+  // 触顶加载更早的历史
+  const loadMore = useCallback(async () => {
+    if (loadingMore || !hasMore) return;
+
+    // 当前已加载最早那页的 offset（messages 头部对应的 offset）
+    // 我们需要向前再取一页
+    const currentLoaded = offsetRef.current;
+    // 总条数需要重新查一次来确定前面还有多少
+    // 简化：直接用当前 messages.length 推算前面的 offset
+    const loadedCount = messages.length;
+    // 最早已加载消息的全局 offset = total - loadedCount（近似）
+    // 直接用 offsetRef 倒推：offsetRef 是已加载的末尾，当前 messages 从 (offsetRef - messages.length) 开始
+    const earliestOffset = currentLoaded - loadedCount;
+    const prevOffset = Math.max(0, earliestOffset - PAGE_SIZE);
+    const fetchCount = earliestOffset - prevOffset;
+
+    if (fetchCount <= 0) {
+      setHasMore(false);
+      return;
+    }
+
+    setLoadingMore(true);
+    try {
+      const res = await getChatHistory({ limit: fetchCount, offset: prevOffset });
+      const { list, total } = res as { list: HistRecordItem[]; total: number };
+      setMessages((prev) => [...(list as HistRecordItem[]), ...prev]);
+      // hasMore：prevOffset > 0 说明前面还有数据
+      setHasMore(prevOffset > 0);
+      // 更新 offset 保持指向已加载的末尾（不变），total 用于边界判断
+      void total;
+    } catch (error) {
+      console.error("Failed to load more:", error);
+    } finally {
+      setLoadingMore(false);
+    }
+  }, [loadingMore, hasMore, messages.length]);
+
+  const addMessage = useCallback(async (
+    { role, content, date, todoId }: HistRecordItem
   ): Promise<boolean> => {
     try {
-      const newMessage: HistRecordItem = {
-        role,
-        content,
-        date,
-        todoId,
-      };
-
-
-      // 先更新UI状态
-      setMessages((prev) => {
-        const newDataList = [...prev, newMessage]
-        return newDataList;
-      });
-
-      // 再更新后台数据
-      updateMessage(newMessage)
-
-      
+      const newMessage: HistRecordItem = { role, content, date, todoId };
+      setMessages((prev) => [...prev, newMessage]);
+      addChatHistory(newMessage);
       return true;
     } catch (error) {
       console.error("Message add failed:", error);
       return false;
     }
-  };
+  }, []);
 
-  return { messages, addMessage };
+  return { messages, loadingMore, hasMore, loadMore, addMessage };
 };

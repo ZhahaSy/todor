@@ -18,11 +18,23 @@ export class ChatHistoryService {
     return this.chatRepository.save(newChat);
   }
 
-  async findAll({ sessionId }: { sessionId: string }): Promise<ChatHistory[]> {
-    const data = await this.chatRepository.find({
+  async findAll({
+    sessionId,
+    limit = 10,
+    offset = 0,
+  }: {
+    sessionId: string;
+    limit?: number;
+    offset?: number;
+  }): Promise<{ list: ChatHistory[]; total: number }> {
+    const [list, total] = await this.chatRepository.findAndCount({
       where: { sessionId },
-      order: { date: 'ASC' },
+      order: { date: 'DESC' },
+      take: limit,
+      skip: offset,
     });
-    return data;
+    // 返回时保持时间升序（由新到旧查出后翻转）
+    list.reverse();
+    return { list, total };
   }
 }

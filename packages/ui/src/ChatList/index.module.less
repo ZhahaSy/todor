@@ -1,5 +1,42 @@
 .chatList {
     flex: 1;
     overflow: hidden;
-    // overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+}
+
+.scrollContainer {
+    flex: 1;
+    overflow-y: auto;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    padding: 8px 0;
+
+    // 气泡样式优化
+    :global {
+        // 用户消息气泡
+        .ant-bubble-content[class*="end"] {
+            background: linear-gradient(135deg, #5B6EF5 0%, #7C8FF7 100%) !important;
+            color: #fff !important;
+        }
+        // AI 消息气泡
+        .ant-bubble-content[class*="start"] {
+            background: #F5F6FB !important;
+            color: #1a1d2e !important;
+        }
+    }
+}
+
+.loadMoreTip {
+    display: flex;
+    justify-content: center;
+    padding: 8px 0;
+}
+
+.noMoreTip {
+    text-align: center;
+    color: #B0B7C8;
+    font-size: 12px;
+    padding: 8px 0;
 }

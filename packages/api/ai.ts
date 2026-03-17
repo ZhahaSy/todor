@@ -1,7 +1,8 @@
 import request from "@client/request";
 
-export const sendMessage = async (data: { input: string; mode?: string }) => {
-    return await request.post("/ai/message", data)
+export const sendMessage = async (data: { input: string; mode?: string }): Promise<string> => {
+    const res = await request.post<unknown, { output: string; intent: string; messageId?: string }>("/ai/message", data)
+    return res.output
 }
 
 export const recognizeAudio = async (data: {
