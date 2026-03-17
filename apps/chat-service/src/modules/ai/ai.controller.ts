@@ -122,12 +122,14 @@ export class AiController {
           role: 'local',
           date: now,
           sessionId,
+          userId: req.user.userId,
         }),
         this.chatHistoryService.create({
           content: processedResult.output,
           role: 'ai',
           date: now,
           sessionId,
+          userId: req.user.userId,
         }),
       ]);
     }
