@@ -1,12 +1,20 @@
 import { useState, useCallback, useRef } from "react";
 import { Sender } from "@ant-design/x";
-import { Button, Tooltip, message } from "antd";
+import { Button, Segmented, Tooltip, message } from "antd";
 import { AudioOutlined, KeyOutlined } from "@ant-design/icons";
 import { useVoiceInput } from "@client/hooks";
 import styles from "./index.module.less";
 
+export type ChatMode = "chat" | "todo" | "agent";
+
+const MODE_OPTIONS: { label: string; value: ChatMode }[] = [
+  { label: "对话", value: "chat" },
+  { label: "待办", value: "todo" },
+  { label: "Agent", value: "agent" },
+];
+
 export interface SenderPanelProps {
-  onSubmit: (value: string) => void;
+  onSubmit: (value: string, mode: ChatMode) => void;
   onCancel: () => void;
   sending?: boolean;
 }
@@ -18,6 +26,7 @@ const isMobileDevice = () =>
 const SenderPanel = ({ onSubmit, onCancel, sending }: SenderPanelProps) => {
   const [value, setValue] = useState("");
   const [voiceMode, setVoiceMode] = useState(false);
+  const [chatMode, setChatMode] = useState<ChatMode>("chat");
   const [isCanceling, setIsCanceling] = useState(false);
   const [messageApi, contextHolder] = message.useMessage();
   const isListeningRef = useRef(false);
@@ -26,7 +35,7 @@ const SenderPanel = ({ onSubmit, onCancel, sending }: SenderPanelProps) => {
   const { isListening, isProcessing, startListening, stopListening, cancelListening } =
     useVoiceInput({
       onTranscript: (text) => {
-        if (text.trim()) onSubmit(text.trim());
+        if (text.trim()) onSubmit(text.trim(), chatMode);
       },
       onError: (err) => messageApi.error(err),
     });
@@ -82,10 +91,10 @@ const SenderPanel = ({ onSubmit, onCancel, sending }: SenderPanelProps) => {
 
   const handleSubmit = useCallback(
     (val: string) => {
-      onSubmit(val);
+      onSubmit(val, chatMode);
       setValue("");
     },
-    [onSubmit]
+    [onSubmit, chatMode]
   );
 
   const voiceBtnText = isProcessing
@@ -103,6 +112,15 @@ const SenderPanel = ({ onSubmit, onCancel, sending }: SenderPanelProps) => {
   return (
     <>
       {contextHolder}
+
+      <div className={styles.modeBar}>
+        <Segmented
+          size="small"
+          options={MODE_OPTIONS}
+          value={chatMode}
+          onChange={(v) => setChatMode(v as ChatMode)}
+        />
+      </div>
 
       {voiceMode ? (
         <div className={styles.voiceBar}>
