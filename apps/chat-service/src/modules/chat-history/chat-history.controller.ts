@@ -23,13 +23,20 @@ export class ChatHistoryController {
 
   @Post()
   async create(@Body() createChatDto: CreateChatDto, @Request() req) {
-    // 直接从 JWT payload 中获取用户名，避免数据库查询
     const name = req.user.name;
+    // 若前端传了 sessionId（深入模式），使用传入值；否则用用户名（主对话）
+    const resolvedSessionId = createChatDto.sessionId ?? name;
     const res = await this.chatService.create({
       ...createChatDto,
-      sessionId: name,
+      sessionId: resolvedSessionId,
     });
     return ResOp.success(res);
+  }
+
+  @Get('sessions')
+  async findSessions(@Request() req) {
+    const sessions = await this.chatService.findSessions(req.user.name);
+    return ResOp.success(sessions);
   }
 
   @Get()

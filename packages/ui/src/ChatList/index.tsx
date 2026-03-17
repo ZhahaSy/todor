@@ -19,7 +19,7 @@ export interface ChatListProps {
   hasMore?: boolean;
   onRetry: () => void;
   onLoadMore?: () => void;
-  onDeepDive?: (index: number) => void;
+  onDeepDive?: () => void;
 }
 
 const md = markdownit({ html: true, breaks: true });
@@ -106,14 +106,14 @@ const ChatList = ({
             <div className={styles.noMoreTip}>没有更早的记录了</div>
           )}
           <Bubble.List
-            items={messages.map((message, index) => ({
+            items={messages.map((message) => ({
               ...message,
               messageRender: renderMarkdown,
               footer: () => {
                 return (
                   <MessageFooter
                     curMessage={message}
-                    onDeepDive={onDeepDive ? () => onDeepDive(index) : undefined}
+                    onDeepDive={onDeepDive}
                   />
                 );
               },

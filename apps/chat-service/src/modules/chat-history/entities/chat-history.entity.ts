@@ -33,4 +33,12 @@ export class ChatHistory {
     default: null,
   })
   todoId: string | null;
+
+  @Column({
+    type: 'varchar',
+    comment: '深入会话标题（首条用户消息截取）',
+    default: null,
+    nullable: true,
+  })
+  title: string | null;
 }

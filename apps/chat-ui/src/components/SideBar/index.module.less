@@ -48,6 +48,28 @@
     }
   }
 
+  .sessionLabel {
+    display: inline-block;
+    max-width: 120px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    vertical-align: middle;
+  }
+
+  &.withSubMenu {
+    overflow-y: auto;
+    :global {
+      .ant-menu-sub {
+        background: none !important;
+      }
+      .ant-menu-item {
+        height: 32px;
+        line-height: 32px;
+      }
+    }
+  }
+
   .collapseBtn {
     margin: 8px 10px 0;
     color: #9BA3B8;
