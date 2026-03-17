@@ -192,7 +192,7 @@ ${locationInfo}
 
     const agent = createToolCallingAgent({
       llm: model,
-      tools,
+      tools: tools as any,
       prompt: agentPrompt,
     });
 
@@ -201,7 +201,7 @@ ${locationInfo}
 
     const executor = new AgentExecutor({
       agent,
-      tools,
+      tools: tools as any,
       maxIterations: 5,
     });
 
