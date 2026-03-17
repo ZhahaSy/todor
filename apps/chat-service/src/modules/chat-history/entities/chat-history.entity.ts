@@ -18,6 +18,10 @@ export class ChatHistory {
   @Column({ type: 'varchar', comment: '日期' })
   date: string;
 
+  @Index()
+  @Column({ type: 'varchar', comment: '所属用户ID', default: null, nullable: true })
+  userId: string | null;
+
   @Index() // 添加索引：按会话ID查询聊天历史
   @Column({
     type: 'varchar',
