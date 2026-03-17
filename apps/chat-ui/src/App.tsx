@@ -8,12 +8,15 @@ export const ConfigProviderConfig = {
     locale: zhCN,
     theme: {
         token: {
-            // colorPrimary: '#E48D2C',
-            // borderRadius: 8,
-            // paddingContentHorizontal: 13,
-            // paddingContentVertical: 4,
-            // colorText: '#61666D',
-            // colorBorder: '#C9CCD0',
+            colorPrimary: '#5B6EF5',
+            borderRadius: 10,
+            fontFamily: `-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif`,
+        },
+        components: {
+            Menu: {
+                itemBorderRadius: 8,
+                itemMarginInline: 8,
+            },
         },
     },
 };

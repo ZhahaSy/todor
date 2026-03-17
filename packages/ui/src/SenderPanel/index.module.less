@@ -1,21 +1,23 @@
-.modeBar {
-  display: flex;
-  align-items: center;
-  padding: 0 4px 8px;
-}
-
 .sender {
-  margin-top: 0;
-  height: 56px;
-  position: sticky;
-  bottom: 30px;
-  background: #fff;
+  border-radius: 14px !important;
+  border: 1.5px solid #eef0f8 !important;
+  box-shadow: 0 2px 16px rgba(91, 110, 245, 0.08) !important;
+  background: #fff !important;
+  transition: border-color 0.2s, box-shadow 0.2s;
+
+  &:focus-within {
+    border-color: #5B6EF5 !important;
+    box-shadow: 0 4px 20px rgba(91, 110, 245, 0.14) !important;
+  }
 }
 
 .toggleBtn {
-  color: #888;
+  color: #aab0c8;
+  border-radius: 8px;
+
   &:hover {
-    color: #1677ff !important;
+    color: #5B6EF5 !important;
+    background: #f0f1fe !important;
   }
 }
 
@@ -24,10 +26,11 @@
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 8px 12px;
-  position: sticky;
-  bottom: 30px;
+  padding: 12px 16px;
+  border-radius: 14px;
+  border: 1.5px solid #eef0f8;
   background: #fff;
+  box-shadow: 0 2px 16px rgba(91, 110, 245, 0.08);
 }
 
 /* ── 按住说话按钮 ── */
@@ -35,10 +38,10 @@
   flex: 1;
   height: 44px;
   border-radius: 22px;
-  border: 1.5px solid #d9d9d9;
-  background: #f5f5f5;
-  font-size: 15px;
-  color: #333;
+  border: 1.5px solid #e0e3f5;
+  background: #f7f8fc;
+  font-size: 14px;
+  color: #4a5080;
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -49,8 +52,9 @@
   -webkit-user-select: none;
 
   &:hover:not(:disabled) {
-    background: #ebebeb;
-    border-color: #bfbfbf;
+    background: #eef0fc;
+    border-color: #5B6EF5;
+    color: #5B6EF5;
   }
 
   &:disabled {
@@ -58,14 +62,12 @@
     cursor: not-allowed;
   }
 
-  /* 录音中 */
   &.recording {
-    background: #e6f4ff;
-    border-color: #91caff;
-    color: #1677ff;
+    background: #eef0fe;
+    border-color: #5B6EF5;
+    color: #5B6EF5;
   }
 
-  /* 移出 = 取消区域 */
   &.canceling {
     background: #fff1f0;
     border-color: #ffa39e;
@@ -85,7 +87,7 @@
   display: inline-block;
   width: 3px;
   height: 100%;
-  background: #1677ff;
+  background: #5B6EF5;
   border-radius: 2px;
   animation: waveAnim 0.7s ease-in-out infinite;
 
@@ -96,12 +98,7 @@
 
 :global {
   @keyframes waveAnim {
-    0%,
-    100% {
-      transform: scaleY(0.3);
-    }
-    50% {
-      transform: scaleY(1);
-    }
+    0%, 100% { transform: scaleY(0.3); }
+    50% { transform: scaleY(1); }
   }
 }

@@ -1,18 +1,44 @@
 .sidebar {
-    background-color: #f1f2f3;
-    border-radius: 6px;
+  background: #fff;
+  border-radius: 14px;
+  display: flex;
+  flex-direction: column;
+  width: 220px;
+  min-width: 220px;
+  height: 100%;
+  padding: 16px 0 12px;
+  box-sizing: border-box;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+  transition: width 0.2s ease;
+
+  &.collapsed {
+    width: 64px;
+    min-width: 64px;
+  }
+
+  .topBar {
+    display: flex;
+    align-items: center;
+    padding: 0 8px 12px;
+    border-bottom: 1px solid #f0f0f0;
+    margin-bottom: 8px;
+  }
+
+  .conversationList {
+    flex: 1;
     display: flex;
     flex-direction: column;
-    gap: 16px;
-    // width: 200px;
-    height: 100%;
-    padding: 10px 0;
-    box-sizing: border-box;
-    .conversationList {
-        flex: 1;
+    overflow: hidden;
+  }
+
+  .collapseBtn {
+    margin: 8px 12px 0;
+    color: #8c8c8c;
+    border-radius: 8px;
+
+    &:hover {
+      color: #5B6EF5;
+      background: #f0f1fe;
     }
-    .topBar {
-        display: flex;
-        justify-content: space-between;
-    }
+  }
 }

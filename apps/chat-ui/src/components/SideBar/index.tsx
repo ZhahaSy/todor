@@ -9,69 +9,50 @@ import {
 } from "@ant-design/icons";
 import { Button, Menu } from "antd";
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 
 const Sidebar = () => {
   const [collapsed, setCollapsed] = useState(false);
-  const toggleCollapsed = () => {
-    setCollapsed(!collapsed);
-  };
-
   const navigate = useNavigate();
+  const location = useLocation();
 
   const items = [
-    {
-      label: "chat",
-      icon: <WechatOutlined />,
-      key: "chat",
-      path: "/chat",
-    },
-    {
-      label: "my todo",
-      icon: <ScheduleOutlined />,
-      key: "myTodo",
-      path: "/todo",
-    },
-    {
-      label: "setting",
-      icon: <SettingOutlined />,
-      key: "setting",
-      path: "/setting",
-    },
+    { label: "Chat", icon: <WechatOutlined />, key: "chat", path: "/chat" },
+    { label: "My Todo", icon: <ScheduleOutlined />, key: "myTodo", path: "/todo" },
+    { label: "Setting", icon: <SettingOutlined />, key: "setting", path: "/setting" },
   ];
 
+  const selectedKey = items.find((item) => location.pathname.startsWith(item.path))?.key;
+
   return (
-    <div className={styles.sidebar}>
-      {/* top 栏 */}
+    <div className={`${styles.sidebar} ${collapsed ? styles.collapsed : ""}`}>
       <div className={styles.topBar}>
-        {/* 增加用户选择器 */}
         <UserSelector isShowName={!collapsed} />
-        {/* <Button icon={<QuestionCircleOutlined />} /> */}
       </div>
 
-      {/* 菜单 */}
-      <div
-        className={styles.conversationList}
-        style={{ display: 'flex' ,flexDirection: 'column' }}
-      >
+      <div className={styles.conversationList}>
         <Menu
-          style={{ background: "none", flex: 1 }}
-          inlineIndent={26}
+          style={{ background: "none", border: "none", flex: 1 }}
+          inlineIndent={20}
           mode="inline"
           inlineCollapsed={collapsed}
           items={items}
+          selectedKeys={selectedKey ? [selectedKey] : []}
           onClick={({ key }) => {
-            navigate(items.find((item) => item.key === key)?.path || '/');
+            navigate(items.find((item) => item.key === key)?.path || "/");
           }}
         />
-        <Button
-          type="text"
-          onClick={toggleCollapsed}
-          style={{ marginBottom: 16, width: collapsed ? 'auto' : 200 }}
-        >
-          {collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
-        </Button>
       </div>
+
+      <Button
+        type="text"
+        className={styles.collapseBtn}
+        onClick={() => setCollapsed(!collapsed)}
+        icon={collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
+        block={!collapsed}
+      >
+        {!collapsed && "收起"}
+      </Button>
     </div>
   );
 };
