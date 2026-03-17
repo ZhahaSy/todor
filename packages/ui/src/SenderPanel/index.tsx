@@ -113,15 +113,6 @@ const SenderPanel = ({ onSubmit, onCancel, sending }: SenderPanelProps) => {
     <>
       {contextHolder}
 
-      <div className={styles.modeBar}>
-        <Segmented
-          size="small"
-          options={MODE_OPTIONS}
-          value={chatMode}
-          onChange={(v) => setChatMode(v as ChatMode)}
-        />
-      </div>
-
       {voiceMode ? (
         <div className={styles.voiceBar}>
           <Tooltip title="切换到键盘输入">
@@ -170,6 +161,14 @@ const SenderPanel = ({ onSubmit, onCancel, sending }: SenderPanelProps) => {
           onSubmit={handleSubmit}
           onCancel={onCancel}
           placeholder="输入问题或使用技能"
+          prefix={
+            <Segmented
+              size="small"
+              options={MODE_OPTIONS}
+              value={chatMode}
+              onChange={(v) => setChatMode(v as ChatMode)}
+            />
+          }
           actions={(defaultActions) => (
             <>
               <Tooltip title="切换到语音输入">
