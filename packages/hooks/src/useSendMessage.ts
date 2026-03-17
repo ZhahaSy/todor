@@ -14,7 +14,7 @@ export const useSendMessage = (
       setLoading(false);
     }, 1000);
   };
-  const handleSubmit = async (value: string, mode: string = "chat") => {
+  const handleSubmit = async (value: string, mode: string = "chat", context?: string, deepDiveSessionId?: string) => {
     setLoading(true);
 
     if (loading) return;
@@ -22,7 +22,7 @@ export const useSendMessage = (
     try {
       await addMessage({ role: "local", content: value, date: new Date().toISOString(), todoId: "" });
 
-      const answer = await sendMessage({ input: value, mode });
+      const answer = await sendMessage({ input: value, mode, context, deepDiveSessionId });
 
       await addMessage({ role: "ai", content: answer, date: new Date().toISOString(), todoId: "" });
     } catch (error) {

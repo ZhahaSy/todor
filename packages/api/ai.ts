@@ -1,6 +1,6 @@
 import request from "@client/request";
 
-export const sendMessage = async (data: { input: string; mode?: string }): Promise<string> => {
+export const sendMessage = async (data: { input: string; mode?: string; context?: string; deepDiveSessionId?: string }): Promise<string> => {
     const res = await request.post<unknown, { output: string; intent: string; messageId?: string }>("/ai/message", data)
     return res.output
 }

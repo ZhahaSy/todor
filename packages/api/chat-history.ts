@@ -1,6 +1,6 @@
 import request from "@client/request";
 
-export const getChatHistory = async (params?: { limit?: number; offset?: number }) => {
+export const getChatHistory = async (params?: { limit?: number; offset?: number; sessionId?: string }) => {
   const data = await request.get("/chat-history", { params });
   return data as { list: unknown[]; total: number };
 };

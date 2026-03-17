@@ -37,10 +37,12 @@ export class ChatHistoryController {
     @Request() req,
     @Query('limit') limit?: string,
     @Query('offset') offset?: string,
+    @Query('sessionId') sessionId?: string,
   ) {
-    const name = req.user.name;
+    // 若前端传了 sessionId（深入模式），直接使用；否则使用用户名（主对话）
+    const resolvedSessionId = sessionId ?? req.user.name;
     const data = await this.chatService.findAll({
-      sessionId: name,
+      sessionId: resolvedSessionId,
       limit: limit ? parseInt(limit, 10) : 10,
       offset: offset ? parseInt(offset, 10) : 0,
     });

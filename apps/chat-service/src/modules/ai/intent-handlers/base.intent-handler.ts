@@ -218,6 +218,31 @@ export abstract class BaseIntentHandler implements IntentHandler {
     await redis.del(sessionId);
   }
 
+  /**
+   * Create memory with an explicit Redis session key
+   * 使用指定的 sessionId 创建 memory（适合需要自定义 key 隔离的场景）
+   */
+  protected createIntentMemoryWithKey(
+    redis: Redis,
+    _inputData: InputData,
+    sessionId: string,
+    options?: {
+      k?: number;
+      ttl?: number;
+      memoryKey?: string;
+      returnMessages?: boolean;
+    },
+  ): RedisChatMemory {
+    return new RedisChatMemory({
+      redis,
+      sessionId,
+      k: options?.k ?? 10,
+      ttl: options?.ttl ?? 3600 * 24 * 7,
+      memoryKey: options?.memoryKey ?? 'history',
+      returnMessages: options?.returnMessages ?? false,
+    });
+  }
+
   protected buildPrompt(systemMessage: string) {
     // Common context that should be included in all prompts
     const commonContext = `
