@@ -1,0 +1,128 @@
+import { StructuredTool } from '@langchain/core/tools';
+import { z } from 'zod';
+import { Logger } from '@nestjs/common';
+import { Skill } from '../../skill/entities/skill.entity';
+
+type JsonSchemaType = 'string' | 'number' | 'boolean';
+
+interface JsonSchemaProperty {
+  type: JsonSchemaType;
+  description?: string;
+}
+
+interface JsonSchema {
+  properties?: Record<string, JsonSchemaProperty>;
+  required?: string[];
+}
+
+/**
+ * 将 JSON Schema 转换为 Zod schema
+ * 支持 string / number / boolean 类型字段
+ */
+function jsonSchemaToZod(jsonSchema: JsonSchema): z.ZodObject<any> {
+  const shape: Record<string, z.ZodTypeAny> = {};
+  const required = new Set(jsonSchema.required ?? []);
+  const properties = jsonSchema.properties ?? {};
+
+  for (const [key, prop] of Object.entries(properties)) {
+    let field: z.ZodTypeAny;
+
+    switch (prop.type) {
+      case 'number':
+        field = z.number();
+        break;
+      case 'boolean':
+        field = z.boolean();
+        break;
+      default:
+        field = z.string();
+    }
+
+    if (prop.description) {
+      field = field.describe(prop.description);
+    }
+
+    if (!required.has(key)) {
+      field = field.optional();
+    }
+
+    shape[key] = field;
+  }
+
+  return z.object(shape);
+}
+
+/**
+ * 工厂函数：根据 Skill 记录生成 StructuredTool 实例
+ */
+export function createDynamicSkillTool(skill: Skill): StructuredTool {
+  const logger = new Logger(`DynamicSkillTool:${skill.name}`);
+
+  let parsedSchema: JsonSchema = {};
+  try {
+    parsedSchema = JSON.parse(skill.inputSchema || '{}') as JsonSchema;
+  } catch {
+    logger.warn(`inputSchema 解析失败，使用空 schema`);
+  }
+
+  const zodSchema = jsonSchemaToZod(parsedSchema);
+
+  // 动态创建 StructuredTool 子类
+  // @ts-expect-error: StructuredTool generic depth exceeds TS limit
+  class DynamicSkillTool extends StructuredTool {
+    name = skill.name;
+    description = skill.description;
+    schema = zodSchema;
+
+    protected async _call(input: z.infer<typeof zodSchema>): Promise<string> {
+      logger.log(`调用 skill: ${skill.name}, input=${JSON.stringify(input)}`);
+
+      switch (skill.executionType) {
+        case 'flow':
+          return 'flow execution not yet supported';
+
+        case 'single':
+        default:
+          return this._callWebhook(input);
+      }
+    }
+
+    private async _callWebhook(input: Record<string, any>): Promise<string> {
+      let config: {
+        url: string;
+        method?: string;
+        headers?: Record<string, string>;
+        timeout?: number;
+      };
+
+      try {
+        config = JSON.parse(skill.config) as typeof config;
+      } catch {
+        return `skill config 解析失败`;
+      }
+
+      try {
+        const method = (config.method ?? 'POST').toUpperCase();
+        const controller = new AbortController();
+        const timer = setTimeout(() => controller.abort(), config.timeout ?? 10000);
+        try {
+          const res = await fetch(config.url, {
+            method,
+            headers: { 'Content-Type': 'application/json', ...config.headers },
+            body: method !== 'GET' ? JSON.stringify(input) : undefined,
+            signal: controller.signal,
+          });
+          const data = await res.json();
+          return JSON.stringify(data);
+        } finally {
+          clearTimeout(timer);
+        }
+      } catch (err: any) {
+        logger.error(`webhook 调用失败: ${err.message}`);
+        return `调用失败：${err.message}`;
+      }
+    }
+  }
+
+  return new DynamicSkillTool();
+}

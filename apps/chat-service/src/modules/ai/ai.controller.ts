@@ -20,6 +20,7 @@ import { TodoService } from '../todo/todo.service';
 import { JwtAuthGuard } from '@/common/guard/jwt.auth';
 import { UserService } from '../user/user.service';
 import { AdvancedSchedulerService } from '../schedule/advanced-scheduler.service';
+import { ChatHistoryService } from '../chat-history/chat-history.service';
 
 @ApiTags('AI接口')
 @UseGuards(JwtAuthGuard)
@@ -30,6 +31,7 @@ export class AiController {
     private readonly todoService: TodoService,
     private readonly userService: UserService,
     private readonly scheduleService: AdvancedSchedulerService,
+    private readonly chatHistoryService: ChatHistoryService,
   ) {}
 
   @HttpCode(HttpStatus.OK)
@@ -55,8 +57,11 @@ export class AiController {
     const inputData: InputData = {
       input: sendMessageDto.input,
       userInfo: userInfo as any,
+      userId: req.user.userId,
       location: sendMessageDto.location,
       forceIntent: sendMessageDto.mode,
+      context: sendMessageDto.context,
+      deepDiveSessionId: sendMessageDto.deepDiveSessionId,
     };
 
     console.log(inputData);
@@ -102,6 +107,29 @@ export class AiController {
         messageId: message.id,
         intent: processedResult.intent,
       });
+    }
+
+    // deepdive 意图：把用户问题和 AI 回答持久化到 DB（独立 sessionId）
+    if (
+      processedResult.intent === 'deepdive' &&
+      sendMessageDto.deepDiveSessionId
+    ) {
+      const sessionId = `deepdive:${sendMessageDto.deepDiveSessionId}`;
+      const now = new Date().toISOString();
+      await Promise.all([
+        this.chatHistoryService.create({
+          content: sendMessageDto.input,
+          role: 'local',
+          date: now,
+          sessionId,
+        }),
+        this.chatHistoryService.create({
+          content: processedResult.output,
+          role: 'ai',
+          date: now,
+          sessionId,
+        }),
+      ]);
     }
 
     // 对于其他意图，直接返回结果

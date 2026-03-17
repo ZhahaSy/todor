@@ -18,6 +18,7 @@ import { UserModule } from './modules/user/user.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { MessageModule } from './modules/message/message.module';
 import { ScheduleModule } from './modules/schedule/schedule.module';
+import { SkillModule } from './modules/skill/skill.module';
 
 export const IS_DEV = process.env.RUNNING_ENV !== 'prod';
 @Module({
@@ -59,6 +60,7 @@ export const IS_DEV = process.env.RUNNING_ENV !== 'prod';
     AiModule,
     AuthModule,
     UserModule,
+    SkillModule,
   ],
   controllers: [AppController],
   providers: [AppService],

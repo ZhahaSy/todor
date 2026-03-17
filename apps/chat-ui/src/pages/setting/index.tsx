@@ -18,7 +18,9 @@ import {
   DatabaseOutlined,
   DownloadOutlined,
   DeleteOutlined,
+  ThunderboltOutlined,
 } from '@ant-design/icons';
+import SkillTab from './SkillTab';
 import useUserStore from '@/store/useUserStore';
 import { updateUserInfo, exportUserData } from '@client/api';
 import type { UpdateUserDto } from '@client/entities';
@@ -262,6 +264,17 @@ const Setting = () => {
         >
           <SecurityTab />
         </TabPane> */}
+        <TabPane
+          tab={
+            <span>
+              <ThunderboltOutlined />
+              自定义 Skill
+            </span>
+          }
+          key="skill"
+        >
+          <SkillTab />
+        </TabPane>
         <TabPane
           tab={
             <span>

@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, forwardRef, Inject } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { ChatPromptTemplate } from '@langchain/core/prompts';
 import { RunnableSequence } from '@langchain/core/runnables';
@@ -8,13 +8,18 @@ import zod from 'zod';
 import * as AsrSdk from 'tencentcloud-sdk-nodejs-asr';
 import { User } from '../user/entities/user.entity';
 import { AiModelProvider } from './ai-model.provider';
+import { SkillService } from '../skill/skill.service';
+import { createDynamicSkillTool } from './tools/dynamic-skill.tool';
 
 // 基础输入输出接口
 export interface InputData {
   input: string;
   userInfo: User;
+  userId?: string; // 用于加载用户 skill
   location?: { lat: number; lon: number };
   forceIntent?: string; // 前端强制指定意图，跳过 LLM 识别
+  context?: string; // 深入模式：主对话历史序列化字符串
+  deepDiveSessionId?: string; // 深入模式会话ID，用于隔离 Redis 记忆和 DB 存储
 }
 
 export interface IntentResult {
@@ -78,6 +83,8 @@ export class AiService {
   constructor(
     private aiModelProvider: AiModelProvider,
     private configService: ConfigService,
+    @Inject(forwardRef(() => SkillService))
+    private skillService: SkillService,
   ) {
     const promptBuilder = new PromptBuilder()
       .addPrompt('date', '当前时间：{date}', {
@@ -144,7 +151,24 @@ export class AiService {
   // 使用 Agent Executor 处理需要工具调用的请求
   async processWithAgent(inputData: InputData): Promise<ProcessedResult> {
     const model = this.aiModelProvider.getModel(0.7);
-    const tools = Array.from(this.tools.values());
+    const staticTools = Array.from(this.tools.values());
+
+    // 动态加载当前用户的 enabled skills
+    const userId = inputData.userId ?? inputData.userInfo?.id;
+    let dynamicTools: StructuredTool[] = [];
+    if (userId) {
+      try {
+        const skills = await this.skillService.findEnabled(userId);
+        dynamicTools = skills.map(createDynamicSkillTool);
+        if (dynamicTools.length > 0) {
+          this.logger.log(`加载用户 ${userId} 的 ${dynamicTools.length} 个 skill`);
+        }
+      } catch (err) {
+        this.logger.warn(`加载用户 skill 失败: ${err.message}`);
+      }
+    }
+
+    const tools = [...staticTools, ...dynamicTools];
 
     const locationInfo = inputData.location
       ? `用户当前位置：纬度 ${inputData.location.lat}，经度 ${inputData.location.lon}`
@@ -208,6 +232,20 @@ ${locationInfo}
     if (toolIntents.includes(intent) && this.tools.size > 0) {
       this.logger.log(`意图 "${intent}" 转交 Agent 处理`);
       return this.processWithAgent(inputData);
+    }
+
+    // 如果用户有 enabled skill，也走 agent 兜底（确保 skill 能被调用）
+    const userId = inputData.userId ?? inputData.userInfo?.id;
+    if (userId && !toolIntents.includes(intent)) {
+      try {
+        const userSkills = await this.skillService.findEnabled(userId);
+        if (userSkills.length > 0 && this.tools.size > 0) {
+          this.logger.log(`用户有 ${userSkills.length} 个 skill，转交 Agent 处理`);
+          return this.processWithAgent(inputData);
+        }
+      } catch {
+        // 忽略，继续正常流程
+      }
     }
 
     // 3. 获取对应的处理器
