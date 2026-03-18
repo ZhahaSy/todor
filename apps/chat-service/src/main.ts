@@ -61,7 +61,21 @@ async function bootstrap() {
 
   const port = process.env.PORT ?? 3000;
   app.enableShutdownHooks();
-  await app.listen(port);
-  console.log(`\x1b[32mApplication is running on port ${port}\x1b[0m`);
+
+  // watch 模式下旧进程刚被 kill，端口释放需要一点时间，最多重试 10 次（每次等 500ms）
+  for (let attempt = 1; attempt <= 10; attempt++) {
+    try {
+      await app.listen(port);
+      console.log(`\x1b[32mApplication is running on port ${port}\x1b[0m`);
+      break;
+    } catch (err: any) {
+      if (err.code === 'EADDRINUSE' && attempt < 10) {
+        console.log(`\x1b[33mPort ${port} busy, retrying (${attempt}/10)...\x1b[0m`);
+        await new Promise((r) => setTimeout(r, 500));
+      } else {
+        throw err;
+      }
+    }
+  }
 }
 bootstrap();
