@@ -11,6 +11,11 @@ import { useSendMessage } from "@client/hooks";
 const FastChat = () => {
   const [open, setOpen] = useState(false);
 
+  const handleClose = () => {
+    setOpen(false);
+    setContent("");
+  };
+
   const dragRef = useRef<FloatButtonElement>(null);
 
   const [position, setPosition] = useState<{
@@ -45,34 +50,27 @@ const FastChat = () => {
         onClick={() => {
           setOpen((preState) => !preState);
         }}
-        icon={null}
+        icon={<MessageFilled />}
         style={{
           width: 40,
           height: 40,
           ...position,
-          // 禁用拖拽回弹效果
           transition: "none",
           transform: "none",
         }}
         onDragEnd={onDrag}
-        description={<MessageFilled />}
       ></FloatButton>
       <Modal
         styles={{
           content: {
             background: "rgba(0,0,0,0)",
             boxShadow: "none",
-            height: "900px",
-            minWidth: "80%",
+            maxHeight: "80vh",
           },
         }}
         maskClosable
-        onClose={() => {
-          setOpen(false);
-        }}
-        onCancel={() => {
-          setOpen(false);
-        }}
+        onClose={handleClose}
+        onCancel={handleClose}
         open={open}
         centered
         closable={false}
