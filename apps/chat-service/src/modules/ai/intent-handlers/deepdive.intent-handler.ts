@@ -64,7 +64,7 @@ ${escapedHistory === '暂无历史对话' ? '（对话刚开始）' : escapedHis
 4. 对话历史中的"Human/AI"指的是本次深入对话，不是背景对话中的人物
 
 当前时间：${new Date().toLocaleString()}
-用户档案：姓名 {name}，年龄 {age}，性别 {gender}，兴趣 {hobby}`;
+用户档案：姓名 ${inputData.userInfo.name}，年龄 ${inputData.userInfo.age ?? '未知'}，性别 ${inputData.userInfo.gender ?? '未知'}，兴趣 ${inputData.userInfo.hobby ?? '未知'}`;
 
     const prompt = this.buildDeepDivePrompt(systemMessage);
 

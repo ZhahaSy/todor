@@ -1,4 +1,5 @@
 import { Bubble, BubbleProps, Welcome } from "@ant-design/x";
+import type { BubbleListRef } from "@ant-design/x/es/bubble/BubbleList";
 import { Spin } from "antd";
 import { useRef, useEffect, useCallback } from "react";
 
@@ -61,14 +62,14 @@ const ChatList = ({
   onLoadMore,
   onDeepDive,
 }: ChatListProps) => {
-  const scrollRef = useRef<HTMLDivElement>(null);
+  const listRef = useRef<BubbleListRef>(null);
   // 记录触顶加载前的 scrollHeight，加载后恢复滚动位置
   const prevScrollHeightRef = useRef(0);
   const prevScrollTopRef = useRef(0);
 
   // 触顶加载时保存滚动位置
   const handleScroll = useCallback(() => {
-    const el = scrollRef.current;
+    const el = listRef.current?.nativeElement;
     if (!el) return;
 
     if (el.scrollTop === 0 && hasMore && !loadingMore) {
@@ -80,7 +81,7 @@ const ChatList = ({
 
   // 加载完成后恢复滚动位置，避免跳屏
   useEffect(() => {
-    const el = scrollRef.current;
+    const el = listRef.current?.nativeElement;
     if (!el || loadingMore) return;
     if (prevScrollHeightRef.current > 0) {
       const diff = el.scrollHeight - prevScrollHeightRef.current;
@@ -92,11 +93,7 @@ const ChatList = ({
   return (
     <div className={styles.chatList}>
       {messages?.length ? (
-        <div
-          ref={scrollRef}
-          className={styles.scrollContainer}
-          onScroll={handleScroll}
-        >
+        <>
           {loadingMore && (
             <div className={styles.loadMoreTip}>
               <Spin size="small" />
@@ -106,6 +103,9 @@ const ChatList = ({
             <div className={styles.noMoreTip}>没有更早的记录了</div>
           )}
           <Bubble.List
+            ref={listRef}
+            className={styles.bubbleList}
+            onScroll={handleScroll}
             items={messages.map((message) => ({
               ...message,
               messageRender: renderMarkdown,
@@ -121,7 +121,7 @@ const ChatList = ({
             roles={roles}
             autoScroll
           />
-        </div>
+        </>
       ) : (
         <Welcome
           title="你好，我是你的私人助手。"

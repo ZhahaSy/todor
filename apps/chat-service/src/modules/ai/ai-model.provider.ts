@@ -19,8 +19,8 @@ export class AiModelProvider {
    * 初始化 AI 模型
    */
   private initializeModel(): void {
-    const apiKey = this.configService.get<string>('DEEPSEEK_API_KEY');
-    const model = this.configService.get<string>('AI_MODEL', 'deepseek-chat');
+    const { apiKey, model, timeout, baseURL, configuration } =
+      this.getModelConfig();
 
     if (!apiKey) {
       throw new Error('DEEPSEEK_API_KEY is not configured');
@@ -30,9 +30,33 @@ export class AiModelProvider {
       apiKey,
       model,
       temperature: 0.7,
+      timeout,
+      configuration,
     });
 
-    this.logger.log('AI 模型初始化成功');
+    this.logger.log(`AI 模型初始化成功: model=${model}, baseURL=${baseURL}`);
+  }
+
+  private getModelConfig() {
+    const apiKey = this.configService.get<string>('DEEPSEEK_API_KEY');
+    const model = this.configService.get<string>('AI_MODEL', 'deepseek-chat');
+    const baseURL =
+      this.configService.get<string>('DEEPSEEK_BASE_URL') ||
+      this.configService.get<string>('OPENAI_BASE_URL') ||
+      'https://api.deepseek.com';
+    const timeout = Number(
+      this.configService.get<string>('AI_REQUEST_TIMEOUT_MS', '60000'),
+    );
+
+    return {
+      apiKey,
+      model,
+      timeout,
+      baseURL,
+      configuration: {
+        baseURL,
+      },
+    };
   }
 
   /**
@@ -44,10 +68,13 @@ export class AiModelProvider {
     // 如果指定了不同的温度参数，创建新实例
     if (temperature !== undefined && temperature !== 0.7) {
       this.logger.debug(`创建临时 AI 模型实例，temperature=${temperature}`);
+      const { apiKey, model, timeout, configuration } = this.getModelConfig();
       return new ChatDeepSeek({
-        apiKey: this.configService.get<string>('DEEPSEEK_API_KEY'),
-        model: this.configService.get<string>('AI_MODEL', 'deepseek-chat'),
+        apiKey,
+        model,
         temperature,
+        timeout,
+        configuration,
       });
     }
 
@@ -65,12 +92,15 @@ export class AiModelProvider {
     maxTokens?: number;
     topP?: number;
   }): ChatDeepSeek {
+    const { apiKey, model, timeout, configuration } = this.getModelConfig();
     return new ChatDeepSeek({
-      apiKey: this.configService.get<string>('DEEPSEEK_API_KEY'),
-      model: this.configService.get<string>('AI_MODEL', 'deepseek-chat'),
+      apiKey,
+      model,
       temperature: options.temperature ?? 0.7,
       maxTokens: options.maxTokens,
       topP: options.topP,
+      timeout,
+      configuration,
     });
   }
 }

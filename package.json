@@ -9,6 +9,7 @@
     "build:cm": "turbo run build --filter=chat-ui-mobile...",
     "start": "turbo run start --parallel",
     "start:c": "turbo run dev --filter=chat-ui...",
+    "prestart:s": "pkill -f 'chat-service.*nest start' 2>/dev/null; pkill -f 'chat-service.*dist/main' 2>/dev/null; true",
     "start:s": "turbo run start --filter=chat-service...",
     "start:cm": "turbo run start --filter=chat-ui-mobile...",
 

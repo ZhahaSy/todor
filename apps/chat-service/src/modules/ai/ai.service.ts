@@ -129,6 +129,18 @@ export class AiService {
     ]);
   }
 
+  private formatModelError(error: unknown): string {
+    const err = error as any;
+    const message = err?.message || 'Unknown AI request error';
+    const causeMessage =
+      err?.cause?.message ||
+      err?.cause?.code ||
+      err?.error?.message ||
+      err?.response?.data?.error?.message;
+
+    return causeMessage ? `${message}; cause=${causeMessage}` : message;
+  }
+
   // 注册意图处理器
   registerIntentHandler(handler: IntentHandler): void {
     this.intentHandlers.set(handler.getIntent(), handler);
@@ -143,9 +155,17 @@ export class AiService {
   // 仅负责识别意图
   async recognizeIntent(inputData: InputData): Promise<string> {
     this.logger.log('[recognizeIntent] 开始识别, input=' + inputData.input);
-    const result = await this.intentRecognitionChain.invoke(inputData);
-    this.logger.log('[recognizeIntent] 识别结果: ' + JSON.stringify(result));
-    return result.intent;
+    try {
+      const result = await this.intentRecognitionChain.invoke(inputData);
+      this.logger.log('[recognizeIntent] 识别结果: ' + JSON.stringify(result));
+      return result.intent;
+    } catch (error) {
+      this.logger.error(
+        `[recognizeIntent] 模型调用失败: ${this.formatModelError(error)}`,
+        (error as any)?.stack,
+      );
+      throw error;
+    }
   }
 
   // 使用 Agent Executor 处理需要工具调用的请求
@@ -205,7 +225,16 @@ ${locationInfo}
       maxIterations: 5,
     });
 
-    const result = await executor.invoke({ input: inputData.input });
+    let result: any;
+    try {
+      result = await executor.invoke({ input: inputData.input });
+    } catch (error) {
+      this.logger.error(
+        `[processWithAgent] Agent 调用失败: ${this.formatModelError(error)}`,
+        (error as any)?.stack,
+      );
+      throw error;
+    }
 
     const intermediateSteps = result.intermediateSteps as Array<{
       action: { tool: string };
@@ -222,7 +251,8 @@ ${locationInfo}
   // 主处理方法
   async process(inputData: InputData): Promise<ProcessedResult> {
     // 1. 识别意图（前端强制指定时跳过 LLM 识别）
-    const intent = inputData.forceIntent ?? await this.recognizeIntent(inputData);
+    const intent =
+      inputData.forceIntent ?? (await this.recognizeIntent(inputData));
     console.log(intent);
 
     this.logger.log(`识别到的意图: ${intent}`);

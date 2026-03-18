@@ -75,11 +75,13 @@ const DeepDivePanel = ({
       )}
 
       <div className={styles.chatArea}>
-        <ChatList
+        <div style={{height: '100%', overflow: 'auto'}}>
+          <ChatList
           messages={messages}
           loading={!!sending}
           onRetry={() => {}}
         />
+        </div>
       </div>
 
       <div className={styles.senderWrap}>
