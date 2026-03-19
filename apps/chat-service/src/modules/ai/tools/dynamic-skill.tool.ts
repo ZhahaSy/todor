@@ -103,13 +103,25 @@ export function createDynamicSkillTool(skill: Skill): StructuredTool {
 
       try {
         const method = (config.method ?? 'POST').toUpperCase();
+
+        // 替换 URL 中的路径参数 {param}，并从 body 中移除已替换的字段
+        let url = config.url;
+        const bodyInput = { ...input };
+        for (const [key, val] of Object.entries(input)) {
+          const placeholder = `{${key}}`;
+          if (url.includes(placeholder)) {
+            url = url.split(placeholder).join(encodeURIComponent(String(val)));
+            delete bodyInput[key];
+          }
+        }
+
         const controller = new AbortController();
         const timer = setTimeout(() => controller.abort(), config.timeout ?? 10000);
         try {
-          const res = await fetch(config.url, {
+          const res = await fetch(url, {
             method,
             headers: { 'Content-Type': 'application/json', ...config.headers },
-            body: method !== 'GET' ? JSON.stringify(input) : undefined,
+            body: method !== 'GET' ? JSON.stringify(bodyInput) : undefined,
             signal: controller.signal,
           });
           const data = await res.json();

@@ -15,6 +15,8 @@ import {
   Tooltip,
   Typography,
   Collapse,
+  Radio,
+  Alert,
 } from 'antd';
 import {
   PlusOutlined,
@@ -23,6 +25,7 @@ import {
   ThunderboltOutlined,
   PlayCircleOutlined,
   ApiOutlined,
+  CloudDownloadOutlined,
 } from '@ant-design/icons';
 import {
   getSkillList,
@@ -30,6 +33,8 @@ import {
   updateSkill,
   deleteSkill,
   testSkill,
+  previewOpenApiSkills,
+  batchCreateSkills,
   type SkillItem,
   type CreateSkillPayload,
 } from '@client/api';
@@ -87,6 +92,17 @@ const SkillTab = () => {
   const [testing, setTesting] = useState(false);
   const [form] = Form.useForm<SkillFormValues>();
 
+  // OpenAPI 导入 Modal 状态
+  const [importModalOpen, setImportModalOpen] = useState(false);
+  const [importStep, setImportStep] = useState<1 | 2>(1);
+  const [importMode, setImportMode] = useState<'url' | 'content'>('url');
+  const [importUrl, setImportUrl] = useState('');
+  const [importContent, setImportContent] = useState('');
+  const [parsing, setParsing] = useState(false);
+  const [previewSkills, setPreviewSkills] = useState<CreateSkillPayload[]>([]);
+  const [selectedSkillNames, setSelectedSkillNames] = useState<string[]>([]);
+  const [importing, setImporting] = useState(false);
+
   const fetchSkills = async () => {
     setLoading(true);
     try {
@@ -100,6 +116,62 @@ const SkillTab = () => {
   };
 
   useEffect(() => { fetchSkills(); }, []);
+
+  const openImportModal = () => {
+    setImportStep(1);
+    setImportMode('url');
+    setImportUrl('');
+    setImportContent('');
+    setPreviewSkills([]);
+    setSelectedSkillNames([]);
+    setImportModalOpen(true);
+  };
+
+  const handleParse = async () => {
+    if (importMode === 'url' && !importUrl.trim()) {
+      message.error('请输入 OpenAPI URL');
+      return;
+    }
+    if (importMode === 'content' && !importContent.trim()) {
+      message.error('请粘贴 OpenAPI 内容');
+      return;
+    }
+    setParsing(true);
+    try {
+      const payload = importMode === 'url'
+        ? { specUrl: importUrl.trim() }
+        : { specContent: importContent.trim() };
+      const skills = await previewOpenApiSkills(payload);
+      setPreviewSkills(skills);
+      setSelectedSkillNames(skills.map((s) => s.name));
+      setImportStep(2);
+    } catch {
+      message.error('解析失败，请检查 URL 或内容格式');
+    } finally {
+      setParsing(false);
+    }
+  };
+
+  const handleImport = async () => {
+    const selected = previewSkills.filter((s) => selectedSkillNames.includes(s.name));
+    if (selected.length === 0) {
+      message.error('请至少选择一个 Skill');
+      return;
+    }
+    setImporting(true);
+    try {
+      const { created, skipped } = await batchCreateSkills(selected);
+      const msgs: string[] = [`成功导入 ${created.length} 个 Skill`];
+      if (skipped.length) msgs.push(`跳过 ${skipped.length} 个重名 Skill`);
+      message.success(msgs.join('，'));
+      setImportModalOpen(false);
+      fetchSkills();
+    } catch {
+      message.error('导入失败，请重试');
+    } finally {
+      setImporting(false);
+    }
+  };
 
   const openCreate = () => {
     setEditingSkill(null);
@@ -300,9 +372,14 @@ const SkillTab = () => {
     <Card
       title={<><ThunderboltOutlined /> 自定义 Skill</>}
       extra={
-        <Button type="primary" icon={<PlusOutlined />} onClick={openCreate}>
-          新建 Skill
-        </Button>
+        <Space>
+          <Button icon={<CloudDownloadOutlined />} onClick={openImportModal}>
+            从 OpenAPI 导入
+          </Button>
+          <Button type="primary" icon={<PlusOutlined />} onClick={openCreate}>
+            新建 Skill
+          </Button>
+        </Space>
       }
     >
       <Paragraph type="secondary" style={{ marginBottom: 16 }}>
@@ -426,6 +503,125 @@ const SkillTab = () => {
             <Switch />
           </Form.Item>
         </Form>
+      </Modal>
+
+      {/* OpenAPI 导入 Modal */}
+      <Modal
+        title="从 OpenAPI 导入 Skill"
+        open={importModalOpen}
+        onCancel={() => setImportModalOpen(false)}
+        width={700}
+        destroyOnClose
+        footer={
+          importStep === 1 ? (
+            <Space>
+              <Button onClick={() => setImportModalOpen(false)}>取消</Button>
+              <Button type="primary" loading={parsing} onClick={handleParse}>
+                解析
+              </Button>
+            </Space>
+          ) : (
+            <Space>
+              <Button onClick={() => setImportStep(1)}>上一步</Button>
+              <Button onClick={() => setImportModalOpen(false)}>取消</Button>
+              <Button type="primary" loading={importing} onClick={handleImport}>
+                确认导入（{selectedSkillNames.length} 个）
+              </Button>
+            </Space>
+          )
+        }
+      >
+        {importStep === 1 && (
+          <>
+            <Radio.Group
+              value={importMode}
+              onChange={(e) => setImportMode(e.target.value as 'url' | 'content')}
+              style={{ marginBottom: 16 }}
+            >
+              <Radio.Button value="url">URL</Radio.Button>
+              <Radio.Button value="content">粘贴内容</Radio.Button>
+            </Radio.Group>
+            {importMode === 'url' ? (
+              <Input
+                placeholder="https://petstore3.swagger.io/api/v3/openapi.json"
+                value={importUrl}
+                onChange={(e) => setImportUrl(e.target.value)}
+                allowClear
+              />
+            ) : (
+              <TextArea
+                rows={12}
+                placeholder="粘贴 OpenAPI JSON 或 YAML 内容..."
+                value={importContent}
+                onChange={(e) => setImportContent(e.target.value)}
+                style={{ fontFamily: 'monospace', fontSize: 12 }}
+              />
+            )}
+          </>
+        )}
+        {importStep === 2 && (
+          <>
+            <Alert
+              message={`共解析出 ${previewSkills.length} 个 Skill，请勾选需要导入的项`}
+              type="info"
+              showIcon
+              style={{ marginBottom: 12 }}
+            />
+            <Table<CreateSkillPayload>
+              rowKey="name"
+              dataSource={previewSkills}
+              size="small"
+              pagination={false}
+              scroll={{ y: 360 }}
+              rowSelection={{
+                selectedRowKeys: selectedSkillNames,
+                onChange: (keys) => setSelectedSkillNames(keys as string[]),
+              }}
+              columns={[
+                {
+                  title: 'Tool 名称',
+                  dataIndex: 'name',
+                  key: 'name',
+                  width: 180,
+                  render: (v: string) => <Text code style={{ fontSize: 11 }}>{v}</Text>,
+                },
+                {
+                  title: '展示名',
+                  dataIndex: 'displayName',
+                  key: 'displayName',
+                  width: 140,
+                },
+                {
+                  title: '描述',
+                  dataIndex: 'description',
+                  key: 'description',
+                  render: (v: string) => (
+                    <Paragraph ellipsis={{ rows: 1, tooltip: v }} style={{ marginBottom: 0 }}>
+                      {v}
+                    </Paragraph>
+                  ),
+                },
+                {
+                  title: 'URL',
+                  key: 'url',
+                  width: 200,
+                  render: (_: unknown, record: CreateSkillPayload) => {
+                    try {
+                      const c = JSON.parse(record.config) as { url: string; method: string };
+                      return (
+                        <Text type="secondary" style={{ fontSize: 11 }}>
+                          {c.method} {c.url}
+                        </Text>
+                      );
+                    } catch {
+                      return null;
+                    }
+                  },
+                },
+              ]}
+            />
+          </>
+        )}
       </Modal>
 
       {/* 测试 Modal */}

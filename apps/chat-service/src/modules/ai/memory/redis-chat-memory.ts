@@ -16,6 +16,7 @@ export interface RedisChatMemoryInput extends BaseChatMemoryInput {
   memoryKey?: string;
   k?: number; // Number of messages to keep in the window
   ttl?: number; // Time to live in seconds
+  messageExpiry?: number; // Max age per message in seconds; older messages are ignored on load
 }
 
 /**
@@ -28,6 +29,7 @@ export class RedisChatMemory extends BaseChatMemory {
   private memoryKey: string;
   private k: number;
   private ttl?: number;
+  private messageExpiry?: number;
 
   constructor(fields: RedisChatMemoryInput) {
     super({
@@ -40,6 +42,7 @@ export class RedisChatMemory extends BaseChatMemory {
     this.memoryKey = fields.memoryKey ?? 'chat_history';
     this.k = fields.k ?? 10; // Default to last 10 messages
     this.ttl = fields.ttl; // Optional TTL
+    this.messageExpiry = fields.messageExpiry; // Optional per-message max age
   }
 
   /**
@@ -64,15 +67,24 @@ export class RedisChatMemory extends BaseChatMemory {
     const key = this.getRedisKey();
     const messagesJson = await this.redis.lrange(key, -this.k, -1);
 
-    const messages: BaseMessage[] = messagesJson.map((msg) => {
-      const parsed = JSON.parse(msg);
-      if (parsed.type === 'human') {
+    const expiryMs = this.messageExpiry ? this.messageExpiry * 1000 : null;
+    const now = Date.now();
+
+    const messages: BaseMessage[] = messagesJson
+      .map((msg) => {
+        const parsed = JSON.parse(msg);
+        // Filter out messages older than messageExpiry (if set)
+        if (expiryMs && parsed.ts && now - parsed.ts > expiryMs) {
+          return null;
+        }
+        if (parsed.type === 'human') {
+          return new HumanMessage(parsed.content);
+        } else if (parsed.type === 'ai') {
+          return new AIMessage(parsed.content);
+        }
         return new HumanMessage(parsed.content);
-      } else if (parsed.type === 'ai') {
-        return new AIMessage(parsed.content);
-      }
-      return new HumanMessage(parsed.content);
-    });
+      })
+      .filter((msg): msg is BaseMessage => msg !== null);
 
     if (this.returnMessages) {
       return {
@@ -105,10 +117,13 @@ export class RedisChatMemory extends BaseChatMemory {
       ? outputValues[this.outputKey]
       : Object.values(outputValues)[0];
 
+    const ts = Date.now();
+
     // Save human message
     const humanMessage = JSON.stringify({
       type: 'human',
       content: input,
+      ts,
     });
     await this.redis.rpush(key, humanMessage);
 
@@ -116,6 +131,7 @@ export class RedisChatMemory extends BaseChatMemory {
     const aiMessage = JSON.stringify({
       type: 'ai',
       content: output,
+      ts,
     });
     await this.redis.rpush(key, aiMessage);
 

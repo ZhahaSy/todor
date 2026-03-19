@@ -17,6 +17,7 @@ import { ResOp } from '@/common/model/response.model';
 import { SkillService } from './skill.service';
 import { CreateSkillDto } from './dto/create-skill.dto';
 import { UpdateSkillDto } from './dto/update-skill.dto';
+import { ImportOpenApiDto } from './dto/import-openapi.dto';
 
 @ApiTags('Skill')
 @UseGuards(JwtAuthGuard)
@@ -36,6 +37,27 @@ export class SkillController {
   async create(@Body() dto: CreateSkillDto, @Request() req) {
     const skill = await this.skillService.create(dto, req.user.userId);
     return ResOp.success(skill);
+  }
+
+  @Get('hub')
+  @ApiOperation({ summary: '获取官方技能库列表' })
+  async findHubSkills(@Request() req) {
+    const items = await this.skillService.findHubSkills(req.user.userId);
+    return ResOp.success(items);
+  }
+
+  @Post('hub/:hubId/install')
+  @ApiOperation({ summary: '安装官方技能' })
+  async installHubSkill(@Param('hubId') hubId: string, @Request() req) {
+    const skill = await this.skillService.installHubSkill(hubId, req.user.userId);
+    return ResOp.success(skill);
+  }
+
+  @Delete('hub/:hubId/uninstall')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @ApiOperation({ summary: '卸载官方技能' })
+  async uninstallHubSkill(@Param('hubId') hubId: string, @Request() req) {
+    await this.skillService.uninstallHubSkill(hubId, req.user.userId);
   }
 
   @Get(':id')
@@ -70,7 +92,25 @@ export class SkillController {
     @Body() input: Record<string, any>,
     @Request() req,
   ) {
-    const result = await this.skillService.testSkill(id, input, req.user.userId);
+    const result = await this.skillService.testSkill(
+      id,
+      input,
+      req.user.userId,
+    );
+    return ResOp.success(result);
+  }
+
+  @Post('import/openapi/preview')
+  @ApiOperation({ summary: '预览 OpenAPI 导入结果（不写 DB）' })
+  async previewOpenApi(@Body() dto: ImportOpenApiDto, @Request() req) {
+    const skills = await this.skillService.previewOpenApi(dto, req.user.userId);
+    return ResOp.success(skills);
+  }
+
+  @Post('batch')
+  @ApiOperation({ summary: '批量创建 Skill' })
+  async batchCreate(@Body() dtos: CreateSkillDto[], @Request() req) {
+    const result = await this.skillService.batchCreate(dtos, req.user.userId);
     return ResOp.success(result);
   }
 }

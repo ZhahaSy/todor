@@ -8,6 +8,7 @@ import {
   SettingOutlined,
   BranchesOutlined,
   PlusOutlined,
+  AppstoreOutlined,
 } from "@ant-design/icons";
 import { Button, Menu, Tooltip } from "antd";
 import { useState, useEffect } from "react";
@@ -58,6 +59,7 @@ const Sidebar = () => {
       ],
     },
     { label: "My Todo", icon: <ScheduleOutlined />, key: "myTodo" },
+    { label: "技能库", icon: <AppstoreOutlined />, key: "skillHub" },
     { label: "Setting", icon: <SettingOutlined />, key: "setting" },
   ];
 
@@ -65,6 +67,7 @@ const Sidebar = () => {
   const getSelectedKey = () => {
     const path = location.pathname;
     if (path.startsWith("/todo")) return "myTodo";
+    if (path.startsWith("/skill-hub")) return "skillHub";
     if (path.startsWith("/setting")) return "setting";
     if (path.startsWith("/chat")) {
       if (activeSessionId) return `deepdive-${activeSessionId}`;
@@ -75,6 +78,7 @@ const Sidebar = () => {
 
   const handleClick = ({ key }: { key: string }) => {
     if (key === "myTodo") return navigate("/todo");
+    if (key === "skillHub") return navigate("/skill-hub");
     if (key === "setting") return navigate("/setting");
     if (key === "chat-main") return navigate("/chat");
     if (key === "deepdive-new") return navigate("/chat?new=1");

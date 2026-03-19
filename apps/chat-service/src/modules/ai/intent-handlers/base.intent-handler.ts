@@ -41,6 +41,7 @@ export abstract class BaseIntentHandler implements IntentHandler {
     options?: {
       k?: number;
       ttl?: number;
+      messageExpiry?: number;
       memoryKey?: string;
       returnMessages?: boolean;
     },
@@ -49,7 +50,8 @@ export abstract class BaseIntentHandler implements IntentHandler {
       redis,
       sessionId: `user:${inputData.userInfo.id}:global`,
       k: options?.k ?? 10,
-      ttl: options?.ttl ?? 3600 * 24 * 7, // 7 days default
+      ttl: options?.ttl ?? 3600 * 24 * 7, // 7 days key TTL
+      messageExpiry: options?.messageExpiry ?? 3600 * 2, // 2 hours per-message expiry
       memoryKey: options?.memoryKey ?? 'history',
       returnMessages: options?.returnMessages ?? false,
     });
@@ -97,6 +99,7 @@ export abstract class BaseIntentHandler implements IntentHandler {
     options?: {
       k?: number;
       ttl?: number;
+      messageExpiry?: number;
       memoryKey?: string;
       returnMessages?: boolean;
       scope?: 'global' | 'intent'; // 允许临时覆盖策略

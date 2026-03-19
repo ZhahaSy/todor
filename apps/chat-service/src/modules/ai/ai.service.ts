@@ -197,12 +197,12 @@ export class AiService {
     const agentPrompt = ChatPromptTemplate.fromMessages([
       [
         'system',
-        `你是 Todor，一个专业的 AI 私人助手。
+        `你是 Todor，一个专业的 AI 私人助手，能与用户进行任何话题的自然对话。
 当前时间：${new Date().toLocaleString()}
 用户信息：姓名 ${inputData.userInfo.name}，邮箱 ${inputData.userInfo.email}
 ${locationInfo}
 
-你可以使用工具来完成用户的请求。请根据用户需求选择合适的工具，并在必要时组合多个工具完成任务。
+你拥有一些工具，但工具只在用户明确需要时才使用。对于聊天、讲故事、问答、情感支持等普通对话请求，请直接用自然语言回答，不要调用任何工具。
 如果需要用户邮箱，请使用：${inputData.userInfo.email}
 如果需要用户名，请使用：${inputData.userInfo.name}`,
       ],

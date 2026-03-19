@@ -4,6 +4,7 @@ import Home from "@/pages/chat";
 import {loginPage as Login, SignIn} from "@client/ui";
 import Todo from "@/pages/todo";
 import Setting from "@/pages/setting";
+import SkillHubPage from "@/pages/skill-hub";
 
 type RouterType = ReturnType<typeof createBrowserRouter>;
 
@@ -29,7 +30,11 @@ const routes: RouteObject[] = [
             {
                 path: '/setting',
                 element: <Setting />,
-            }
+            },
+            {
+                path: '/skill-hub',
+                element: <SkillHubPage />,
+            },
 
         ]
     },

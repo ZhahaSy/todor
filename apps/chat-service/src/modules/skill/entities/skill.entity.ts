@@ -38,6 +38,12 @@ export class Skill {
   @Column({ default: true })
   enabled: boolean;
 
+  @Column({ default: false })
+  isHubSkill: boolean;
+
+  @Column({ nullable: true, type: 'text' })
+  hubSkillId: string | null;
+
   @Column()
   creatorId: string;
 

@@ -53,3 +53,42 @@ export const testSkill = async (id: string, input: Record<string, unknown>): Pro
   const data = await request.post(`/skill/${id}/test`, input);
   return data;
 };
+
+export const previewOpenApiSkills = async (payload: {
+  specUrl?: string;
+  specContent?: string;
+}): Promise<CreateSkillPayload[]> => {
+  const data = await request.post<unknown, CreateSkillPayload[]>('/skill/import/openapi/preview', payload);
+  return data;
+};
+
+export const batchCreateSkills = async (
+  skills: CreateSkillPayload[],
+): Promise<{ created: SkillItem[]; skipped: string[] }> => {
+  const data = await request.post<unknown, { created: SkillItem[]; skipped: string[] }>('/skill/batch', skills);
+  return data;
+};
+
+export interface HubSkillItem {
+  id: string;
+  name: string;
+  displayName: string;
+  description: string;
+  category: string;
+  tags: string[];
+  installedId: string | null;
+}
+
+export const getHubSkillList = async (): Promise<HubSkillItem[]> => {
+  const data = await request.get<HubSkillItem[]>('/skill/hub');
+  return data as unknown as HubSkillItem[];
+};
+
+export const installHubSkill = async (hubId: string): Promise<SkillItem> => {
+  const data = await request.post<unknown, SkillItem>(`/skill/hub/${hubId}/install`, {});
+  return data;
+};
+
+export const uninstallHubSkill = async (hubId: string): Promise<void> => {
+  await request.delete(`/skill/hub/${hubId}/uninstall`);
+};
