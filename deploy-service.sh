@@ -64,7 +64,7 @@ if ! $SKIP_BUILD; then
   fi
   pnpm install                        # 安装全部依赖（含 devDependencies，构建需要）
   cd "$SERVICE_DIR"
-  pnpm build
+  pnpm build:s
   info "构建完成"
 else
   warn "跳过构建"
