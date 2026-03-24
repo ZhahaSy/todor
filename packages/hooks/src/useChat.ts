@@ -109,7 +109,7 @@ export const useChat = (): ReturnType => {
     } finally {
       setLoadingMore(false);
     }
-  }, [loadingMore, hasMore, messages.length]);
+  }, [loadingMore, hasMore, messages?.length]);
 
   const addMessage = useCallback(async (
     { role, content, date, todoId }: HistRecordItem
