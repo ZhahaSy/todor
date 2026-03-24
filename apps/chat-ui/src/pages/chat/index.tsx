@@ -49,13 +49,6 @@ const ChatPage: React.FC = () => {
     navigate(`/chat?session=${sid}`);
   }, [messages, deepDive, navigate]);
 
-  const handleDeepDiveSubmit = useCallback(
-    (value: string) => {
-      deepDive.submit(value, contextRef.current, deepDive.sessionId || sessionParam || "");
-    },
-    [deepDive, sessionParam]
-  );
-
   const handleDeepDiveBack = useCallback(() => {
     deepDive.reset();
     navigate("/chat");

@@ -1,0 +1,879 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Todor - 智能AI待办助手</title>
+  <!-- Tailwind CSS v3 -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Font Awesome -->
+  <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: '#1890ff',
+            secondary: '#52c41a',
+            accent: '#f5222d',
+            neutral: '#1f2329',
+            'neutral-light': '#4e5969',
+            'neutral-lighter': '#8c8c8c',
+            'bg-light': '#f5f5f5',
+            'bg-white': '#ffffff',
+          },
+          fontFamily: {
+            inter: ['Inter', 'sans-serif'],
+          },
+          boxShadow: {
+            'card': '0 4px 20px rgba(0, 0, 0, 0.08)',
+            'card-hover': '0 8px 30px rgba(0, 0, 0, 0.12)',
+          },
+        },
+      }
+    }
+  </script>
+  <style type="text/tailwindcss">
+    @layer utilities {
+      .content-auto {
+        content-visibility: auto;
+      }
+      .text-shadow {
+        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      }
+      .bg-gradient-primary {
+        background: linear-gradient(135deg, #1890ff 0%, #36cfc9 100%);
+      }
+      .bg-gradient-secondary {
+        background: linear-gradient(135deg, #52c41a 0%, #73d13d 100%);
+      }
+      .animate-float {
+        animation: float 6s ease-in-out infinite;
+      }
+      @keyframes float {
+        0% { transform: translateY(0px); }
+        50% { transform: translateY(-20px); }
+        100% { transform: translateY(0px); }
+      }
+      .scrollbar-hide::-webkit-scrollbar {
+        display: none;
+      }
+      .scrollbar-hide {
+        -ms-overflow-style: none;
+        scrollbar-width: none;
+      }
+    }
+  </style>
+</head>
+<body class="font-inter bg-bg-light text-neutral">
+  <!-- 导航栏 -->
+  <header class="fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-sm shadow-sm transition-all duration-300">
+    <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex items-center justify-between h-16">
+        <div class="flex items-center">
+          <a href="#" class="flex items-center">
+            <div class="text-primary text-2xl font-bold">Todor</div>
+          </a>
+          <nav class="hidden md:ml-10 md:flex md:space-x-8">
+            <a href="#features" class="text-neutral-light hover:text-primary px-3 py-2 text-sm font-medium transition-colors">功能</a>
+            <a href="#advantages" class="text-neutral-light hover:text-primary px-3 py-2 text-sm font-medium transition-colors">优势</a>
+            <a href="#pricing" class="text-neutral-light hover:text-primary px-3 py-2 text-sm font-medium transition-colors">定价</a>
+            <a href="#roadmap" class="text-neutral-light hover:text-primary px-3 py-2 text-sm font-medium transition-colors">路线图</a>
+          </nav>
+        </div>
+        <div class="hidden md:flex items-center space-x-4">
+          <a href="#" class="text-primary hover:text-primary/80 px-4 py-2 text-sm font-medium transition-colors">登录</a>
+          <a href="#" class="bg-primary hover:bg-primary/90 text-white px-4 py-2 text-sm font-medium rounded-md transition-colors">注册</a>
+        </div>
+        <div class="md:hidden flex items-center">
+          <button type="button" class="text-neutral-light hover:text-primary">
+            <i class="fa fa-bars text-xl"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Hero 区域 -->
+  <section class="pt-32 pb-20 md:pt-40 md:pb-28 bg-gradient-to-br from-blue-50 to-cyan-50">
+    <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex flex-col md:flex-row items-center justify-between">
+        <div class="md:w-1/2 mb-10 md:mb-0">
+          <h1 class="text-[clamp(2.5rem,5vw,4rem)] font-bold leading-tight text-neutral mb-6">
+            和 Todor 聊聊天，<br>
+            <span class="text-primary">任务就完成了</span>
+          </h1>
+          <p class="text-lg text-neutral-light mb-8 max-w-lg">
+            用对话取代表单，让任务管理像聊天一样简单。Todor 是你专属的 AI 智能助手，理解你的意图，记住你的上下文，帮你轻松管理每一天。
+          </p>
+          <div class="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4">
+            <a href="#" class="bg-primary hover:bg-primary/90 text-white px-6 py-3 rounded-md font-medium transition-all transform hover:scale-105">
+              开始使用
+            </a>
+            <a href="#features" class="border border-primary text-primary hover:bg-primary/5 px-6 py-3 rounded-md font-medium transition-colors">
+              了解更多
+            </a>
+          </div>
+          <div class="mt-10 flex items-center space-x-6">
+            <div class="flex -space-x-2">
+              <img src="https://picsum.photos/id/1001/40/40" alt="用户头像" class="w-10 h-10 rounded-full border-2 border-white">
+              <img src="https://picsum.photos/id/1002/40/40" alt="用户头像" class="w-10 h-10 rounded-full border-2 border-white">
+              <img src="https://picsum.photos/id/1003/40/40" alt="用户头像" class="w-10 h-10 rounded-full border-2 border-white">
+              <div class="w-10 h-10 rounded-full bg-primary/10 border-2 border-white flex items-center justify-center text-primary font-medium">
+                10k+
+              </div>
+            </div>
+            <div class="text-neutral-light text-sm">
+              已有 10,000+ 用户选择 Todor
+            </div>
+          </div>
+        </div>
+        <div class="md:w-1/2">
+          <div class="relative">
+            <div class="absolute -top-6 -left-6 w-24 h-24 bg-primary/10 rounded-full blur-xl"></div>
+            <div class="absolute -bottom-6 -right-6 w-32 h-32 bg-secondary/10 rounded-full blur-xl"></div>
+            <div class="relative bg-white rounded-xl shadow-card p-6 animate-float">
+              <div class="flex items-center mb-4">
+                <div class="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary">
+                  <i class="fa fa-robot"></i>
+                </div>
+                <div class="ml-4">
+                  <div class="font-medium">Todor AI</div>
+                  <div class="text-xs text-neutral-lighter">智能助手</div>
+                </div>
+              </div>
+              <div class="space-y-4">
+                <div class="flex items-start">
+                  <div class="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center flex-shrink-0">
+                    <i class="fa fa-user text-neutral-lighter"></i>
+                  </div>
+                  <div class="ml-3 bg-gray-100 rounded-lg px-4 py-2 max-w-[80%]">
+                    <p>明天下午3点有会议，记得准备PPT</p>
+                  </div>
+                </div>
+                <div class="flex items-start justify-end">
+                  <div class="mr-3 bg-primary/10 rounded-lg px-4 py-2 max-w-[80%]">
+                    <p>好的，已为你创建待办事项：</p>
+                    <div class="mt-2 bg-white rounded-md p-3 shadow-sm">
+                      <div class="font-medium">准备会议PPT</div>
+                      <div class="text-sm text-neutral-lighter">明天 15:00</div>
+                      <div class="mt-2 flex items-center text-xs text-primary">
+                        <i class="fa fa-bell mr-1"></i>
+                        已设置提醒
+                      </div>
+                    </div>
+                  </div>
+                  <div class="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0 text-primary">
+                    <i class="fa fa-robot"></i>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 核心功能 -->
+  <section id="features" class="py-20 bg-white">
+    <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="text-center mb-16">
+        <h2 class="text-3xl md:text-4xl font-bold text-neutral mb-4">核心功能</h2>
+        <p class="text-neutral-light max-w-2xl mx-auto">
+          Todor 提供强大的功能，让任务管理变得简单高效
+        </p>
+      </div>
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        <!-- 功能卡片 1 -->
+        <div class="bg-white rounded-xl shadow-card hover:shadow-card-hover p-6 transition-all duration-300">
+          <div class="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center text-primary mb-6">
+            <i class="fa fa-comment-o text-xl"></i>
+          </div>
+          <h3 class="text-xl font-semibold mb-3">AI 智能助手</h3>
+          <ul class="space-y-2 text-neutral-light">
+            <li class="flex items-center">
+              <i class="fa fa-check text-secondary mr-2"></i>
+              意图识别，自动判断聊天或任务
+            </li>
+            <li class="flex items-center">
+              <i class="fa fa-check text-secondary mr-2"></i>
+              自然语言对话，支持闲聊
+            </li>
+            <li class="flex items-center">
+              <i class="fa fa-check text-secondary mr-2"></i>
+              上下文记忆，记住对话历史
+            </li>
+            <li class="flex items-center">
+              <i class="fa fa-check text-secondary mr-2"></i>
+              个性化回复，基于用户档案
+            </li>
+          </ul>
+        </div>
+        <!-- 功能卡片 2 -->
+        <div class="bg-white rounded-xl shadow-card hover:shadow-card-hover p-6 transition-all duration-300">
+          <div class="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center text-primary mb-6">
+            <i class="fa fa-tasks text-xl"></i>
+          </div>
+          <h3 class="text-xl font-semibold mb-3">待办管理</h3>
+          <ul class="space-y-2 text-neutral-light">
+            <li class="flex items-center">
+              <i class="fa fa-check text-secondary mr-2"></i>
+              自然语言创建，智能解析时间
+            </li>
+            <li class="flex items-center">
+              <i class="fa fa-check text-secondary mr-2"></i>
+              分类管理，工作/生活/学习
+            </li>
+            <li class="flex items-center">
+              <i class="fa fa-check text-secondary mr-2"></i>
+              优先级设置，高/中/低
+            </li>
+            <li class="flex items-center">
+              <i class="fa fa-check text-secondary mr-2"></i>
+              双视图，卡片/日历模式
+            </li>
+          </ul>
+        </div>
+        <!-- 功能卡片 3 -->
+        <div class="bg-white rounded-xl shadow-card hover:shadow-card-hover p-6 transition-all duration-300">
+          <div class="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center text-primary mb-6">
+            <i class="fa fa-bell-o text-xl"></i>
+          </div>
+          <h3 class="text-xl font-semibold mb-3">智能提醒</h3>
+          <ul class="space-y-2 text-neutral-light">
+            <li class="flex items-center">
+              <i class="fa fa-check text-secondary mr-2"></i>
+              邮件提醒，定时发送
+            </li>
+            <li class="flex items-center">
+              <i class="fa fa-check text-secondary mr-2"></i>
+              应用内通知，实时推送
+            </li>
+            <li class="flex items-center">
+              <i class="fa fa-check text-secondary mr-2"></i>
+              重试机制，确保送达
+            </li>
+            <li class="flex items-center">
+              <i class="fa fa-check text-secondary mr-2"></i>
+              99.9% 可靠性保证
+            </li>
+          </ul>
+        </div>
+        <!-- 功能卡片 4 -->
+        <div class="bg-white rounded-xl shadow-card hover:shadow-card-hover p-6 transition-all duration-300">
+          <div class="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center text-primary mb-6">
+            <i class="fa fa-user-o text-xl"></i>
+          </div>
+          <h3 class="text-xl font-semibold mb-3">用户系统</h3>
+          <ul class="space-y-2 text-neutral-light">
+            <li class="flex items-center">
+              <i class="fa fa-check text-secondary mr-2"></i>
+              注册登录，JWT 认证
+            </li>
+            <li class="flex items-center">
+              <i class="fa fa-check text-secondary mr-2"></i>
+              个人档案，详细信息
+            </li>
+            <li class="flex items-center">
+              <i class="fa fa-check text-secondary mr-2"></i>
+              安全认证，Argon2 加密
+            </li>
+            <li class="flex items-center">
+              <i class="fa fa-check text-secondary mr-2"></i>
+              HttpOnly Cookie，CSRF 防护
+            </li>
+          </ul>
+        </div>
+        <!-- 功能卡片 5 -->
+        <div class="bg-white rounded-xl shadow-card hover:shadow-card-hover p-6 transition-all duration-300">
+          <div class="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center text-primary mb-6">
+            <i class="fa fa-line-chart text-xl"></i>
+          </div>
+          <h3 class="text-xl font-semibold mb-3">数据统计</h3>
+          <ul class="space-y-2 text-neutral-light">
+            <li class="flex items-center">
+              <i class="fa fa-check text-secondary mr-2"></i>
+              概览卡片，关键指标
+            </li>
+            <li class="flex items-center">
+              <i class="fa fa-check text-secondary mr-2"></i>
+              完成趋势，可视化图表
+            </li>
+            <li class="flex items-center">
+              <i class="fa fa-check text-secondary mr-2"></i>
+              类型分布，优先级分析
+            </li>
+            <li class="flex items-center">
+              <i class="fa fa-check text-secondary mr-2"></i>
+              生产力评分，AI 分析
+            </li>
+          </ul>
+        </div>
+        <!-- 功能卡片 6 -->
+        <div class="bg-white rounded-xl shadow-card hover:shadow-card-hover p-6 transition-all duration-300">
+          <div class="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center text-primary mb-6">
+            <i class="fa fa-cogs text-xl"></i>
+          </div>
+          <h3 class="text-xl font-semibold mb-3">技术亮点</h3>
+          <ul class="space-y-2 text-neutral-light">
+            <li class="flex items-center">
+              <i class="fa fa-check text-secondary mr-2"></i>
+              Monorepo 架构，代码共享
+            </li>
+            <li class="flex items-center">
+              <i class="fa fa-check text-secondary mr-2"></i>
+              AI 模型单例化，高性能
+            </li>
+            <li class="flex items-center">
+              <i class="fa fa-check text-secondary mr-2"></i>
+              数据库索引优化，快速查询
+            </li>
+            <li class="flex items-center">
+              <i class="fa fa-check text-secondary mr-2"></i>
+              密码自动迁移，向后兼容
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 产品优势 -->
+  <section id="advantages" class="py-20 bg-bg-light">
+    <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="text-center mb-16">
+        <h2 class="text-3xl md:text-4xl font-bold text-neutral mb-4">Todor 的独特优势</h2>
+        <p class="text-neutral-light max-w-2xl mx-auto">
+          相比传统待办工具，Todor 带来全新的智能体验
+        </p>
+      </div>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
+        <div>
+          <div class="space-y-8">
+            <!-- 优势 1 -->
+            <div class="flex">
+              <div class="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center text-primary flex-shrink-0">
+                <span class="font-semibold">01</span>
+              </div>
+              <div class="ml-6">
+                <h3 class="text-xl font-semibold mb-2">AI 对话式交互</h3>
+                <p class="text-neutral-light">
+                  所有竞品都是表单式输入，Todor 是唯一真正对话式的待办工具。和 Todor 聊天，任务自然完成。
+                </p>
+              </div>
+            </div>
+            <!-- 优势 2 -->
+            <div class="flex">
+              <div class="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center text-primary flex-shrink-0">
+                <span class="font-semibold">02</span>
+              </div>
+              <div class="ml-6">
+                <h3 class="text-xl font-semibold mb-2">上下文记忆</h3>
+                <p class="text-neutral-light">
+                  记住对话历史，理解"把刚才说的整理成待办"这样的指令，提供连贯的智能体验。
+                </p>
+              </div>
+            </div>
+            <!-- 优势 3 -->
+            <div class="flex">
+              <div class="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center text-primary flex-shrink-0">
+                <span class="font-semibold">03</span>
+              </div>
+              <div class="ml-6">
+                <h3 class="text-xl font-semibold mb-2">意图理解</h3>
+                <p class="text-neutral-light">
+                  自动识别是聊天还是创建任务，无需切换模式，让交互更加自然流畅。
+                </p>
+              </div>
+            </div>
+            <!-- 优势 4 -->
+            <div class="flex">
+              <div class="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center text-primary flex-shrink-0">
+                <span class="font-semibold">04</span>
+              </div>
+              <div class="ml-6">
+                <h3 class="text-xl font-semibold mb-2">开源和可定制</h3>
+                <p class="text-neutral-light">
+                  可私有化部署，可自定义 AI 模型，为企业和个人用户提供更大的灵活性。
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="relative">
+          <div class="absolute -top-10 -left-10 w-40 h-40 bg-primary/5 rounded-full blur-2xl"></div>
+          <div class="absolute -bottom-10 -right-10 w-40 h-40 bg-secondary/5 rounded-full blur-2xl"></div>
+          <div class="relative bg-white rounded-xl shadow-card p-8">
+            <h3 class="text-2xl font-bold mb-6">竞品对比</h3>
+            <div class="overflow-x-auto scrollbar-hide">
+              <table class="w-full">
+                <thead>
+                  <tr class="border-b border-gray-200">
+                    <th class="text-left py-3 px-4 font-medium text-neutral-light">特性</th>
+                    <th class="text-center py-3 px-4 font-medium text-neutral-light">Todor</th>
+                    <th class="text-center py-3 px-4 font-medium text-neutral-light">Notion</th>
+                    <th class="text-center py-3 px-4 font-medium text-neutral-light">Todoist</th>
+                    <th class="text-center py-3 px-4 font-medium text-neutral-light">Microsoft To Do</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr class="border-b border-gray-100">
+                    <td class="py-3 px-4">AI 对话式交互</td>
+                    <td class="text-center"><i class="fa fa-check text-secondary"></i></td>
+                    <td class="text-center"><i class="fa fa-times text-accent"></i></td>
+                    <td class="text-center"><i class="fa fa-times text-accent"></i></td>
+                    <td class="text-center"><i class="fa fa-times text-accent"></i></td>
+                  </tr>
+                  <tr class="border-b border-gray-100">
+                    <td class="py-3 px-4">上下文记忆</td>
+                    <td class="text-center"><i class="fa fa-check text-secondary"></i></td>
+                    <td class="text-center"><i class="fa fa-times text-accent"></i></td>
+                    <td class="text-center"><i class="fa fa-times text-accent"></i></td>
+                    <td class="text-center"><i class="fa fa-times text-accent"></i></td>
+                  </tr>
+                  <tr class="border-b border-gray-100">
+                    <td class="py-3 px-4">自然语言创建</td>
+                    <td class="text-center"><i class="fa fa-check text-secondary"></i></td>
+                    <td class="text-center"><i class="fa fa-times text-accent"></i></td>
+                    <td class="text-center"><i class="fa fa-check text-secondary"></i></td>
+                    <td class="text-center"><i class="fa fa-check text-secondary"></i></td>
+                  </tr>
+                  <tr class="border-b border-gray-100">
+                    <td class="py-3 px-4">团队协作</td>
+                    <td class="text-center"><i class="fa fa-check text-secondary"></i></td>
+                    <td class="text-center"><i class="fa fa-check text-secondary"></i></td>
+                    <td class="text-center"><i class="fa fa-check text-secondary"></i></td>
+                    <td class="text-center"><i class="fa fa-check text-secondary"></i></td>
+                  </tr>
+                  <tr>
+                    <td class="py-3 px-4">开源可定制</td>
+                    <td class="text-center"><i class="fa fa-check text-secondary"></i></td>
+                    <td class="text-center"><i class="fa fa-times text-accent"></i></td>
+                    <td class="text-center"><i class="fa fa-times text-accent"></i></td>
+                    <td class="text-center"><i class="fa fa-times text-accent"></i></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 定价计划 -->
+  <section id="pricing" class="py-20 bg-white">
+    <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="text-center mb-16">
+        <h2 class="text-3xl md:text-4xl font-bold text-neutral mb-4">定价计划</h2>
+        <p class="text-neutral-light max-w-2xl mx-auto">
+          选择适合你的计划，开始智能任务管理之旅
+        </p>
+      </div>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+        <!-- 免费版 -->
+        <div class="bg-white rounded-xl shadow-card p-8 border border-gray-200">
+          <div class="text-center mb-8">
+            <h3 class="text-xl font-semibold mb-2">免费版</h3>
+            <div class="text-3xl font-bold mb-2">¥0<span class="text-sm font-normal text-neutral-lighter">/月</span></div>
+            <p class="text-neutral-light text-sm">适合个人用户</p>
+          </div>
+          <ul class="space-y-3 mb-8">
+            <li class="flex items-center">
+              <i class="fa fa-check text-secondary mr-3"></i>
+              100 个活跃任务
+            </li>
+            <li class="flex items-center">
+              <i class="fa fa-check text-secondary mr-3"></i>
+              基础 AI 功能
+            </li>
+            <li class="flex items-center">
+              <i class="fa fa-check text-secondary mr-3"></i>
+              邮件提醒
+            </li>
+            <li class="flex items-center">
+              <i class="fa fa-check text-secondary mr-3"></i>
+              个人档案
+            </li>
+            <li class="flex items-center text-neutral-lighter">
+              <i class="fa fa-times mr-3"></i>
+              团队协作
+            </li>
+            <li class="flex items-center text-neutral-lighter">
+              <i class="fa fa-times mr-3"></i>
+              高级 AI 功能
+            </li>
+          </ul>
+          <a href="#" class="block w-full text-center border border-primary text-primary hover:bg-primary/5 py-3 rounded-md font-medium transition-colors">
+            开始使用
+          </a>
+        </div>
+        <!-- 专业版 -->
+        <div class="bg-white rounded-xl shadow-card p-8 border-2 border-primary relative">
+          <div class="absolute -top-4 left-1/2 transform -translate-x-1/2 bg-primary text-white text-xs font-medium px-4 py-1 rounded-full">
+            推荐
+          </div>
+          <div class="text-center mb-8">
+            <h3 class="text-xl font-semibold mb-2">专业版</h3>
+            <div class="text-3xl font-bold mb-2">¥69<span class="text-sm font-normal text-neutral-lighter">/月</span></div>
+            <p class="text-neutral-light text-sm">适合专业用户</p>
+          </div>
+          <ul class="space-y-3 mb-8">
+            <li class="flex items-center">
+              <i class="fa fa-check text-secondary mr-3"></i>
+              无限任务
+            </li>
+            <li class="flex items-center">
+              <i class="fa fa-check text-secondary mr-3"></i>
+              高级 AI 功能
+            </li>
+            <li class="flex items-center">
+              <i class="fa fa-check text-secondary mr-3"></i>
+              所有提醒方式
+            </li>
+            <li class="flex items-center">
+              <i class="fa fa-check text-secondary mr-3"></i>
+              附件上传（100MB）
+            </li>
+            <li class="flex items-center">
+              <i class="fa fa-check text-secondary mr-3"></i>
+              数据分析
+            </li>
+            <li class="flex items-center">
+              <i class="fa fa-check text-secondary mr-3"></i>
+              日历集成
+            </li>
+          </ul>
+          <a href="#" class="block w-full text-center bg-primary text-white hover:bg-primary/90 py-3 rounded-md font-medium transition-colors">
+            选择专业版
+          </a>
+        </div>
+        <!-- 团队版 -->
+        <div class="bg-white rounded-xl shadow-card p-8 border border-gray-200">
+          <div class="text-center mb-8">
+            <h3 class="text-xl font-semibold mb-2">团队版</h3>
+            <div class="text-3xl font-bold mb-2">¥199<span class="text-sm font-normal text-neutral-lighter">/月</span></div>
+            <p class="text-neutral-light text-sm">适合 5 人团队</p>
+          </div>
+          <ul class="space-y-3 mb-8">
+            <li class="flex items-center">
+              <i class="fa fa-check text-secondary mr-3"></i>
+              包含专业版所有功能
+            </li>
+            <li class="flex items-center">
+              <i class="fa fa-check text-secondary mr-3"></i>
+              团队协作
+            </li>
+            <li class="flex items-center">
+              <i class="fa fa-check text-secondary mr-3"></i>
+              共享项目
+            </li>
+            <li class="flex items-center">
+              <i class="fa fa-check text-secondary mr-3"></i>
+              权限管理
+            </li>
+            <li class="flex items-center">
+              <i class="fa fa-check text-secondary mr-3"></i>
+              优先支持
+            </li>
+            <li class="flex items-center">
+              <i class="fa fa-check text-secondary mr-3"></i>
+              团队统计
+            </li>
+          </ul>
+          <a href="#" class="block w-full text-center border border-primary text-primary hover:bg-primary/5 py-3 rounded-md font-medium transition-colors">
+            选择团队版
+          </a>
+        </div>
+      </div>
+      <div class="mt-12 text-center">
+        <p class="text-neutral-light mb-6">需要更多功能？联系我们获取企业版方案</p>
+        <a href="#" class="inline-block bg-neutral hover:bg-neutral/90 text-white px-6 py-3 rounded-md font-medium transition-colors">
+          联系销售
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- 技术特点 -->
+  <section class="py-20 bg-bg-light">
+    <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="text-center mb-16">
+        <h2 class="text-3xl md:text-4xl font-bold text-neutral mb-4">技术特点</h2>
+        <p class="text-neutral-light max-w-2xl mx-auto">
+          先进的技术架构，为智能体验提供强大支持
+        </p>
+      </div>
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+        <!-- 技术特点 1 -->
+        <div class="bg-white rounded-xl shadow-card p-6 text-center">
+          <div class="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center text-primary mx-auto mb-4">
+            <i class="fa fa-code text-2xl"></i>
+          </div>
+          <h3 class="text-lg font-semibold mb-2">Monorepo 架构</h3>
+          <p class="text-neutral-light text-sm">
+            代码共享和复用，提高开发效率，确保一致性
+          </p>
+        </div>
+        <!-- 技术特点 2 -->
+        <div class="bg-white rounded-xl shadow-card p-6 text-center">
+          <div class="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center text-primary mx-auto mb-4">
+            <i class="fa fa-brain text-2xl"></i>
+          </div>
+          <h3 class="text-lg font-semibold mb-2">AI 模型单例化</h3>
+          <p class="text-neutral-light text-sm">
+            高性能 AI 模型管理，减少资源消耗
+          </p>
+        </div>
+        <!-- 技术特点 3 -->
+        <div class="bg-white rounded-xl shadow-card p-6 text-center">
+          <div class="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center text-primary mx-auto mb-4">
+            <i class="fa fa-database text-2xl"></i>
+          </div>
+          <h3 class="text-lg font-semibold mb-2">数据库优化</h3>
+          <p class="text-neutral-light text-sm">
+            索引优化，快速查询，提升系统响应速度
+          </p>
+        </div>
+        <!-- 技术特点 4 -->
+        <div class="bg-white rounded-xl shadow-card p-6 text-center">
+          <div class="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center text-primary mx-auto mb-4">
+            <i class="fa fa-lock text-2xl"></i>
+          </div>
+          <h3 class="text-lg font-semibold mb-2">安全认证</h3>
+          <p class="text-neutral-light text-sm">
+            JWT + Argon2 加密，HttpOnly Cookie 防护
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 路线图 -->
+  <section id="roadmap" class="py-20 bg-white">
+    <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="text-center mb-16">
+        <h2 class="text-3xl md:text-4xl font-bold text-neutral mb-4">产品路线图</h2>
+        <p class="text-neutral-light max-w-2xl mx-auto">
+          Todor 的发展计划，持续进化的智能助手
+        </p>
+      </div>
+      <div class="relative max-w-3xl mx-auto">
+        <!-- 时间线 -->
+        <div class="absolute left-0 md:left-1/2 transform md:translate-x-[-50%] h-full w-1 bg-gray-200"></div>
+        <!-- 阶段 1 -->
+        <div class="relative mb-12 md:mb-24">
+          <div class="flex flex-col md:flex-row items-start">
+            <div class="md:w-1/2 md:pr-12 md:text-right mb-6 md:mb-0">
+              <div class="bg-primary/10 text-primary text-xs font-medium px-3 py-1 rounded-full inline-block mb-3">
+                Q1-Q2 2026
+              </div>
+              <h3 class="text-xl font-semibold mb-2">MVP 完善</h3>
+              <ul class="space-y-2 text-neutral-light">
+                <li>完成 Setting 页面</li>
+                <li>应用内通知系统</li>
+                <li>快速编辑功能</li>
+                <li>数据统计面板</li>
+                <li>单元测试 70%+</li>
+              </ul>
+            </div>
+            <div class="md:w-1/2 md:pl-12 md:ml-auto">
+              <div class="absolute left-0 md:left-1/2 transform md:translate-x-[-50%] -translate-y-1/2 w-6 h-6 rounded-full bg-primary border-4 border-white"></div>
+            </div>
+          </div>
+        </div>
+        <!-- 阶段 2 -->
+        <div class="relative mb-12 md:mb-24">
+          <div class="flex flex-col md:flex-row items-start">
+            <div class="md:w-1/2 md:pr-12 md:text-right mb-6 md:mb-0 md:order-1 order-2">
+              <div class="absolute left-0 md:left-1/2 transform md:translate-x-[-50%] -translate-y-1/2 w-6 h-6 rounded-full bg-primary border-4 border-white"></div>
+            </div>
+            <div class="md:w-1/2 md:pl-12 md:order-2 order-1">
+              <div class="bg-primary/10 text-primary text-xs font-medium px-3 py-1 rounded-full inline-block mb-3">
+                Q3-Q4 2026
+              </div>
+              <h3 class="text-xl font-semibold mb-2">功能扩展</h3>
+              <ul class="space-y-2 text-neutral-light">
+                <li>标签系统</li>
+                <li>重复任务功能</li>
+                <li>子任务和检查清单</li>
+                <li>日历增强</li>
+                <li>移动端 App（React Native）</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+        <!-- 阶段 3 -->
+        <div class="relative mb-12 md:mb-24">
+          <div class="flex flex-col md:flex-row items-start">
+            <div class="md:w-1/2 md:pr-12 md:text-right mb-6 md:mb-0">
+              <div class="bg-primary/10 text-primary text-xs font-medium px-3 py-1 rounded-full inline-block mb-3">
+                Q1-Q2 2027
+              </div>
+              <h3 class="text-xl font-semibold mb-2">协作和集成</h3>
+              <ul class="space-y-2 text-neutral-light">
+                <li>团队协作功能</li>
+                <li>第三方集成（钉钉、Slack）</li>
+                <li>API 开放平台</li>
+                <li>知识库</li>
+                <li>工作流自动化</li>
+              </ul>
+            </div>
+            <div class="md:w-1/2 md:pl-12 md:ml-auto">
+              <div class="absolute left-0 md:left-1/2 transform md:translate-x-[-50%] -translate-y-1/2 w-6 h-6 rounded-full bg-primary border-4 border-white"></div>
+            </div>
+          </div>
+        </div>
+        <!-- 阶段 4 -->
+        <div class="relative">
+          <div class="flex flex-col md:flex-row items-start">
+            <div class="md:w-1/2 md:pr-12 md:text-right mb-6 md:mb-0 md:order-1 order-2">
+              <div class="absolute left-0 md:left-1/2 transform md:translate-x-[-50%] -translate-y-1/2 w-6 h-6 rounded-full bg-primary border-4 border-white"></div>
+            </div>
+            <div class="md:w-1/2 md:pl-12 md:order-2 order-1">
+              <div class="bg-primary/10 text-primary text-xs font-medium px-3 py-1 rounded-full inline-block mb-3">
+                Q3-Q4 2027
+              </div>
+              <h3 class="text-xl font-semibold mb-2">企业化</h3>
+              <ul class="space-y-2 text-neutral-light">
+                <li>SSO 集成</li>
+                <li>私有化部署</li>
+                <li>企业级安全</li>
+                <li>AI 定制训练</li>
+                <li>专属客户经理</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 行动召唤 -->
+  <section class="py-20 bg-gradient-primary text-white">
+    <div class="container mx-auto px-4 sm:px-6 lg:px-8 text-center">
+      <h2 class="text-3xl md:text-4xl font-bold mb-6">开始使用 Todor</h2>
+      <p class="text-white/80 max-w-2xl mx-auto mb-8">
+        和 Todor 聊聊天，任务就完成了。立即开始智能任务管理之旅，提升你的生产力。
+      </p>
+      <div class="flex flex-col sm:flex-row justify-center space-y-4 sm:space-y-0 sm:space-x-4">
+        <a href="#" class="bg-white text-primary hover:bg-white/90 px-8 py-3 rounded-md font-medium transition-colors transform hover:scale-105">
+          免费注册
+        </a>
+        <a href="#" class="border border-white text-white hover:bg-white/10 px-8 py-3 rounded-md font-medium transition-colors">
+          了解更多
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- 页脚 -->
+  <footer class="bg-neutral text-white pt-16 pb-8">
+    <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-8 mb-12">
+        <!-- 品牌 -->
+        <div>
+          <div class="text-2xl font-bold mb-4">Todor</div>
+          <p class="text-white/60 mb-4">
+            智能AI待办助手，用对话取代表单，让任务管理像聊天一样简单。
+          </p>
+          <div class="flex space-x-4">
+            <a href="#" class="text-white/60 hover:text-white transition-colors">
+              <i class="fa fa-github"></i>
+            </a>
+            <a href="#" class="text-white/60 hover:text-white transition-colors">
+              <i class="fa fa-twitter"></i>
+            </a>
+            <a href="#" class="text-white/60 hover:text-white transition-colors">
+              <i class="fa fa-linkedin"></i>
+            </a>
+            <a href="#" class="text-white/60 hover:text-white transition-colors">
+              <i class="fa fa-medium"></i>
+            </a>
+          </div>
+        </div>
+        <!-- 产品 -->
+        <div>
+          <h3 class="text-lg font-semibold mb-4">产品</h3>
+          <ul class="space-y-2">
+            <li><a href="#features" class="text-white/60 hover:text-white transition-colors">功能</a></li>
+            <li><a href="#advantages" class="text-white/60 hover:text-white transition-colors">优势</a></li>
+            <li><a href="#pricing" class="text-white/60 hover:text-white transition-colors">定价</a></li>
+            <li><a href="#roadmap" class="text-white/60 hover:text-white transition-colors">路线图</a></li>
+          </ul>
+        </div>
+        <!-- 资源 -->
+        <div>
+          <h3 class="text-lg font-semibold mb-4">资源</h3>
+          <ul class="space-y-2">
+            <li><a href="#" class="text-white/60 hover:text-white transition-colors">文档</a></li>
+            <li><a href="#" class="text-white/60 hover:text-white transition-colors">API</a></li>
+            <li><a href="#" class="text-white/60 hover:text-white transition-colors">教程</a></li>
+            <li><a href="#" class="text-white/60 hover:text-white transition-colors">博客</a></li>
+          </ul>
+        </div>
+        <!-- 公司 -->
+        <div>
+          <h3 class="text-lg font-semibold mb-4">公司</h3>
+          <ul class="space-y-2">
+            <li><a href="#" class="text-white/60 hover:text-white transition-colors">关于我们</a></li>
+            <li><a href="#" class="text-white/60 hover:text-white transition-colors">联系我们</a></li>
+            <li><a href="#" class="text-white/60 hover:text-white transition-colors">隐私政策</a></li>
+            <li><a href="#" class="text-white/60 hover:text-white transition-colors">服务条款</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="border-t border-white/10 pt-8 text-center text-white/60 text-sm">
+        <p>&copy; 2026 Todor. 保留所有权利。</p>
+      </div>
+    </div>
+  </footer>
+
+  <!-- JavaScript -->
+  <script>
+    // 导航栏滚动效果
+    window.addEventListener('scroll', function() {
+      const header = document.querySelector('header');
+      if (window.scrollY > 10) {
+        header.classList.add('shadow-md');
+      } else {
+        header.classList.remove('shadow-md');
+      }
+    });
+
+    // 平滑滚动
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+      anchor.addEventListener('click', function (e) {
+        e.preventDefault();
+        const target = document.querySelector(this.getAttribute('href'));
+        if (target) {
+          target.scrollIntoView({
+            behavior: 'smooth',
+            block: 'start'
+          });
+        }
+      });
+    });
+
+    // 功能卡片动画
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('opacity-100', 'translate-y-0');
+          entry.target.classList.remove('opacity-0', 'translate-y-10');
+        }
+      });
+    }, {
+      threshold: 0.1
+    });
+
+    document.querySelectorAll('.shadow-card').forEach(card => {
+      card.classList.add('opacity-0', 'translate-y-10', 'transition-all', 'duration-500');
+      observer.observe(card);
+    });
+  </script>
+</body>
+</html>

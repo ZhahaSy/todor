@@ -436,6 +436,9 @@ importers:
       '@client/api':
         specifier: workspace:*
         version: link:../api
+      '@client/entities':
+        specifier: workspace:*
+        version: link:../entities
       react:
         specifier: ^19.2.4
         version: 19.2.4

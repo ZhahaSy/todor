@@ -12,6 +12,7 @@
   },
   "devDependencies": {
     "@client/api": "workspace:*",
+    "@client/entities": "workspace:*",
     "react": "^19.2.4"
   },
   "dependencies": {
