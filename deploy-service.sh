@@ -35,7 +35,7 @@ error() { echo -e "\033[31m[ERROR]\033[0m $*"; exit 1; }
 step()  { echo -e "\n\033[34m━━━ $* ━━━\033[0m"; }
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-SERVICE_DIR="$SCRIPT_DIR/todor/apps/chat-service"
+SERVICE_DIR="$SCRIPT_DIR/apps/chat-service"
 
 # ─── 仅重启模式 ──────────────────────────────────────────────────────────────
 if $RESTART_ONLY; then
