@@ -1,0 +1,28 @@
+name: my-turborepo
+
+services:
+  chat-service:
+    image: ghcr.io/${GHCR_OWNER}/chat-service:${IMAGE_TAG:-latest}
+    container_name: chat-service
+    restart: unless-stopped
+    env_file:
+      - ./chat-service.env
+    volumes:
+      - /opt/my-turborepo/data/chat-service:/var/data/chat-service
+    networks:
+      - app-net
+
+  chat-ui:
+    image: ghcr.io/${GHCR_OWNER}/chat-ui:${IMAGE_TAG:-latest}
+    container_name: chat-ui
+    restart: unless-stopped
+    depends_on:
+      - chat-service
+    ports:
+      - "80:80"
+    networks:
+      - app-net
+
+networks:
+  app-net:
+    driver: bridge

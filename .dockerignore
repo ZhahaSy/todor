@@ -1,0 +1,16 @@
+.git
+.github
+.turbo
+node_modules
+**/node_modules
+dist
+**/dist
+.DS_Store
+*.log
+coverage
+**/coverage
+chat.db
+**/chat.db
+**/.env
+**/.env.local
+**/.env.*.local
