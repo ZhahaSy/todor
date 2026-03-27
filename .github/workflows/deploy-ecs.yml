@@ -160,6 +160,10 @@ jobs:
               [ -s "$TMP_KEEP" ] && cat "$TMP_KEEP"
             } > "$ENV_FILE"
             rm -f "$TMP_KEEP"
+            # 未配置时写入 8080，避免 chat-ui 默认绑宿主 80 与系统 Nginx 冲突
+            if ! grep -qE '^CHAT_UI_HOST_PORT=' "$ENV_FILE"; then
+              echo 'CHAT_UI_HOST_PORT=8080' >> "$ENV_FILE"
+            fi
 
             if [ -n "${{ secrets.ACR_REGISTRY }}" ]; then
               echo "${{ secrets.ACR_PASSWORD }}" | docker login "${{ secrets.ACR_REGISTRY }}" -u "${{ secrets.ACR_USERNAME }}" --password-stdin
@@ -168,6 +172,7 @@ jobs:
             fi
 
             cd /opt/my-turborepo/deploy
+            echo "[deploy] $(grep -E '^CHAT_UI_HOST_PORT=' .env || true)"
 
             # Compose ↔ Docker 守护进程：单次 pull 慢时 600s 仍可能切断长连接；拉满避免「第一层快、后面卡死」误判
             export COMPOSE_HTTP_TIMEOUT=86400

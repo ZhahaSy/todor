@@ -3,7 +3,7 @@ name: my-turborepo
 # ECS 上 deploy/.env 示例：
 #   IMAGE_BASE=...
 #   IMAGE_TAG=...
-#   CHAT_UI_HOST_PORT=80   # 宿主若已占用 80，改为 8080 等
+#   CHAT_UI_HOST_PORT=8080 # 默认见下方；无宿主机 Nginx 且要写死 80 时可设 CHAT_UI_HOST_PORT=80
 
 services:
   chat-service:
@@ -24,7 +24,8 @@ services:
     depends_on:
       - chat-service
     ports:
-      - "${CHAT_UI_HOST_PORT:-80}:80"
+      # 默认 8080，避免与宿主机 Nginx 抢 80；需要容器直连宿主 80 时在 .env 写 CHAT_UI_HOST_PORT=80
+      - "${CHAT_UI_HOST_PORT:-8080}:80"
     networks:
       - app-net
 

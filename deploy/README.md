@@ -130,7 +130,7 @@ AI_MODEL=deepseek-chat
 AI_REQUEST_TIMEOUT_MS=60000
 ```
 
-**注意**：`deploy/docker-compose.prod.yml` 使用 **`IMAGE_BASE`** / **`IMAGE_TAG`**；可选 **`CHAT_UI_HOST_PORT`**（默认 `80`，映射到容器 80）。GitHub Action 每次部署会**更新**这两项镜像变量，并**保留** `.env` 里其它行（例如你已设的 `CHAT_UI_HOST_PORT`）。
+**注意**：`deploy/docker-compose.prod.yml` 使用 **`IMAGE_BASE`** / **`IMAGE_TAG`**；**`CHAT_UI_HOST_PORT` 默认可理解为 `8080`**（compose 内 `${CHAT_UI_HOST_PORT:-8080}`），与常见「宿主机 Nginx 占 80」场景一致。若 `.env` 里没有该项，部署脚本会**自动补上 `CHAT_UI_HOST_PORT=8080`**。只有你确定要让容器占用宿主 **80**（且无 Nginx 冲突）时，再在 `.env` 写 `CHAT_UI_HOST_PORT=80`。GitHub Action 会**保留**你已有的该项。
 
 ### 宿主机已有 Nginx 占 80：方案 B（推荐）
 
@@ -142,7 +142,7 @@ AI_REQUEST_TIMEOUT_MS=60000
    CHAT_UI_HOST_PORT=8080
    ```
 
-2. **确保 compose 为仓库最新**（含 `ports: "${CHAT_UI_HOST_PORT:-80}:80"`），然后启动容器：
+2. **确保 compose 为仓库最新**（含 `ports: "${CHAT_UI_HOST_PORT:-8080}:80"`），然后启动容器：
 
    ```bash
    cd /opt/my-turborepo/deploy
