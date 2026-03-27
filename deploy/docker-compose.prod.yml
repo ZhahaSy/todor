@@ -1,8 +1,9 @@
 name: my-turborepo
 
-# ECS 上由 deploy 写入 .env：
-#   IMAGE_BASE=ghcr.io/<owner>  或  registry.cn-<region>.aliyuncs.com/<命名空间>
-#   IMAGE_TAG=<commit SHA 或 latest>
+# ECS 上 deploy/.env 示例：
+#   IMAGE_BASE=...
+#   IMAGE_TAG=...
+#   CHAT_UI_HOST_PORT=80   # 宿主若已占用 80，改为 8080 等
 
 services:
   chat-service:
@@ -23,7 +24,7 @@ services:
     depends_on:
       - chat-service
     ports:
-      - "80:80"
+      - "${CHAT_UI_HOST_PORT:-80}:80"
     networks:
       - app-net
 

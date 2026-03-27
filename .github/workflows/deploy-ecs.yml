@@ -148,7 +148,18 @@ jobs:
             if [ -n "${{ secrets.ACR_REGISTRY }}" ]; then
               IMAGE_BASE="${{ secrets.ACR_REGISTRY }}/${{ secrets.ACR_NAMESPACE }}"
             fi
-            printf 'IMAGE_BASE=%s\nIMAGE_TAG=%s\n' "$IMAGE_BASE" "${{ github.sha }}" > /opt/my-turborepo/deploy/.env
+            # 更新镜像变量，并保留你在 ECS 上自定义的其它行（如 CHAT_UI_HOST_PORT）
+            ENV_FILE=/opt/my-turborepo/deploy/.env
+            TMP_KEEP=$(mktemp)
+            if [ -f "$ENV_FILE" ]; then
+              grep -vE '^(IMAGE_BASE|IMAGE_TAG)=' "$ENV_FILE" > "$TMP_KEEP" || true
+            fi
+            {
+              printf 'IMAGE_BASE=%s\n' "$IMAGE_BASE"
+              printf 'IMAGE_TAG=%s\n' "${{ github.sha }}"
+              [ -s "$TMP_KEEP" ] && cat "$TMP_KEEP"
+            } > "$ENV_FILE"
+            rm -f "$TMP_KEEP"
 
             if [ -n "${{ secrets.ACR_REGISTRY }}" ]; then
               echo "${{ secrets.ACR_PASSWORD }}" | docker login "${{ secrets.ACR_REGISTRY }}" -u "${{ secrets.ACR_USERNAME }}" --password-stdin

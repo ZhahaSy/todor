@@ -130,7 +130,42 @@ AI_MODEL=deepseek-chat
 AI_REQUEST_TIMEOUT_MS=60000
 ```
 
-**注意**：`deploy/docker-compose.prod.yml` 使用变量 **`IMAGE_BASE`** / **`IMAGE_TAG`**。每次部署由 GitHub Action 在 ECS 上写入 **`/opt/my-turborepo/deploy/.env`**，无需手填；若你在服务器上手动 `docker compose`，需自行保证该 `.env` 存在且与 compose 一致。
+**注意**：`deploy/docker-compose.prod.yml` 使用 **`IMAGE_BASE`** / **`IMAGE_TAG`**；可选 **`CHAT_UI_HOST_PORT`**（默认 `80`，映射到容器 80）。GitHub Action 每次部署会**更新**这两项镜像变量，并**保留** `.env` 里其它行（例如你已设的 `CHAT_UI_HOST_PORT`）。
+
+### 宿主机已有 Nginx 占 80：方案 B（推荐）
+
+目标：**保留** 系统里的 Nginx 监听 **80**，Docker 里的 `chat-ui` 只监听本机 **8080**，由 Nginx 反代到 `127.0.0.1:8080`。对外仍用 **http://域名或IP/**，无需在浏览器里写 `:8080`（也可不配反代、直接访问 `:8080`，见下）。
+
+1. **在 ECS 上编辑** `/opt/my-turborepo/deploy/.env`，增加或修改一行（没有该文件就先有 `IMAGE_*` 再手动补这行，部署一次后会被合并保留）：
+
+   ```env
+   CHAT_UI_HOST_PORT=8080
+   ```
+
+2. **确保 compose 为仓库最新**（含 `ports: "${CHAT_UI_HOST_PORT:-80}:80"`），然后启动容器：
+
+   ```bash
+   cd /opt/my-turborepo/deploy
+   docker compose -f docker-compose.prod.yml up -d
+   ```
+
+3. **本机自检**（应在 ECS 上返回 HTML 或 200）：
+
+   ```bash
+   curl -sI http://127.0.0.1:8080/ | head -3
+   ```
+
+4. **配置宿主机 Nginx**（示例见仓库 `deploy/nginx-host-reverse-proxy.example.conf`）：
+
+   - 把其中 `server_name` 改成你的域名，或暂时 `_`。  
+   - 放入 `conf.d` / `sites-enabled`，执行 `sudo nginx -t && sudo systemctl reload nginx`。  
+   - `location /` 已带 **WebSocket** 头，便于 `/socket.io/` 与 Ant Design X 等长连接。
+
+5. **安全组**：若用户**只通过 80（及后续 HTTPS）访问**，可不开放 **8080** 公网（8080 仅本机 Nginx 访问更安全）。若你需要**临时直连调试**，再单独放行 8080。
+
+**不配反代时**：浏览器访问 `http://<ECS公网IP>:8080`，安全组需放行 **8080**。
+
+若启动 `chat-ui` 仍报 **`address already in use`**：确认 `.env` 里已是 `CHAT_UI_HOST_PORT=8080` 且 `ss -tlnp | grep 8080` 无其它冲突后再 `compose up`。
 
 ---
 
@@ -162,7 +197,9 @@ docker compose -f docker-compose.prod.yml ps
 
 ## 5) 可选：HTTPS
 
-当前 Compose 将 **HTTP 80** 映射到 `chat-ui`。生产建议在 ECS 前加 **SLB / Nginx / Caddy** 做 **TLS 终止**，或自行扩展 compose 挂载证书。
+若使用 **方案 B**：在**宿主机 Nginx** 上为 `server_name` 配置 **443 + 证书**，`proxy_pass` 仍指向 **`http://127.0.0.1:8080`** 即可。
+
+未做反代时，Compose 可把宿主端口改为 **8080**；生产仍建议在 ECS 前加 **SLB** 或 **Nginx TLS**。
 
 ---
 
