@@ -2,12 +2,9 @@ import { useState, useCallback, useRef } from "react";
 import { addChatHistory, getChatHistory, sendMessage } from "@client/api";
 import type { ChatHistory } from "@client/entities";
 
-/** HTTP 或非安全上下文中无 randomUUID，改用 getRandomValues（仍可用） */
+/** 纯 HTTP（非安全上下文）下 randomUUID 不可用；会话 id 只用 getRandomValues，避免打包/运行环境差异 */
 function newDeepDiveSessionId(): string {
   const c = globalThis.crypto;
-  if (c && typeof c.randomUUID === "function") {
-    return c.randomUUID();
-  }
   if (c && typeof c.getRandomValues === "function") {
     const buf = new Uint8Array(16);
     c.getRandomValues(buf);

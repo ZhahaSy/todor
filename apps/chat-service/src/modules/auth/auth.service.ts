@@ -1,6 +1,6 @@
 import { forwardRef, Inject, Injectable, Logger } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { verifyPassword, encryptPassword } from 'src/utils/cryptogram';
+import { verifyPassword, encryptPassword } from '@/utils/cryptogram';
 import { UserService } from '../user/user.service';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
