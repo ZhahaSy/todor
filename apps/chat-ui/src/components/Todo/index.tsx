@@ -54,9 +54,9 @@ const Todo = () => {
           },
         }}
         maskClosable
-        onClose={() => {
-          setOpen(false);
-        }}
+        // onClose={() => {
+        //   setOpen(false);
+        // }}
         onCancel={() => {
           setOpen(false);
         }}

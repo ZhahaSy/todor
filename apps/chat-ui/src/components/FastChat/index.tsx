@@ -70,7 +70,7 @@ const FastChat = () => {
           },
         }}
         maskClosable
-        onClose={handleClose}
+        // onClose={handleClose}
         onCancel={handleClose}
         open={open}
         centered
