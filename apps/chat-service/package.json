@@ -6,7 +6,7 @@
   "private": true,
   "license": "UNLICENSED",
   "scripts": {
-    "build": "rm -rf dist && cross-env NODE_OPTIONS=--max-old-space-size=4096 nest build --tsc --webpack=false",
+    "build": "nest build",
     "build:cloud": "rm -rf dist && cross-env NODE_OPTIONS=--max-old-space-size=4096 NODE_ENV=production TSC_NONPOLLING=1 npx tsc -p tsconfig.build.json",
     "build:light": "rm -rf dist && cross-env NODE_OPTIONS=--max-old-space-size=4096 NODE_ENV=production npx tsc -p tsconfig.build.json --incremental false --skipLibCheck true",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
