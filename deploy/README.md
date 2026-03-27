@@ -46,6 +46,20 @@
    - 控制单镜像体积（多阶段 build、少装无用依赖），层越小越不易超时。  
    - 后续可为 `build-push-action` 加 **GHA cache**（`cache-to/from: type=gha`），主要缩短 **构建** 时间。
 
+### 现象：第一张镜像很快，Pulled 之后下一张或下一层极慢甚至超时
+
+常见原因一是 **`docker compose pull` 并行拉多个服务**，第二条连接质量差；二是 **Compose 与本机 Docker 守护进程之间的 HTTP 超时**（默认往往只有 60s～600s），层还在下但长时间无“进度汇报”会被 CLI 判死。
+
+当前 workflow 已改为：**顺序执行** `pull chat-service` → `pull chat-ui`，并把 **`COMPOSE_HTTP_TIMEOUT` / `DOCKER_CLIENT_TIMEOUT` 提到 86400s**，SSH **`command_timeout: 120m`**。
+
+若仍极慢，可在 ECS 上（自行评估后）调整 Docker daemon，例如 `/etc/docker/daemon.json` 中略降低并发下载，有时对弱网更稳：
+
+```json
+{ "max-concurrent-downloads": 2 }
+```
+
+修改后 `sudo systemctl restart docker`。
+
 ### 自检命令
 
 在 ECS：
@@ -55,7 +69,8 @@ cd /opt/my-turborepo/deploy
 cat .env
 # IMAGE_BASE 应为 ACR 时：registry.cn-xxx.aliyuncs.com/你的命名空间
 
-docker compose -f docker-compose.prod.yml pull -q || docker compose -f docker-compose.prod.yml pull
+docker compose -f docker-compose.prod.yml pull chat-service
+docker compose -f docker-compose.prod.yml pull chat-ui
 ```
 
 在 GitHub Actions 日志里看 **`Build and push`** 是否出现 **push 到 ACR** 报错；若有而 ECS 拉流正常，优先按上面第 3 步处理 **推送侧**。
