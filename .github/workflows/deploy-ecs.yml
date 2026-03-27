@@ -33,9 +33,21 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      # 是否启用 ACR：if 条件里不能写 secrets.*（部分环境会报 Unrecognized named-value: 'secrets'）
+      - name: Detect ACR secrets
+        id: acr_cfg
+        env:
+          ACR_REGISTRY_SECRET: ${{ secrets.ACR_REGISTRY }}
+        run: |
+          if [ -n "$ACR_REGISTRY_SECRET" ]; then
+            echo "enabled=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "enabled=false" >> "$GITHUB_OUTPUT"
+          fi
+
       # 可选：配置后同一镜像会同时推送到阿里云 ACR，ECS 走同地域拉取，避免跨境拉 ghcr 很慢
       - name: Login to ACR (optional)
-        if: ${{ secrets.ACR_REGISTRY != '' }}
+        if: steps.acr_cfg.outputs.enabled == 'true'
         uses: docker/login-action@v3
         with:
           registry: ${{ secrets.ACR_REGISTRY }}
