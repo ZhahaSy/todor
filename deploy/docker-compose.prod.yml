@@ -1,8 +1,12 @@
 name: my-turborepo
 
+# ECS 上由 deploy 写入 .env：
+#   IMAGE_BASE=ghcr.io/<owner>  或  registry.cn-<region>.aliyuncs.com/<命名空间>
+#   IMAGE_TAG=<commit SHA 或 latest>
+
 services:
   chat-service:
-    image: ghcr.io/${GHCR_OWNER}/chat-service:${IMAGE_TAG:-latest}
+    image: ${IMAGE_BASE}/chat-service:${IMAGE_TAG:-latest}
     container_name: chat-service
     restart: unless-stopped
     env_file:
@@ -13,7 +17,7 @@ services:
       - app-net
 
   chat-ui:
-    image: ghcr.io/${GHCR_OWNER}/chat-ui:${IMAGE_TAG:-latest}
+    image: ${IMAGE_BASE}/chat-ui:${IMAGE_TAG:-latest}
     container_name: chat-ui
     restart: unless-stopped
     depends_on:
