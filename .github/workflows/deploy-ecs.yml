@@ -6,6 +6,12 @@ on:
       - main
   workflow_dispatch:
 
+# 避免多次 push 时多个 workflow 并发部署同一台 ECS：后结束的 job 可能用「更早的 commit SHA」
+# 覆盖 .env 里的 IMAGE_TAG，把线上镜像回滚成旧版本。
+concurrency:
+  group: deploy-ecs-${{ github.ref }}
+  cancel-in-progress: true
+
 permissions:
   contents: read
   packages: write
@@ -208,5 +214,5 @@ jobs:
               exit 1
             fi
 
-            docker compose -f docker-compose.prod.yml up -d --remove-orphans
+            docker compose -f docker-compose.prod.yml up -d --remove-orphans --force-recreate
             docker image prune -f
