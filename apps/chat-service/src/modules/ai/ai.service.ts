@@ -7,6 +7,8 @@ import { AgentExecutor, createToolCallingAgent } from 'langchain/agents';
 import zod from 'zod';
 import * as AsrSdk from 'tencentcloud-sdk-nodejs-asr';
 import { User } from '../user/entities/user.entity';
+import { RedisService } from '../redis/redis.service';
+import { RedisChatMemory } from './memory/redis-chat-memory';
 import { AiModelProvider } from './ai-model.provider';
 import { SkillService } from '../skill/skill.service';
 import { createDynamicSkillTool } from './tools/dynamic-skill.tool';
@@ -83,6 +85,7 @@ export class AiService {
   constructor(
     private aiModelProvider: AiModelProvider,
     private configService: ConfigService,
+    private redisService: RedisService,
     @Inject(forwardRef(() => SkillService))
     private skillService: SkillService,
   ) {
@@ -127,6 +130,19 @@ export class AiService {
       ),
       model.withStructuredOutput(this.intentRecognitionSchema),
     ]);
+  }
+
+  /** 与 BaseIntentHandler.createGlobalMemory 一致，保证 Agent 与普通聊天共用 Redis 上下文 */
+  private createGlobalRedisMemory(inputData: InputData): RedisChatMemory {
+    return new RedisChatMemory({
+      redis: this.redisService.getClient(),
+      sessionId: `user:${inputData.userInfo.id}:global`,
+      k: 10,
+      ttl: 3600 * 24 * 7,
+      messageExpiry: 3600 * 2,
+      memoryKey: 'history',
+      returnMessages: false,
+    });
   }
 
   private formatModelError(error: unknown): string {
@@ -184,7 +200,9 @@ export class AiService {
           this.logger.log(`加载用户 ${userId} 的 ${dynamicTools.length} 个 skill`);
         }
       } catch (err) {
-        this.logger.warn(`加载用户 skill 失败: ${err.message}`);
+        this.logger.warn(
+          `加载用户 skill 失败: ${err instanceof Error ? err.message : String(err)}`,
+        );
       }
     }
 
@@ -194,6 +212,14 @@ export class AiService {
       ? `用户当前位置：纬度 ${inputData.location.lat}，经度 ${inputData.location.lon}`
       : '用户位置：未提供';
 
+    const memory = this.createGlobalRedisMemory(inputData);
+    const memoryVariables = await memory.loadMemoryVariables({});
+    const chatHistoryRaw =
+      (memoryVariables.history as string) || '暂无历史对话';
+    const escapedHistory = String(chatHistoryRaw)
+      .replace(/\{/g, '{{')
+      .replace(/\}/g, '}}');
+
     const agentPrompt = ChatPromptTemplate.fromMessages([
       [
         'system',
@@ -201,6 +227,9 @@ export class AiService {
 当前时间：${new Date().toLocaleString()}
 用户信息：姓名 ${inputData.userInfo.name}，邮箱 ${inputData.userInfo.email}
 ${locationInfo}
+
+对话历史：
+${escapedHistory}
 
 你拥有一些工具，但工具只在用户明确需要时才使用。对于聊天、讲故事、问答、情感支持等普通对话请求，请直接用自然语言回答，不要调用任何工具。
 如果需要用户邮箱，请使用：${inputData.userInfo.email}
@@ -235,6 +264,11 @@ ${locationInfo}
       );
       throw error;
     }
+
+    await memory.saveContext(
+      { input: inputData.input },
+      { output: result.output },
+    );
 
     const intermediateSteps = result.intermediateSteps as Array<{
       action: { tool: string };
