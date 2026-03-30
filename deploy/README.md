@@ -137,6 +137,8 @@ REDIS_DB=0
 
 **`POST /api/ai/message` 远程 500**：多数是 **Redis 连不上**。Compose 里 `chat-service` 的 `localhost` 指向容器自身，必须把 `REDIS_HOST` 设为 **`redis`**（与 compose 中的 Redis 服务名一致），并确保已用包含 `redis` 服务的最新 `docker-compose.prod.yml` 执行 `up -d`。其次再查 **`DEEPSEEK_API_KEY`** 是否已写入、ECS  outbound 能否访问 `DEEPSEEK_BASE_URL`（见容器日志中 `[recognizeIntent]` / `Redis connection error`）。
 
+**部署时 `redis` 镜像拉取超时**（`registry-1.docker.io` / `Client.Timeout exceeded`）：国内 ECS 访问 Docker Hub 经常如此。仓库里的 compose **默认**使用 `REDIS_IMAGE=docker.m.daocloud.io/library/redis:7-alpine`（DaoCloud 对官方 library 的代理）。若仍失败，可任选其一：**(1)** 在 ECS 配置 Docker **`registry-mirrors`**（见阿里云「镜像加速器」文档）后设 `REDIS_IMAGE=redis:7-alpine`；**(2)** 在能拉通 Hub 的机器上 `docker pull redis:7-alpine`，`tag` 到你自己的 **ACR** 再 `push`，然后把 **`/opt/my-turborepo/deploy/.env`** 里写成 `REDIS_IMAGE=<你的ACR>/redis:7-alpine`；**(3)** 海外机器可直接 `REDIS_IMAGE=redis:7-alpine`。
+
 **注意**：`deploy/docker-compose.prod.yml` 使用 **`IMAGE_BASE`** / **`IMAGE_TAG`**；**`CHAT_UI_HOST_PORT` 默认可理解为 `8080`**（compose 内 `${CHAT_UI_HOST_PORT:-8080}`），与常见「宿主机 Nginx 占 80」场景一致。若 `.env` 里没有该项，部署脚本会**自动补上 `CHAT_UI_HOST_PORT=8080`**。只有你确定要让容器占用宿主 **80**（且无 Nginx 冲突）时，再在 `.env` 写 `CHAT_UI_HOST_PORT=80`。GitHub Action 会**保留**你已有的该项。
 
 ### 宿主机已有 Nginx 占 80：方案 B（推荐）

@@ -202,7 +202,8 @@ jobs:
             for attempt in 1 2 3 4 5; do
               # 按服务顺序拉：避免出现 chat-service 完成后与 chat-ui 并行、瞬时吞吐掉到几 KB/s 仍被 CLI 判超时
               if docker compose -f docker-compose.prod.yml pull chat-service \
-                && docker compose -f docker-compose.prod.yml pull chat-ui; then
+                && docker compose -f docker-compose.prod.yml pull chat-ui \
+                && docker compose -f docker-compose.prod.yml pull redis; then
                 pull_ok=1
                 break
               fi
