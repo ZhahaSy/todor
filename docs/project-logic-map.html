@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>my-turborepo — 项目逻辑与流程图谱</title>
+    <!-- 使用仓库内 vendor，避免依赖外网 CDN（jsdelivr 等在国内常不可用） -->
+    <script src="./vendor/mermaid.min.js"></script>
+    <style>
+      :root {
+        --bg: #f6f7f9;
+        --card: #fff;
+        --text: #1a1d26;
+        --muted: #5c6370;
+        --border: #e2e5eb;
+        --accent: #2563eb;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        font-family:
+          ui-sans-serif,
+          system-ui,
+          -apple-system,
+          "Segoe UI",
+          Roboto,
+          "PingFang SC",
+          "Microsoft YaHei",
+          sans-serif;
+        background: var(--bg);
+        color: var(--text);
+        line-height: 1.6;
+      }
+      header {
+        background: linear-gradient(135deg, #1e3a5f 0%, #0f172a 100%);
+        color: #f1f5f9;
+        padding: 2rem 1.5rem 2.5rem;
+      }
+      header h1 {
+        margin: 0 0 0.5rem;
+        font-size: 1.5rem;
+        font-weight: 600;
+      }
+      header p {
+        margin: 0;
+        opacity: 0.85;
+        font-size: 0.95rem;
+        max-width: 52rem;
+      }
+      main {
+        max-width: 56rem;
+        margin: -1.5rem auto 3rem;
+        padding: 0 1rem;
+      }
+      section {
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 1.25rem 1.5rem 1.75rem;
+        margin-bottom: 1.25rem;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+      }
+      section h2 {
+        margin: 0 0 0.75rem;
+        font-size: 1.1rem;
+        color: var(--accent);
+        border-bottom: 1px solid var(--border);
+        padding-bottom: 0.5rem;
+      }
+      section p.note {
+        margin: 0 0 1rem;
+        font-size: 0.9rem;
+        color: var(--muted);
+      }
+      .mermaid {
+        display: flex;
+        justify-content: center;
+        overflow-x: auto;
+      }
+      footer {
+        text-align: center;
+        padding: 1rem;
+        font-size: 0.8rem;
+        color: var(--muted);
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <h1>my-turborepo — 功能与运行逻辑图谱</h1>
+      <p>
+        基于当前仓库结构整理：Turbo 单仓多应用、共享包、chat-service 的 AI
+        意图路由与 <code>POST /ai/message</code> 后续业务。在浏览器中直接打开本文件即可查看流程图；Mermaid
+        脚本已放在 <code>docs/vendor/</code>，无需联网。
+      </p>
+    </header>
+    <main>
+      <section>
+        <h2>1. Monorepo 结构（概览）</h2>
+        <p class="note">
+          根目录使用 pnpm + Turbo；前端通过 <code>@client/*</code> workspace
+          包复用 API、组件与请求层。
+        </p>
+        <div class="mermaid">
+          graph LR
+            subgraph apps["apps/"]
+              CS["chat-service<br/>NestJS + TypeORM SQLite"]
+              CU["chat-ui<br/>Vite + React"]
+              CM["chat-ui-mobile<br/>React + Tauri"]
+            end
+            subgraph pkgs["packages/"]
+              API["api"]
+              ENT["entities"]
+              HOOKS["hooks"]
+              REQ["request"]
+              UI["ui"]
+              UTIL["utils"]
+            end
+            CU --> API
+            CU --> UI
+            CU --> HOOKS
+            CM --> API
+            CM --> UI
+            CM --> HOOKS
+            API --> REQ
+            HOOKS --> API
+      </div>
+      </section>
+
+      <section>
+        <h2>2. chat-ui 页面与数据流</h2>
+        <p class="note">
+          路由见 <code>apps/chat-ui/src/router/index.tsx</code>；HTTP 经
+          <code>@client/request</code>（baseURL <code>/api/</code>，带 cookie）。
+        </p>
+        <div class="mermaid">
+          flowchart LR
+            U[用户] --> P[ProjectLayout]
+            P --> Chat["/chat"]
+            P --> Todo["/todo"]
+            P --> Setting["/setting"]
+            P --> SkillHub["/skill-hub"]
+            Login["/login"] --> SignIn["/signin"]
+            Chat --> API["/api/*"]
+            Todo --> API
+            SkillHub --> API
+      </div>
+      </section>
+
+      <section>
+        <h2>3. chat-service 模块（后端）</h2>
+        <p class="note">
+          入口 <code>AppModule</code> 聚合 AI、待办、用户、鉴权、Redis、定时、消息、Skill
+          等模块。
+        </p>
+        <div class="mermaid">
+          graph TB
+            APP[AppModule]
+            APP --> AI[AiModule]
+            APP --> TH[ChatHistoryModule]
+            APP --> TD[TodoModule]
+            APP --> MS[MessageModule]
+            APP --> SC[ScheduleModule]
+            APP --> AU[AuthModule]
+            APP --> US[UserModule]
+            APP --> SK[SkillModule]
+            APP --> RD[RedisModule]
+            AI --> |"LangChain LLM + Agent"| LLM[DeepSeek 等]
+            AI --> |"工具"| Tools["database_query / create_reminder / weather + 动态 skill"]
+      </div>
+      </section>
+
+      <section>
+        <h2>4. 核心：<code>AiService.process</code> 决策流</h2>
+        <p class="note">
+          <code>forceIntent</code> 来自请求体 <code>mode</code>（可选
+          <code>chat | todo | deepdive</code>），有值时跳过 LLM
+          意图识别。意图识别模型输出的类型见代码中的 schema（含
+          todo/chat/reminder/query/email/agent；<strong>deepdive 通常由前端 mode 强制指定</strong>）。
+        </p>
+        <div class="mermaid">
+          flowchart TD
+            A([开始: process]) --> B{"forceIntent 有值?"}
+            B -->|是| C[意图 = forceIntent]
+            B -->|否| D[LLM 结构化输出意图]
+            C --> E{"意图为 query / email / agent 且已注册 tools?"}
+            D --> E
+            E -->|是| AG[processWithAgent]
+            E -->|否| F{"用户有 skill 且意图非 todo-reminder-deepdive 且有 tools?"}
+            F -->|是| AG
+            F -->|否| G[从 Map 取 IntentHandler]
+            G --> H{"无 handler 且 intent=reminder?"}
+            H -->|是| I[改用 todo Handler]
+            H -->|否| J{"仍无 handler?"}
+            I --> K[handler.process]
+            J -->|是 且有 tools| AG
+            J -->|是 且无 tools| L[返回 unknown]
+            J -->|否| K
+            K --> M([返回 ProcessedResult])
+            AG --> M
+            L --> M
+      </div>
+      </section>
+
+      <section>
+        <h2>5. <code>POST /ai/message</code>：AI 之后还做什么</h2>
+        <p class="note">
+          JWT 鉴权；<code>AiService.process</code> 返回后，Controller
+          按意图做持久化或写会话历史。
+        </p>
+        <div class="mermaid">
+          flowchart TD
+            R([POST /ai/message]) --> JWT[JwtAuthGuard]
+            JWT --> AI[AiService.process]
+            AI --> BR{"intent 为 todo 或 reminder<br/>且 data 存在?"}
+            BR -->|是| TD[TodoService.create]
+            TD --> EM[ScheduleService 一次性提醒邮件等]
+            BR -->|否| DD{"intent 为 deepdive 且带 deepDiveSessionId?"}
+            EM --> OUT[ResOp.success]
+            DD -->|是| CH[ChatHistoryService 写入 local+ai]
+            DD -->|否| OUT
+            CH --> OUT
+      </div>
+      </section>
+
+      <section>
+        <h2>6. 已注册的意图 Handler 与 Agent 工具（快照）</h2>
+        <p class="note">
+          Handler 在 <code>AiModule</code> 构造函数里注册；静态 Tool 含数据库查询、创建提醒、天气等，用户
+          Skill 在 Agent 运行时动态注入。
+        </p>
+        <div class="mermaid">
+          graph LR
+            subgraph handlers["IntentHandler"]
+              H1[chat]
+              H2[todo]
+              H3[deepdive]
+            end
+            subgraph agentTools["Agent 内工具"]
+              T1[database_query]
+              T2[create_reminder]
+              T3[weather]
+              T4[用户动态 skill]
+            end
+      </div>
+      </section>
+    </main>
+    <footer>
+      生成自仓库 docs/project-logic-map.html — 若图形溢出可横向滚动；与代码不一致时以源码为准。更新 Mermaid：替换
+      docs/vendor/mermaid.min.js（例如从 unpkg 对应版本下载）。
+    </footer>
+    <script>
+      mermaid.initialize({
+        startOnLoad: true,
+        theme: "neutral",
+        flowchart: { curve: "basis", padding: 12 },
+        securityLevel: "loose",
+      });
+    </script>
+  </body>
+</html>

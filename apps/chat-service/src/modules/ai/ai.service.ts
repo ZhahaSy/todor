@@ -197,7 +197,9 @@ export class AiService {
         const skills = await this.skillService.findEnabled(userId);
         dynamicTools = skills.map(createDynamicSkillTool);
         if (dynamicTools.length > 0) {
-          this.logger.log(`加载用户 ${userId} 的 ${dynamicTools.length} 个 skill`);
+          this.logger.log(
+            `加载用户 ${userId} 的 ${dynamicTools.length} 个 skill`,
+          );
         }
       } catch (err) {
         this.logger.warn(
@@ -298,13 +300,21 @@ ${escapedHistory}
       return this.processWithAgent(inputData);
     }
 
-    // 如果用户有 enabled skill，也走 agent 兜底（确保 skill 能被调用）
+    // 若用户有 enabled skill，对「泛对话」类意图走 Agent，便于调用动态 skill。
+    // 结构化意图（todo / reminder / deepdive）必须走专用 Handler，不能被 skill 逻辑截胡。
+    const intentsThatSkipSkillAgent = ['todo', 'reminder', 'deepdive'];
     const userId = inputData.userId ?? inputData.userInfo?.id;
-    if (userId && !toolIntents.includes(intent)) {
+    if (
+      userId &&
+      !toolIntents.includes(intent) &&
+      !intentsThatSkipSkillAgent.includes(intent)
+    ) {
       try {
         const userSkills = await this.skillService.findEnabled(userId);
         if (userSkills.length > 0 && this.tools.size > 0) {
-          this.logger.log(`用户有 ${userSkills.length} 个 skill，转交 Agent 处理`);
+          this.logger.log(
+            `用户有 ${userSkills.length} 个 skill，转交 Agent 处理`,
+          );
           return this.processWithAgent(inputData);
         }
       } catch {
