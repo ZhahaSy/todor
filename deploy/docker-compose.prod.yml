@@ -6,10 +6,20 @@ name: my-turborepo
 #   CHAT_UI_HOST_PORT=8080 # 默认见下方；无宿主机 Nginx 且要写死 80 时可设 CHAT_UI_HOST_PORT=80
 
 services:
+  # AI 对话记忆（redis-chat-memory）依赖 Redis；容器内 localhost 不是宿主机，须用服务名 redis
+  redis:
+    image: redis:7-alpine
+    container_name: chat-redis
+    restart: unless-stopped
+    networks:
+      - app-net
+
   chat-service:
     image: ${IMAGE_BASE}/chat-service:${IMAGE_TAG:-latest}
     container_name: chat-service
     restart: unless-stopped
+    depends_on:
+      - redis
     env_file:
       - ./chat-service.env
     volumes:
