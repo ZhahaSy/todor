@@ -1,7 +1,13 @@
-import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  Logger,
+  OnModuleInit,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import * as schedule from 'node-schedule';
+import { parseScheduleAt } from '@/common/utils/parse-schedule-time';
 import { EmailService } from '../message/email.service';
 import { ScheduledTask } from './entities/scheduled-task.entity';
 
@@ -59,12 +65,20 @@ export class AdvancedSchedulerService implements OnModuleInit {
    */
   async scheduleOneTimeEmail(
     taskId: string,
-    targetDate: Date,
+    targetAt: string | Date,
     to: string,
     subject: string,
     content: string,
     userId?: string,
   ) {
+    let targetDate: Date;
+    try {
+      targetDate = parseScheduleAt(targetAt);
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : '提醒时间无效';
+      throw new BadRequestException(msg);
+    }
+
     if (targetDate <= new Date()) {
       this.logger.warn(`⚠️ 任务 [${taskId}] 调度时间已过，跳过`);
       return { taskId, status: 'skipped', message: '调度时间已过' };
@@ -86,7 +100,7 @@ export class AdvancedSchedulerService implements OnModuleInit {
     this.scheduleJob(taskId, targetDate, to, subject, content, userId);
 
     this.logger.log(
-      `📅 已安排邮件任务 [${taskId}] - 发送时间: ${targetDate.toLocaleString()}`,
+      `📅 已安排邮件任务 [${taskId}] - 发送时间(ISO): ${targetDate.toISOString()} | 本地: ${targetDate.toString()} | TZ: ${Intl.DateTimeFormat().resolvedOptions().timeZone}`,
     );
 
     return {

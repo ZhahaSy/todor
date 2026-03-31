@@ -65,13 +65,15 @@ export class TodoController {
     // 先创建 todo 拿到真实 id，再用 id 注册调度任务
     const todo = await this.todoService.create(createTodoDto);
     const userEmail = req.user.email;
-    await this.scheduleService.scheduleOneTimeEmail(
-      todo.id,
-      new Date(createTodoDto.todoTime),
-      userEmail,
-      '待办事项提醒: ' + createTodoDto.title,
-      `您有一条待办事项：${createTodoDto.content}`,
-    );
+    if (createTodoDto.todoTime) {
+      await this.scheduleService.scheduleOneTimeEmail(
+        todo.id,
+        createTodoDto.todoTime,
+        userEmail,
+        '待办事项提醒: ' + createTodoDto.title,
+        `您有一条待办事项：${createTodoDto.content}`,
+      );
+    }
     return ResOp.success(todo);
   }
 }

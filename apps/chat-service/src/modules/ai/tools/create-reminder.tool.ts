@@ -51,7 +51,7 @@ export class CreateReminderTool extends StructuredTool {
 
       await this.schedulerService.scheduleOneTimeEmail(
         todo.id,
-        new Date(input.todoTime),
+        input.todoTime,
         input.email,
         `待办提醒：${input.title}`,
         `您有一条待办事项：\n\n${input.content}\n\n时间：${input.todoTime}`,

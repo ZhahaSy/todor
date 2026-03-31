@@ -95,7 +95,7 @@ export class AiController {
       // 安排提醒邮件（同步发送应用内通知）
       await this.scheduleService.scheduleOneTimeEmail(
         message.id,
-        new Date(todoData.todoTime),
+        todoData.todoTime,
         userInfo.email,
         '待办事项提醒: ' + todoData.title,
         `您有一条待办事项：${todoData.content}`,

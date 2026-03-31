@@ -1,8 +1,20 @@
-import { message } from "antd";
+import { message as antdStaticMessage } from "antd";
 import axios from "axios";
 import type { AxiosRequestConfigPluginOriginalData } from 'axios';
 
 import './shims.axios.d.ts';
+
+/** App.useApp().message 仅需与静态 API 在 error/destroy 上兼容 */
+type InterceptorMessage = Pick<typeof antdStaticMessage, "error" | "destroy">;
+
+/** 在应用根组件用 App.useApp() 注入，避免拦截器里静态 message 与 <App> 上下文不一致导致不展示 */
+let antdMessageApi: InterceptorMessage | null = null;
+
+export function bindAntdMessageApi(api: InterceptorMessage | null) {
+  antdMessageApi = api;
+}
+
+const message = (): InterceptorMessage => antdMessageApi ?? antdStaticMessage;
 
 const CodeMessage: Record<number, string> = {
   200: "服务器成功返回请求的数据。",
@@ -33,7 +45,6 @@ instance.interceptors.request.use((config) => {
 });
 
 instance.interceptors.response.use(
-  // 当 status >= 200 && status < 300 时，会进入此逻辑
   (response) => {
     const { data: responseData, config, request } = response;
 
@@ -49,28 +60,37 @@ instance.interceptors.response.use(
       response.headers["content-type"].includes("application/json")
     ) {
       if (!config.skipError && !config.quiet) {
-        message.error(responseData.msg ?? "请求异常");
+        message().error(responseData.msg ?? "请求异常");
       }
       return Promise.reject(response);
     }
     return responseData.data;
   },
-  // 当 status > 300 时，会进入此逻辑
   (error) => {
-    if (error.response.status === 401) {
-      message.destroy();
-      message.error("请先登录");
-      window.location.href = "/login";
-      return Promise.reject(error);
-    }
-    if (error.config.headers["content-type"] === "multipart/form-data") {
-      message.destroy();
-      message.error(CodeMessage[error.response.status] ?? "请求异常");
+    const status = error.response?.status;
+    const cfg = error.config;
+
+    if (status === 401) {
+      message().destroy();
+      message().error({
+        content: "请先登录",
+        duration: 1.2,
+        onClose: () => {
+          window.location.href = "/login";
+        },
+      });
       return Promise.reject(error);
     }
 
-    if (error.response && !error.config.quiet && !error.config.skipError) {
-      message.error(CodeMessage[error.response.status] ?? "请求异常");
+    const ct = cfg?.headers && String(cfg.headers["Content-Type"] ?? cfg.headers["content-type"] ?? "");
+    if (ct.includes("multipart/form-data") && status != null) {
+      message().destroy();
+      message().error(CodeMessage[status] ?? "请求异常");
+      return Promise.reject(error);
+    }
+
+    if (error.response && !cfg?.quiet && !cfg?.skipError && status != null) {
+      message().error(CodeMessage[status] ?? "请求异常");
     }
     return Promise.reject(error);
   }
