@@ -28,7 +28,14 @@ export type ReturnType = {
   /**
    * 添加聊天记录
    */
-  addMessage: (message: HistRecordItem) => Promise<boolean>;
+  addMessage: (
+    message: HistRecordItem,
+    options?: { skipPersist?: boolean }
+  ) => Promise<boolean>;
+  /** 将增量文本追加到最后一条 AI 消息（流式输出用） */
+  appendToLastAiContent: (delta: string) => void;
+  /** 将最后一条 AI 消息设为完整内容（done 时兜底，避免 token 未解析时界面空白） */
+  replaceLastAiContent: (full: string) => void;
 };
 
 const PAGE_SIZE = 10;
@@ -111,19 +118,59 @@ export const useChat = (): ReturnType => {
     }
   }, [loadingMore, hasMore, messages?.length]);
 
-  const addMessage = useCallback(async (
-    { role, content, date, todoId }: HistRecordItem
-  ): Promise<boolean> => {
-    try {
-      const newMessage: HistRecordItem = { role, content, date, todoId };
-      setMessages((prev) => [...prev, newMessage]);
-      addChatHistory(newMessage);
-      return true;
-    } catch (error) {
-      console.error("Message add failed:", error);
-      return false;
-    }
+  const addMessage = useCallback(
+    async (
+      { role, content, date, todoId }: HistRecordItem,
+      options?: { skipPersist?: boolean }
+    ): Promise<boolean> => {
+      try {
+        const newMessage: HistRecordItem = { role, content, date, todoId };
+        setMessages((prev) => [...prev, newMessage]);
+        if (!options?.skipPersist) {
+          addChatHistory(newMessage);
+        }
+        return true;
+      } catch (error) {
+        console.error("Message add failed:", error);
+        return false;
+      }
+    },
+    []
+  );
+
+  const appendToLastAiContent = useCallback((delta: string) => {
+    if (!delta) return;
+    setMessages((prev) => {
+      if (prev.length === 0) return prev;
+      const last = prev[prev.length - 1];
+      if (last.role !== "ai") return prev;
+      const next = [...prev];
+      next[next.length - 1] = {
+        ...last,
+        content: last.content + delta,
+      };
+      return next;
+    });
   }, []);
 
-  return { messages, loadingMore, hasMore, loadMore, addMessage };
+  const replaceLastAiContent = useCallback((full: string) => {
+    setMessages((prev) => {
+      if (prev.length === 0) return prev;
+      const last = prev[prev.length - 1];
+      if (last.role !== "ai") return prev;
+      const next = [...prev];
+      next[next.length - 1] = { ...last, content: full };
+      return next;
+    });
+  }, []);
+
+  return {
+    messages,
+    loadingMore,
+    hasMore,
+    loadMore,
+    addMessage,
+    appendToLastAiContent,
+    replaceLastAiContent,
+  };
 };

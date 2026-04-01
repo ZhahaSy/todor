@@ -29,7 +29,10 @@ export default defineConfig({
       '/api': {
         target: 'http://localhost:3000',
         changeOrigin: true,
-        rewrite: (path) => path.replace(/^\/api/, '')
+        rewrite: (path) => path.replace(/^\/api/, ''),
+        /** 避免 dev 代理缓冲 SSE，长连接不设超时 */
+        timeout: 0,
+        proxyTimeout: 0,
       }
     }
   }

@@ -1,5 +1,5 @@
 import { useState, useCallback, useRef } from "react";
-import { addChatHistory, getChatHistory, sendMessage } from "@client/api";
+import { addChatHistory, getChatHistory, sendMessageStream } from "@client/api";
 import type { ChatHistory } from "@client/entities";
 
 /** 纯 HTTP（非安全上下文）下 randomUUID 不可用；会话 id 只用 getRandomValues，避免打包/运行环境差异 */
@@ -79,31 +79,55 @@ export const useDeepDiveChat = (): UseDeepDiveChatReturn => {
         title,
       }).catch(console.error);
 
+      const aiDate = new Date().toISOString();
+      setMessages((prev) => [
+        ...prev,
+        { role: "ai", content: "", date: aiDate, todoId: "" } as ChatHistory,
+      ]);
+
       try {
-        const answer = await sendMessage({
-          input: value,
-          mode: "deepdive",
-          context,
-          deepDiveSessionId: sid,
-        });
-
-        if (abortRef.current) return;
-
-        const aiMsg: ChatHistory = {
-          role: "ai",
-          content: answer,
-          date: new Date().toISOString(),
-          todoId: "",
-        };
-        setMessages((prev) => [...prev, aiMsg]);
-
-        // 持久化 AI 消息
-        addChatHistory({
-          content: answer,
-          role: "ai",
-          date: aiMsg.date!,
-          sessionId: sid,
-        }).catch(console.error);
+        await sendMessageStream(
+          {
+            input: value,
+            mode: "deepdive",
+            context,
+            deepDiveSessionId: sid,
+          },
+          {
+            onToken: (t) => {
+              if (abortRef.current) return;
+              setMessages((prev) => {
+                if (prev.length === 0) return prev;
+                const last = prev[prev.length - 1];
+                if (last.role !== "ai") return prev;
+                const next = [...prev];
+                next[next.length - 1] = {
+                  ...last,
+                  content: last.content + t,
+                };
+                return next;
+              });
+            },
+            onDone: ({ output }) => {
+              if (abortRef.current) return;
+              setMessages((prev) => {
+                if (prev.length === 0) return prev;
+                const last = prev[prev.length - 1];
+                if (last.role !== "ai") return prev;
+                const next = [...prev];
+                next[next.length - 1] = { ...last, content: output };
+                return next;
+              });
+              addChatHistory({
+                content: output,
+                role: "ai",
+                date: aiDate,
+                sessionId: sid,
+              }).catch(console.error);
+            },
+            onError: (msg) => console.error("deep dive stream:", msg),
+          }
+        );
       } catch (e) {
         if (!abortRef.current) console.error("deep dive submit failed", e);
       } finally {

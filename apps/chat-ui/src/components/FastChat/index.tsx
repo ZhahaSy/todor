@@ -36,13 +36,15 @@ const FastChat = () => {
 
   const [content, setContent] = useState("");
 
-  const { handleSubmit, handleCancel, loading } = useSendMessage(
-    async (message) => {
+  const { handleSubmit, handleCancel, loading } = useSendMessage({
+    addMessage: async (message, _opts) => {
       if (message.role === "local") return false;
       setContent(message.content);
       return true;
-    }
-  );
+    },
+    appendToLastAiContent: (delta) => setContent((c) => c + delta),
+    replaceLastAiContent: (full) => setContent(full),
+  });
 
   return (
     <>

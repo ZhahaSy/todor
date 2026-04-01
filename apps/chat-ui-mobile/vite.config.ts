@@ -37,6 +37,8 @@ export default defineConfig(async () => ({
         changeOrigin: true,
         secure: false,
         rewrite: (path) => path.replace(/^\/api/, ""),
+        timeout: 0,
+        proxyTimeout: 0,
       },
     },
   },

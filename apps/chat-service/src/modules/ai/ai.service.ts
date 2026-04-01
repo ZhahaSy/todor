@@ -35,6 +35,12 @@ export interface ProcessedResult {
   data?: any;
 }
 
+/** SSE 流：意图 → 若干 token → 最终完成（含完整文本） */
+export type AiStreamEvent =
+  | { type: 'intent'; intent: string }
+  | { type: 'token'; text: string }
+  | { type: 'done'; output: string; intent: string; data?: any };
+
 // 意图处理接口
 export interface IntentHandler {
   getIntent(): string;
@@ -347,6 +353,134 @@ ${escapedHistory}
 
     // 4. 使用处理器处理请求
     return handler.process(inputData);
+  }
+
+  /**
+   * 流式处理：chat / deepdive 走模型 token 流；其余意图与 process 一致，仅结束时推送一条 done。
+   */
+  async *streamProcess(inputData: InputData): AsyncGenerator<AiStreamEvent> {
+    const intent =
+      inputData.forceIntent ?? (await this.recognizeIntent(inputData));
+    yield { type: 'intent', intent };
+
+    const toolIntents = ['query', 'email', 'agent'];
+    if (toolIntents.includes(intent) && this.tools.size > 0) {
+      const result = await this.processWithAgent(inputData);
+      yield {
+        type: 'done',
+        output: result.output,
+        intent: result.intent,
+        data: result.data,
+      };
+      return;
+    }
+
+    const intentsThatSkipSkillAgent = ['todo', 'reminder', 'deepdive'];
+    const userId = inputData.userId ?? inputData.userInfo?.id;
+    if (
+      userId &&
+      !toolIntents.includes(intent) &&
+      !intentsThatSkipSkillAgent.includes(intent)
+    ) {
+      try {
+        const userSkills = await this.skillService.findEnabled(userId);
+        if (userSkills.length > 0 && this.tools.size > 0) {
+          const result = await this.processWithAgent(inputData);
+          yield {
+            type: 'done',
+            output: result.output,
+            intent: result.intent,
+            data: result.data,
+          };
+          return;
+        }
+      } catch {
+        // 与 process 一致：忽略后继续
+      }
+    }
+
+    let handler = this.intentHandlers.get(intent);
+    if (!handler && intent === 'reminder') {
+      handler = this.intentHandlers.get('todo');
+    }
+
+    if (!handler) {
+      if (this.tools.size > 0) {
+        const result = await this.processWithAgent(inputData);
+        yield {
+          type: 'done',
+          output: result.output,
+          intent: result.intent,
+          data: result.data,
+        };
+        return;
+      }
+      yield {
+        type: 'done',
+        output: '抱歉，我暂时无法处理这种类型的请求',
+        intent: 'unknown',
+      };
+      return;
+    }
+
+    type StreamHandler = {
+      streamChat?: (i: InputData) => AsyncGenerator<string, string>;
+      streamDeepDive?: (i: InputData) => AsyncGenerator<string, string>;
+    };
+
+    if (intent === 'chat') {
+      const h = handler as StreamHandler;
+      if (!h.streamChat) {
+        const result = await handler.process(inputData);
+        yield {
+          type: 'done',
+          output: result.output,
+          intent: result.intent,
+          data: result.data,
+        };
+        return;
+      }
+      const gen = h.streamChat(inputData);
+      let step = await gen.next();
+      while (!step.done) {
+        yield { type: 'token', text: step.value as string };
+        step = await gen.next();
+      }
+      const full = step.value as string;
+      yield { type: 'done', output: full, intent: 'chat' };
+      return;
+    }
+
+    if (intent === 'deepdive') {
+      const h = handler as StreamHandler;
+      if (!h.streamDeepDive) {
+        const result = await handler.process(inputData);
+        yield {
+          type: 'done',
+          output: result.output,
+          intent: result.intent,
+          data: result.data,
+        };
+        return;
+      }
+      const gen = h.streamDeepDive(inputData);
+      let step = await gen.next();
+      while (!step.done) {
+        yield { type: 'token', text: step.value as string };
+        step = await gen.next();
+      }
+      const full = step.value as string;
+      yield { type: 'done', output: full, intent: 'deepdive' };
+      return;
+    }
+
+    const result = await handler.process(inputData);
+    yield {
+      type: 'done',
+      output: result.output,
+      intent: result.intent,
+      data: result.data,
+    };
   }
 
   async recognizeAudio(

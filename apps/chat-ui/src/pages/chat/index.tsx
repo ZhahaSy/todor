@@ -18,8 +18,20 @@ const ChatPage: React.FC = () => {
   const isNewDeepDive = searchParams.get("new") === "1"; // 新建深度会话（从侧边栏点「新建深入」）
 
   // 主对话
-  const { messages, addMessage, loadingMore, hasMore, loadMore } = useChat();
-  const { handleSubmit, handleCancel, handleRetry, loading } = useSendMessage(addMessage);
+  const {
+    messages,
+    addMessage,
+    appendToLastAiContent,
+    replaceLastAiContent,
+    loadingMore,
+    hasMore,
+    loadMore,
+  } = useChat();
+  const { handleSubmit, handleCancel, handleRetry, loading } = useSendMessage({
+    addMessage,
+    appendToLastAiContent,
+    replaceLastAiContent,
+  });
 
   // 深度对话
   const deepDive = useDeepDiveChat();
@@ -32,10 +44,10 @@ const ChatPage: React.FC = () => {
     }
   }, [sessionParam]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // 新建深度会话（从侧边栏 or 从消息「深入」按钮）
+  // 新建深度会话：侧边栏「新建深入」不带主对话背景；消息「深入」用 handleEnterDeepDive
   useEffect(() => {
     if (isNewDeepDive) {
-      contextRef.current = serializeMessages(messages);
+      contextRef.current = "";
       const sid = deepDive.startNewSession(contextRef.current);
       // 将 URL 切换到新 session，去掉 ?new=1
       navigate(`/chat?session=${sid}`, { replace: true });

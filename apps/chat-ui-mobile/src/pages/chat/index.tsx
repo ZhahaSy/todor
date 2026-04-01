@@ -2,8 +2,20 @@ import { ChatList, SenderPanel } from "@client/ui"
 import { useChat, useSendMessage } from "@client/hooks";
 
 const Chat = () => {
-    const { messages, addMessage, loadingMore, hasMore, loadMore } = useChat();
-    const { handleSubmit, handleCancel, handleRetry, loading } = useSendMessage(addMessage);
+    const {
+      messages,
+      addMessage,
+      appendToLastAiContent,
+      replaceLastAiContent,
+      loadingMore,
+      hasMore,
+      loadMore,
+    } = useChat();
+    const { handleSubmit, handleCancel, handleRetry, loading } = useSendMessage({
+      addMessage,
+      appendToLastAiContent,
+      replaceLastAiContent,
+    });
     return (
         <div>
             <ChatList

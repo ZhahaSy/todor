@@ -7,7 +7,9 @@ import {
   UseGuards,
   Request,
   BadRequestException,
+  Res,
 } from '@nestjs/common';
+import type { Response } from 'express';
 
 import { AiService, InputData, ProcessedResult } from './ai.service';
 
@@ -139,6 +141,135 @@ export class AiController {
       output: processedResult.output,
       intent: processedResult.intent,
     });
+  }
+
+  @ApiOperation({
+    summary: '发送消息（流式）',
+    description:
+      'SSE：event:intent → event:token（若干）→ event:done；chat/deepdive 为 token 流，其余意图仅在 done 中返回完整结果',
+  })
+  @ApiBody({ type: SendMessageDto })
+  @Post('message/stream')
+  async sendMessageStream(
+    @Body() sendMessageDto: SendMessageDto,
+    @Request() req,
+    @Res({ passthrough: false }) res: Response,
+  ): Promise<void> {
+    const userInfo = {
+      id: req.user.userId,
+      name: req.user.name,
+      email: req.user.email,
+      age: req.user.age,
+      gender: req.user.gender,
+      hobby: req.user.hobby,
+    };
+
+    const inputData: InputData = {
+      input: sendMessageDto.input,
+      userInfo: userInfo as any,
+      userId: req.user.userId,
+      location: sendMessageDto.location,
+      forceIntent: sendMessageDto.mode,
+      context: sendMessageDto.context,
+      deepDiveSessionId: sendMessageDto.deepDiveSessionId,
+    };
+
+    res.setHeader('Content-Type', 'text/event-stream; charset=utf-8');
+    res.setHeader('Cache-Control', 'no-cache, no-transform');
+    res.setHeader('Connection', 'keep-alive');
+    res.setHeader('X-Accel-Buffering', 'no');
+    (res as Response & { flushHeaders?: () => void }).flushHeaders?.();
+
+    const writeSse = (event: string, data: Record<string, unknown>) => {
+      res.write(`event: ${event}\ndata: ${JSON.stringify(data)}\n\n`);
+    };
+
+    try {
+      for await (const ev of this.aiService.streamProcess(inputData)) {
+        if (ev.type === 'intent') {
+          writeSse('intent', { intent: ev.intent });
+          continue;
+        }
+        if (ev.type === 'token') {
+          writeSse('token', { t: ev.text });
+          continue;
+        }
+        if (ev.type === 'done') {
+          const payload: Record<string, unknown> = {
+            output: ev.output,
+            intent: ev.intent,
+            data: ev.data,
+          };
+
+          if (
+            (ev.intent === 'todo' || ev.intent === 'reminder') &&
+            ev.data
+          ) {
+            const todoData = ev.data as {
+              title: string;
+              content: string;
+              type?: string;
+              priority?: string;
+              todoTime?: string;
+              isUrgent?: boolean;
+            };
+            const message = await this.todoService.create({
+              title: todoData.title,
+              content: todoData.content,
+              type: todoData.type || 'work',
+              priority: todoData.priority || 'medium',
+              todoTime: todoData.todoTime,
+              isUrgent: todoData.isUrgent || false,
+              creator: userInfo.name,
+              originInput: sendMessageDto.input,
+              originOutput: ev.output,
+            });
+
+            await this.scheduleService.scheduleOneTimeEmail(
+              message.id,
+              todoData.todoTime,
+              userInfo.email,
+              '待办事项提醒: ' + todoData.title,
+              `您有一条待办事项：${todoData.content}`,
+              userInfo.id,
+            );
+
+            payload.messageId = message.id;
+          }
+
+          if (
+            ev.intent === 'deepdive' &&
+            sendMessageDto.deepDiveSessionId
+          ) {
+            const sessionId = `deepdive:${sendMessageDto.deepDiveSessionId}`;
+            const now = new Date().toISOString();
+            await Promise.all([
+              this.chatHistoryService.create({
+                content: sendMessageDto.input,
+                role: 'local',
+                date: now,
+                sessionId,
+                userId: req.user.userId,
+              }),
+              this.chatHistoryService.create({
+                content: ev.output,
+                role: 'ai',
+                date: now,
+                sessionId,
+                userId: req.user.userId,
+              }),
+            ]);
+          }
+
+          writeSse('done', payload);
+        }
+      }
+    } catch (e) {
+      writeSse('error', {
+        message: e instanceof Error ? e.message : String(e),
+      });
+    }
+    res.end();
   }
 
   @HttpCode(HttpStatus.OK)
