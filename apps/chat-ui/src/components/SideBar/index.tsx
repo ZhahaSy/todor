@@ -9,11 +9,13 @@ import {
   BranchesOutlined,
   PlusOutlined,
   AppstoreOutlined,
+  DeleteOutlined,
 } from "@ant-design/icons";
-import { Button, Menu, Tooltip } from "antd";
+import { Button, Menu, Tooltip, Popconfirm, message } from "antd";
+import type { MenuProps } from "antd";
 import { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { getDeepDiveSessions } from "@client/api";
+import { deleteDeepDiveSession, getDeepDiveSessions } from "@client/api";
 import type { DeepDiveSession } from "@client/api";
 
 const Sidebar = () => {
@@ -45,9 +47,46 @@ const Sidebar = () => {
         ...sessions.map((s) => ({
           key: `deepdive-${s.sessionId}`,
           label: (
-            <Tooltip title={s.title} placement="right">
-              <span className={styles.sessionLabel}>{s.title}</span>
-            </Tooltip>
+            <div className={styles.sessionRow}>
+              <Tooltip title={s.title} placement="right">
+                <span className={styles.sessionLabel}>{s.title}</span>
+              </Tooltip>
+              <span
+                data-dd-delete
+                onClick={(e) => e.stopPropagation()}
+                onMouseDown={(e) => e.stopPropagation()}
+              >
+                <Popconfirm
+                  title="删除此深入会话？"
+                  description="将删除该会话下所有消息与追加内容，不可恢复。"
+                  okText="删除"
+                  cancelText="取消"
+                  okButtonProps={{ danger: true }}
+                  onConfirm={async () => {
+                    try {
+                      await deleteDeepDiveSession(s.sessionId);
+                      message.success("已删除");
+                      const list = await getDeepDiveSessions();
+                      setSessions(list);
+                      const cur = new URLSearchParams(location.search).get("session");
+                      const norm = (x: string) => x.replace(/^deepdive:/, "");
+                      if (cur && norm(cur) === norm(s.sessionId)) {
+                        navigate("/chat");
+                      }
+                    } catch {
+                      message.error("删除失败");
+                    }
+                  }}
+                >
+                  <Button
+                    type="text"
+                    size="small"
+                    danger
+                    icon={<DeleteOutlined style={{ fontSize: 12 }} />}
+                  />
+                </Popconfirm>
+              </span>
+            </div>
           ),
           icon: <BranchesOutlined style={{ fontSize: 12 }} />,
         })),
@@ -76,7 +115,10 @@ const Sidebar = () => {
     return "chat-main";
   };
 
-  const handleClick = ({ key }: { key: string }) => {
+  const handleMenuClick: MenuProps["onClick"] = ({ key, domEvent }) => {
+    if ((domEvent.target as HTMLElement).closest("[data-dd-delete]")) {
+      return;
+    }
     if (key === "myTodo") return navigate("/todo");
     if (key === "skillHub") return navigate("/skill-hub");
     if (key === "setting") return navigate("/setting");
@@ -84,7 +126,7 @@ const Sidebar = () => {
     if (key === "deepdive-new") return navigate("/chat?new=1");
     if (key.startsWith("deepdive-")) {
       const sid = key.replace("deepdive-", "");
-      navigate(`/chat?session=${sid}`);
+      navigate(`/chat?session=${encodeURIComponent(sid)}`);
     }
   };
 
@@ -103,7 +145,7 @@ const Sidebar = () => {
           items={menuItems}
           selectedKeys={[getSelectedKey()]}
           defaultOpenKeys={["chat"]}
-          onClick={handleClick}
+          onClick={handleMenuClick}
         />
       </div>
 

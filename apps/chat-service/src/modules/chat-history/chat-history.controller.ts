@@ -2,6 +2,8 @@ import {
   Controller,
   Post,
   Get,
+  Put,
+  Delete,
   Body,
   Query,
   UseGuards,
@@ -10,6 +12,7 @@ import {
 import { JwtAuthGuard } from '@/common/guard/jwt.auth';
 import { ChatHistoryService } from './chat-history.service';
 import { CreateChatDto } from './dto/create-chat.dto';
+import { UpsertDeepDiveExtraDto } from './dto/deep-dive-extra.dto';
 import { ResOp } from '@/common/model/response.model';
 import { UserService } from '../user/user.service';
 
@@ -38,6 +41,46 @@ export class ChatHistoryController {
     const { name, userId } = req.user;
     const sessions = await this.chatService.findSessions(userId, name);
     return ResOp.success(sessions);
+  }
+
+  @Get('deep-dive/extra')
+  async getDeepDiveExtra(
+    @Request() req,
+    @Query('sessionId') sessionId: string,
+  ) {
+    const { userId } = req.user;
+    if (!sessionId?.trim()) {
+      return ResOp.success({ extraContext: '' });
+    }
+    const data = await this.chatService.getDeepDiveExtra(userId, sessionId);
+    return ResOp.success(data);
+  }
+
+  @Put('deep-dive/extra')
+  async upsertDeepDiveExtra(
+    @Body() dto: UpsertDeepDiveExtraDto,
+    @Request() req,
+  ) {
+    const { userId } = req.user;
+    await this.chatService.upsertDeepDiveExtra(
+      userId,
+      dto.sessionId,
+      dto.extraContext ?? '',
+    );
+    return ResOp.success(null);
+  }
+
+  @Delete('deep-dive/session')
+  async deleteDeepDiveSession(
+    @Request() req,
+    @Query('sessionId') sessionId: string,
+  ) {
+    const { userId } = req.user;
+    if (!sessionId?.trim()) {
+      return ResOp.success(null);
+    }
+    await this.chatService.deleteDeepDiveSession(userId, sessionId);
+    return ResOp.success(null);
   }
 
   @Get()

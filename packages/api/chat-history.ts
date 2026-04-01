@@ -25,3 +25,30 @@ export const getDeepDiveSessions = async (): Promise<DeepDiveSession[]> => {
   const data = await request.get("/chat-history/sessions");
   return data as unknown as DeepDiveSession[];
 };
+
+/** 深入模式「追加」文本（存数据库） */
+export const getDeepDiveExtraContext = async (
+  sessionId: string
+): Promise<{ extraContext: string }> => {
+  const data = await request.get("/chat-history/deep-dive/extra", {
+    params: { sessionId },
+  });
+  return data as { extraContext: string };
+};
+
+export const upsertDeepDiveExtraContext = async (
+  sessionId: string,
+  extraContext: string
+): Promise<void> => {
+  await request.put("/chat-history/deep-dive/extra", {
+    sessionId,
+    extraContext: extraContext ?? "",
+  });
+};
+
+/** 删除整个深入会话（消息、追加文本、Redis 记忆） */
+export const deleteDeepDiveSession = async (sessionId: string): Promise<void> => {
+  await request.delete("/chat-history/deep-dive/session", {
+    params: { sessionId },
+  });
+};

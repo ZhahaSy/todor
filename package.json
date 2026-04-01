@@ -12,7 +12,6 @@
     "prestart:s": "pkill -f 'chat-service.*nest start' 2>/dev/null; pkill -f 'chat-service.*dist/main' 2>/dev/null; true",
     "start:s": "turbo run start --filter=chat-service...",
     "start:cm": "turbo run start --filter=chat-ui-mobile...",
-
     "lint": "turbo run lint",
     "format": "prettier --write \"**/*.{ts,tsx,md}\"",
     "check-types": "turbo run check-types",
@@ -30,7 +29,8 @@
   },
   "pnpm": {
     "overrides": {
-      "@langchain/core": "^0.3.58"
+      "@langchain/core": "^0.3.58",
+      "iconv-lite": "0.6.3"
     }
   },
   "dependencies": {

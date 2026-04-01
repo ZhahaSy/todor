@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 import { Button, Input } from "antd";
 import { ArrowLeftOutlined, PlusOutlined } from "@ant-design/icons";
 import { ChatHistory } from "@client/entities";
@@ -6,31 +6,12 @@ import ChatList from "../ChatList";
 import SenderPanel from "../SenderPanel";
 import type { ChatMode } from "../SenderPanel";
 import styles from "./index.module.less";
+import {
+  getDeepDiveExtraContext,
+  upsertDeepDiveExtraContext,
+} from "@client/api";
 
-/** 按深入会话 id 持久化「追加」区内容，避免刷新或暂离后丢失 */
-const EXTRA_CONTEXT_STORAGE_PREFIX = "deepdive:extraContext:";
-
-function readStoredExtraContext(sessionId: string): string {
-  if (typeof window === "undefined" || !sessionId) return "";
-  try {
-    return localStorage.getItem(EXTRA_CONTEXT_STORAGE_PREFIX + sessionId) ?? "";
-  } catch {
-    return "";
-  }
-}
-
-function writeStoredExtraContext(sessionId: string, value: string) {
-  if (typeof window === "undefined" || !sessionId) return;
-  try {
-    if (value.trim()) {
-      localStorage.setItem(EXTRA_CONTEXT_STORAGE_PREFIX + sessionId, value);
-    } else {
-      localStorage.removeItem(EXTRA_CONTEXT_STORAGE_PREFIX + sessionId);
-    }
-  } catch {
-    /* quota / private mode */
-  }
-}
+const SAVE_DEBOUNCE_MS = 500;
 
 export interface DeepDivePanelProps {
   initialContext: string;
@@ -53,6 +34,9 @@ const DeepDivePanel = ({
 }: DeepDivePanelProps) => {
   const [extraContext, setExtraContext] = useState("");
   const [showExtra, setShowExtra] = useState(false);
+  const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const extraContextRef = useRef("");
+  extraContextRef.current = extraContext;
 
   useEffect(() => {
     if (!deepDiveSessionId) {
@@ -60,17 +44,52 @@ const DeepDivePanel = ({
       setShowExtra(false);
       return;
     }
-    const stored = readStoredExtraContext(deepDiveSessionId);
-    setExtraContext(stored);
-    setShowExtra(!!stored.trim());
+    let cancelled = false;
+    getDeepDiveExtraContext(deepDiveSessionId)
+      .then((res) => {
+        if (cancelled) return;
+        const text = res.extraContext ?? "";
+        setExtraContext(text);
+        setShowExtra(!!text.trim());
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setExtraContext("");
+          setShowExtra(false);
+        }
+      });
+    return () => {
+      cancelled = true;
+    };
   }, [deepDiveSessionId]);
+
+  useEffect(() => {
+    return () => {
+      if (saveTimerRef.current) {
+        clearTimeout(saveTimerRef.current);
+        saveTimerRef.current = null;
+      }
+    };
+  }, []);
+
+  const scheduleSave = useCallback(
+    (value: string) => {
+      if (!deepDiveSessionId) return;
+      if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
+      saveTimerRef.current = setTimeout(() => {
+        saveTimerRef.current = null;
+        void upsertDeepDiveExtraContext(deepDiveSessionId, value).catch(console.error);
+      }, SAVE_DEBOUNCE_MS);
+    },
+    [deepDiveSessionId]
+  );
 
   const onExtraContextChange = useCallback(
     (value: string) => {
       setExtraContext(value);
-      writeStoredExtraContext(deepDiveSessionId, value);
+      scheduleSave(value);
     },
-    [deepDiveSessionId]
+    [scheduleSave]
   );
 
   const buildContext = useCallback(() => {
@@ -112,7 +131,19 @@ const DeepDivePanel = ({
           <Input.TextArea
             value={extraContext}
             onChange={(e) => onExtraContextChange(e.target.value)}
-            placeholder="在此粘贴额外文本，AI 将基于原始上下文 + 追加内容回答"
+            onBlur={() => {
+              if (deepDiveSessionId) {
+                if (saveTimerRef.current) {
+                  clearTimeout(saveTimerRef.current);
+                  saveTimerRef.current = null;
+                }
+                void upsertDeepDiveExtraContext(
+                  deepDiveSessionId,
+                  extraContextRef.current
+                ).catch(console.error);
+              }
+            }}
+            placeholder="在此粘贴额外文本，AI 将基于原始上下文 + 追加内容回答（已保存到云端）"
             autoSize={{ minRows: 3, maxRows: 8 }}
           />
         </div>

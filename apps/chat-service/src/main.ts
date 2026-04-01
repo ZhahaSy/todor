@@ -3,18 +3,25 @@ import { AppModule } from '@/app.module';
 import * as dotenv from 'dotenv';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { ResOp } from '@/common/model/response.model';
-import * as cookieParser from 'cookie-parser';
+import cookieParser from 'cookie-parser';
 import helmet from 'helmet';
 import { rateLimit } from 'express-rate-limit';
+import {
+  utf8JsonMiddleware,
+  utf8UrlencodedMiddleware,
+} from './utf8-body-parser';
 
 dotenv.config(); // 添加这行加载.env文件
+
+const BODY_LIMIT = 10 * 1024 * 1024;
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
     bodyParser: false,
   });
-  app.use(require('express').json({ limit: '10mb' }));
-  app.use(require('express').urlencoded({ limit: '10mb', extended: true }));
+  // 不使用 express.json/urlencoded，避免拉取 raw-body → iconv-lite（pnpm 下 0.7.x 缺 encodings）
+  app.use(utf8JsonMiddleware({ limit: BODY_LIMIT }));
+  app.use(utf8UrlencodedMiddleware({ limit: BODY_LIMIT, extended: true }));
 
   // 安全响应头
   app.use(helmet());
@@ -70,7 +77,9 @@ async function bootstrap() {
       break;
     } catch (err: any) {
       if (err.code === 'EADDRINUSE' && attempt < 10) {
-        console.log(`\x1b[33mPort ${port} busy, retrying (${attempt}/10)...\x1b[0m`);
+        console.log(
+          `\x1b[33mPort ${port} busy, retrying (${attempt}/10)...\x1b[0m`,
+        );
         await new Promise((r) => setTimeout(r, 500));
       } else {
         throw err;

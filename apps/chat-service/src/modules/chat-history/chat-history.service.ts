@@ -1,15 +1,27 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, In } from 'typeorm';
 import { CreateChatDto } from './dto/create-chat.dto';
 import { ChatHistory } from './entities/chat-history.entity';
+import { DeepDiveExtra } from './entities/deep-dive-extra.entity';
+import { RedisService } from '../redis/redis.service';
 
 @Injectable()
 export class ChatHistoryService {
   constructor(
     @InjectRepository(ChatHistory)
     private readonly chatRepository: Repository<ChatHistory>,
+    @InjectRepository(DeepDiveExtra)
+    private readonly deepDiveExtraRepository: Repository<DeepDiveExtra>,
+    private readonly redisService: RedisService,
   ) {}
+
+  /** 统一为无前缀 UUID，与前端 URL ?session= 一致 */
+  private normalizeDeepDiveSessionId(sessionId: string): string {
+    return sessionId.startsWith('deepdive:')
+      ? sessionId.slice('deepdive:'.length)
+      : sessionId;
+  }
 
   async create(
     createChatDto: CreateChatDto & { sessionId: string; userId: string },
@@ -56,12 +68,66 @@ export class ChatHistoryService {
       .andWhere('c.sessionId IS NOT NULL')
       .groupBy('c.sessionId')
       .orderBy('lastDate', 'DESC')
-      .getRawMany<{ sessionId: string; lastDate: string; title: string | null }>();
+      .getRawMany<{
+        sessionId: string;
+        lastDate: string;
+        title: string | null;
+      }>();
 
     return rows.map((r) => ({
       sessionId: r.sessionId,
       title: r.title ?? r.sessionId.slice(0, 8),
       lastDate: r.lastDate,
     }));
+  }
+
+  async getDeepDiveExtra(
+    userId: string,
+    sessionId: string,
+  ): Promise<{ extraContext: string }> {
+    const sid = this.normalizeDeepDiveSessionId(sessionId);
+    const row = await this.deepDiveExtraRepository.findOne({
+      where: { userId, sessionId: sid },
+    });
+    return { extraContext: row?.extraContext ?? '' };
+  }
+
+  async upsertDeepDiveExtra(
+    userId: string,
+    sessionId: string,
+    extraContext: string,
+  ): Promise<void> {
+    const sid = this.normalizeDeepDiveSessionId(sessionId);
+    const existing = await this.deepDiveExtraRepository.findOne({
+      where: { userId, sessionId: sid },
+    });
+    if (existing) {
+      existing.extraContext = extraContext;
+      await this.deepDiveExtraRepository.save(existing);
+      return;
+    }
+    await this.deepDiveExtraRepository.save(
+      this.deepDiveExtraRepository.create({
+        userId,
+        sessionId: sid,
+        extraContext,
+      }),
+    );
+  }
+
+  /**
+   * 删除深入会话：消息记录、追加文本、Redis 中的该会话记忆
+   */
+  async deleteDeepDiveSession(userId: string, sessionId: string): Promise<void> {
+    const raw = this.normalizeDeepDiveSessionId(sessionId);
+    const sessionVariants = [raw, `deepdive:${raw}`];
+    await this.chatRepository.delete({
+      userId,
+      sessionId: In(sessionVariants),
+    });
+    await this.deepDiveExtraRepository.delete({ userId, sessionId: raw });
+
+    const redisKey = `memory:user:${userId}:deepdive:${raw}:history`;
+    await this.redisService.del(redisKey);
   }
 }
