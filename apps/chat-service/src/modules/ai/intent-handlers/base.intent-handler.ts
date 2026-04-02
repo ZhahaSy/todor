@@ -1,5 +1,6 @@
 import { IntentHandler, InputData, ProcessedResult } from '../ai.service';
-import { ChatPromptTemplate } from '@langchain/core/prompts';
+import { ChatPromptTemplate, MessagesPlaceholder } from '@langchain/core/prompts';
+import { BaseMessage } from '@langchain/core/messages';
 import { RedisChatMemory } from '../memory/redis-chat-memory';
 import Redis from 'ioredis';
 
@@ -71,6 +72,7 @@ export abstract class BaseIntentHandler implements IntentHandler {
     options?: {
       k?: number;
       ttl?: number;
+      messageExpiry?: number;
       memoryKey?: string;
       returnMessages?: boolean;
     },
@@ -80,6 +82,7 @@ export abstract class BaseIntentHandler implements IntentHandler {
       sessionId: `user:${inputData.userInfo.id}:${this.getIntent()}`,
       k: options?.k ?? 10,
       ttl: options?.ttl ?? 3600 * 24 * 7, // 7 days default
+      messageExpiry: options?.messageExpiry ?? 3600 * 2, // 2 hours per-message expiry
       memoryKey: options?.memoryKey ?? 'history',
       returnMessages: options?.returnMessages ?? false,
     });
@@ -119,9 +122,9 @@ export abstract class BaseIntentHandler implements IntentHandler {
    * @param memory RedisChatMemory instance
    * @returns Chat history string or empty message
    */
-  protected async loadChatHistory(memory: RedisChatMemory): Promise<string> {
+  protected async loadChatHistory(memory: RedisChatMemory): Promise<BaseMessage[]> {
     const memoryVariables = await memory.loadMemoryVariables({});
-    return memoryVariables.history || '暂无历史对话';
+    return (memoryVariables.history as BaseMessage[]) || [];
   }
 
   /**
@@ -186,12 +189,13 @@ export abstract class BaseIntentHandler implements IntentHandler {
 
       if (source === 'global') {
         const memory = this.createGlobalMemory(redis, inputData);
-        history = await this.loadChatHistory(memory);
+        const messages = await this.loadChatHistory(memory);
+        history = messages.map((m) => `${m._getType()}: ${m.content}`).join('\n');
       } else {
         history = await this.loadCrossIntentHistory(redis, inputData, source);
       }
 
-      if (history && history !== '暂无历史对话') {
+      if (history && history.length > 0) {
         histories.push(`[${source}对话]\n${history}`);
       }
     }
@@ -213,12 +217,11 @@ export abstract class BaseIntentHandler implements IntentHandler {
     inputData: InputData,
     scope: 'global' | 'intent' = 'global',
   ): Promise<void> {
-    const sessionId =
+    const memory =
       scope === 'global'
-        ? `user:${inputData.userInfo.id}:global`
-        : `user:${inputData.userInfo.id}:${this.getIntent()}`;
-
-    await redis.del(sessionId);
+        ? this.createGlobalMemory(redis, inputData)
+        : this.createIntentMemory(redis, inputData);
+    await memory.clear();
   }
 
   /**
@@ -232,6 +235,7 @@ export abstract class BaseIntentHandler implements IntentHandler {
     options?: {
       k?: number;
       ttl?: number;
+      messageExpiry?: number;
       memoryKey?: string;
       returnMessages?: boolean;
     },
@@ -241,6 +245,7 @@ export abstract class BaseIntentHandler implements IntentHandler {
       sessionId,
       k: options?.k ?? 10,
       ttl: options?.ttl ?? 3600 * 24 * 7,
+      messageExpiry: options?.messageExpiry ?? 3600 * 2,
       memoryKey: options?.memoryKey ?? 'history',
       returnMessages: options?.returnMessages ?? false,
     });
@@ -264,34 +269,16 @@ export abstract class BaseIntentHandler implements IntentHandler {
   }
 
   /**
-   * Build prompt with chat history included
-   * @param systemMessage System message
-   * @param chatHistory Chat history string
-   * @returns ChatPromptTemplate with history
+   * Build prompt with chat history as real message turns
    */
-  protected buildPromptWithHistory(
-    systemMessage: string,
-    chatHistory: string,
-  ): ChatPromptTemplate {
-    // Escape curly braces in chatHistory to prevent LangChain template parsing errors
-    const escapedChatHistory = chatHistory
-      .replace(/\{/g, '{{')
-      .replace(/\}/g, '}}');
+  protected buildPromptWithHistory(systemMessage: string): ChatPromptTemplate {
+    const systemWithContext = `${systemMessage}
 
-    const contextWithHistory = `${systemMessage}
-
-对话历史：
-${escapedChatHistory}
-
-当前时间：${new Date().toLocaleString()}
-用户档案：
-姓名：{name}
-年龄：{age}
-性别：{gender}
-兴趣：{hobby}`;
+当前时间：${new Date().toLocaleString()}`;
 
     return ChatPromptTemplate.fromMessages([
-      ['system', contextWithHistory],
+      ['system', systemWithContext],
+      new MessagesPlaceholder('chat_history'),
       ['human', '{input}'],
     ]);
   }
