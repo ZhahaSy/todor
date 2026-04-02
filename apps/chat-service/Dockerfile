@@ -2,7 +2,6 @@ FROM node:20-bookworm-slim AS builder
 
 ENV PNPM_HOME="/pnpm"
 ENV PATH="${PNPM_HOME}:${PATH}"
-ENV NODE_OPTIONS="--max-old-space-size=3072"
 RUN corepack enable
 
 WORKDIR /app
@@ -14,7 +13,7 @@ RUN pnpm install --filter chat-service... --frozen-lockfile
 
 COPY apps/chat-service apps/chat-service
 
-RUN pnpm --filter chat-service build:light
+RUN pnpm --filter chat-service build
 
 FROM node:20-bookworm-slim AS runner
 
