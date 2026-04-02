@@ -3,6 +3,14 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { AiModule } from './modules/ai/ai.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { Todo } from './modules/todo/entities/todo.entity';
+import { ChatHistory } from './modules/chat-history/entities/chat-history.entity';
+import { Notification } from './modules/message/entities/notification.entity';
+import { ScheduledTask } from './modules/schedule/entities/scheduled-task.entity';
+import { HubSkillDef } from './modules/skill/entities/hub-skill-def.entity';
+import { User } from './modules/user/entities/user.entity';
+import { Skill } from './modules/skill/entities/skill.entity';
+import { DeepDiveExtra } from './modules/chat-history/entities/deep-dive-extra.entity';
 
 import { ConfigModule } from '@nestjs/config';
 import { ChatHistoryModule } from './modules/chat-history/chat-history.module';
@@ -28,7 +36,7 @@ export const IS_DEV = process.env.RUNNING_ENV !== 'prod';
       database:
         process.env.DB_DATABASE ||
         (IS_DEV ? 'dbs/chat.db' : '/var/data/chat-service/chat.db'),
-      entities: [__dirname + '/**/*.entity{.ts,.js}'],
+      entities: [Todo, ChatHistory, Notification, ScheduledTask, HubSkillDef, User, Skill, DeepDiveExtra],
       synchronize: true, // 自动同步表结构（新表/新列），pm2 reload 已固化 env，不再有误触风险
     }),
 
