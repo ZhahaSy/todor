@@ -6,7 +6,7 @@ import { AiModelProvider } from '../ai-model.provider';
 import { extractTokenText } from '../utils/langchain-stream';
 import { RedisChatMemory } from '../memory/redis-chat-memory';
 import { ChatPromptTemplate } from '@langchain/core/prompts';
-import { AIMessage, ToolMessage } from '@langchain/core/messages';
+import { AIMessage, AIMessageChunk, ToolMessage } from '@langchain/core/messages';
 import { createGetUserInfoTool } from '../tools/get-user-info.tool';
 
 @Injectable()
@@ -83,9 +83,9 @@ export class ChatIntentHandler extends BaseIntentHandler {
     const formattedMessages = await prompt.formatMessages(invokeArgs);
 
     let textContent = '';
-    const toolCalls: any[] = [];
+    let accumulatedChunk: AIMessageChunk | null = null;
 
-    // 流式输出，同时收集 tool calls
+    // 流式输出，同时累积完整的 AI message chunk（tool_calls 是 delta，需要 concat 合并）
     const stream = await modelWithTools.stream(formattedMessages);
     for await (const chunk of stream) {
       const piece = extractTokenText(chunk);
@@ -93,10 +93,10 @@ export class ChatIntentHandler extends BaseIntentHandler {
         textContent += piece;
         yield piece;
       }
-      if ((chunk as any).tool_calls?.length > 0) {
-        toolCalls.push(...(chunk as any).tool_calls);
-      }
+      accumulatedChunk = accumulatedChunk ? accumulatedChunk.concat(chunk as AIMessageChunk) : (chunk as AIMessageChunk);
     }
+
+    const toolCalls = accumulatedChunk?.tool_calls ?? [];
 
     if (toolCalls.length > 0) {
       // 执行工具，流式输出最终回复
