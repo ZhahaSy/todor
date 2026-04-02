@@ -6,9 +6,9 @@ interface UseVoiceInputOptions {
   onError?: (error: string) => void;
 }
 
-const SAMPLE_RATE = 16000;
+const TARGET_SAMPLE_RATE = 16000;
 
-/** Float32 PCM samples → WAV Blob（16-bit, mono, 16kHz） */
+/** Float32 PCM samples → WAV Blob（16-bit, mono） */
 function encodeWav(samples: Float32Array, sampleRate: number): Blob {
   const dataLen = samples.length * 2;
   const buffer = new ArrayBuffer(44 + dataLen);
@@ -22,8 +22,8 @@ function encodeWav(samples: Float32Array, sampleRate: number): Blob {
   view.setUint32(4, 36 + dataLen, true);
   writeStr(8, 'WAVE');
   writeStr(12, 'fmt ');
-  view.setUint32(16, 16, true);        // PCM chunk size
-  view.setUint16(20, 1, true);         // PCM format
+  view.setUint32(16, 16, true);
+  view.setUint16(20, 1, true);         // PCM
   view.setUint16(22, 1, true);         // mono
   view.setUint32(24, sampleRate, true);
   view.setUint32(28, sampleRate * 2, true);
@@ -40,6 +40,21 @@ function encodeWav(samples: Float32Array, sampleRate: number): Blob {
   return new Blob([buffer], { type: 'audio/wav' });
 }
 
+/** 使用 OfflineAudioContext 将 PCM 重采样到目标采样率 */
+async function resample(samples: Float32Array, fromRate: number, toRate: number): Promise<Float32Array> {
+  if (fromRate === toRate) return samples;
+  const duration = samples.length / fromRate;
+  const offlineCtx = new OfflineAudioContext(1, Math.ceil(duration * toRate), toRate);
+  const srcBuffer = offlineCtx.createBuffer(1, samples.length, fromRate);
+  srcBuffer.copyToChannel(samples, 0);
+  const src = offlineCtx.createBufferSource();
+  src.buffer = srcBuffer;
+  src.connect(offlineCtx.destination);
+  src.start();
+  const rendered = await offlineCtx.startRendering();
+  return rendered.getChannelData(0);
+}
+
 export function useVoiceInput({ onTranscript, onError }: UseVoiceInputOptions) {
   const [isListening, setIsListening] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
@@ -53,11 +68,16 @@ export function useVoiceInput({ onTranscript, onError }: UseVoiceInputOptions) {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       streamRef.current = stream;
 
-      const audioCtx = new AudioContext({ sampleRate: SAMPLE_RATE });
+      // 不指定 sampleRate，使用设备原生采样率，避免移动端不支持自定义采样率报错
+      const audioCtx = new AudioContext();
       audioCtxRef.current = audioCtx;
 
+      // iOS Safari 需要 resume（用户手势后可能仍处于 suspended 状态）
+      if (audioCtx.state === 'suspended') {
+        await audioCtx.resume();
+      }
+
       const source = audioCtx.createMediaStreamSource(stream);
-      // ScriptProcessorNode 是唯一能在旧版浏览器同步获取 PCM 的方式
       const processor = audioCtx.createScriptProcessor(4096, 1, 1) as ScriptProcessorNode;
       processorRef.current = processor;
       samplesRef.current = [];
@@ -72,7 +92,7 @@ export function useVoiceInput({ onTranscript, onError }: UseVoiceInputOptions) {
       setIsListening(true);
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : String(err);
-      if (msg.includes('NotAllowed') || msg.includes('Permission')) {
+      if (msg.includes('NotAllowed') || msg.includes('Permission') || msg.includes('denied')) {
         onError?.('麦克风权限被拒绝，请在浏览器设置中允许麦克风访问');
       } else {
         onError?.(`无法启动录音: ${msg}`);
@@ -92,7 +112,8 @@ export function useVoiceInput({ onTranscript, onError }: UseVoiceInputOptions) {
   }, []);
 
   const stopAndRecognize = useCallback(async () => {
-    // 先停止录音
+    const nativeSampleRate = audioCtxRef.current?.sampleRate ?? TARGET_SAMPLE_RATE;
+
     processorRef.current?.disconnect();
     processorRef.current = null;
     streamRef.current?.getTracks().forEach((t: MediaStreamTrack) => t.stop());
@@ -105,7 +126,6 @@ export function useVoiceInput({ onTranscript, onError }: UseVoiceInputOptions) {
     samplesRef.current = [];
     if (chunks.length === 0) return;
 
-    // 合并所有 PCM 片段
     const total = chunks.reduce((n: number, c: Float32Array) => n + c.length, 0);
     const merged = new Float32Array(total);
     let offset = 0;
@@ -114,12 +134,14 @@ export function useVoiceInput({ onTranscript, onError }: UseVoiceInputOptions) {
       offset += chunk.length;
     }
 
-    const wavBlob = encodeWav(merged, SAMPLE_RATE);
     setIsProcessing(true);
     try {
+      // 重采样到 16kHz（后端 ASR 要求）
+      const resampled = await resample(merged, nativeSampleRate, TARGET_SAMPLE_RATE);
+      const wavBlob = encodeWav(resampled, TARGET_SAMPLE_RATE);
+
       const arrayBuffer = await wavBlob.arrayBuffer();
       const bytes = new Uint8Array(arrayBuffer);
-      // btoa 处理大文件时分块转换避免栈溢出
       let binary = '';
       const chunkSize = 8192;
       for (let i = 0; i < bytes.length; i += chunkSize) {
@@ -128,7 +150,6 @@ export function useVoiceInput({ onTranscript, onError }: UseVoiceInputOptions) {
       const base64 = btoa(binary);
       const text = await recognizeAudio({ audioData: base64, format: 'wav', dataLen: arrayBuffer.byteLength });
 
-      console.log('text',text)
       if (text) onTranscript(text);
     } catch {
       onError?.('语音识别失败，请重试');
