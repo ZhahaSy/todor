@@ -33,25 +33,4 @@ import { ChatHistoryModule } from '../chat-history/chat-history.module';
   ],
   exports: [AiService, AiModelProvider],
 })
-export class AiModule {
-  constructor(
-    aiService: AiService,
-    chatIntentHandler: ChatIntentHandler,
-    todoIntentHandler: TodoIntentHandler,
-    deepDiveIntentHandler: DeepDiveIntentHandler,
-    databaseQueryTool: DatabaseQueryTool,
-    createReminderTool: CreateReminderTool,
-    weatherQueryTool: WeatherQueryTool,
-  ) {
-    // 注册意图处理器
-    aiService.registerIntentHandler(chatIntentHandler);
-    aiService.registerIntentHandler(todoIntentHandler);
-    aiService.registerIntentHandler(deepDiveIntentHandler);
-
-    // 注册 LangChain Tools
-    (aiService as any).registerTool(databaseQueryTool);
-    // SendEmailTool 暂时下线，待改造：通讯录、对话确认、自定义发件人
-    (aiService as any).registerTool(createReminderTool);
-    (aiService as any).registerTool(weatherQueryTool);
-  }
-}
+export class AiModule {}

@@ -65,7 +65,7 @@ export class RedisChatMemory extends BaseChatMemory {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   async loadMemoryVariables(_values: InputValues): Promise<MemoryVariables> {
     const key = this.getRedisKey();
-    const messagesJson = await this.redis.lrange(key, -this.k, -1);
+    const messagesJson = await this.redis.lrange(key, -this.k * 2, -1);
 
     const expiryMs = this.messageExpiry ? this.messageExpiry * 1000 : null;
     const now = Date.now();

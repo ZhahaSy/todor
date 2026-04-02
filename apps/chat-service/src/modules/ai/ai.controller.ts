@@ -8,33 +8,49 @@ import {
   Request,
   BadRequestException,
   Res,
+  Logger,
 } from '@nestjs/common';
 import type { Response } from 'express';
 
-import { AiService, InputData, ProcessedResult } from './ai.service';
+import { AiService, InputData } from './ai.service';
 
 import { SendMessageDto } from './dto/send-message.dto';
 import { AsrRecognizeDto } from './dto/asr-recognize.dto';
 
 import { ApiTags, ApiOperation, ApiBody } from '@nestjs/swagger';
 import { ResOp } from '@/common/model/response.model';
-import { TodoService } from '../todo/todo.service';
 import { JwtAuthGuard } from '@/common/guard/jwt.auth';
 import { UserService } from '../user/user.service';
-import { AdvancedSchedulerService } from '../schedule/advanced-scheduler.service';
-import { ChatHistoryService } from '../chat-history/chat-history.service';
 
 @ApiTags('AI接口')
 @UseGuards(JwtAuthGuard)
 @Controller('ai')
 export class AiController {
+  private readonly logger = new Logger(AiController.name);
+
   constructor(
     private readonly aiService: AiService,
-    private readonly todoService: TodoService,
     private readonly userService: UserService,
-    private readonly scheduleService: AdvancedSchedulerService,
-    private readonly chatHistoryService: ChatHistoryService,
   ) {}
+
+  private buildInputData(dto: SendMessageDto, req: any): InputData {
+    return {
+      input: dto.input,
+      userInfo: {
+        id: req.user.userId,
+        name: req.user.name,
+        email: req.user.email,
+        age: req.user.age,
+        gender: req.user.gender,
+        hobby: req.user.hobby,
+      } as any,
+      userId: req.user.userId,
+      location: dto.location,
+      forceIntent: dto.mode,
+      context: dto.context,
+      deepDiveSessionId: dto.deepDiveSessionId,
+    };
+  }
 
   @HttpCode(HttpStatus.OK)
   @ApiOperation({
@@ -44,102 +60,26 @@ export class AiController {
   @ApiBody({ type: SendMessageDto })
   @Post('message')
   async sendMessage(@Body() sendMessageDto: SendMessageDto, @Request() req) {
-    // 直接从 JWT payload 中获取用户信息，避免数据库查询
-    const userInfo = {
-      id: req.user.userId,
-      name: req.user.name,
-      email: req.user.email,
-      age: req.user.age,
-      gender: req.user.gender,
-      hobby: req.user.hobby,
-    };
-    console.log('sendMessage-user', req.user);
+    this.logger.log('sendMessage-user: ' + JSON.stringify(req.user));
+    const inputData = this.buildInputData(sendMessageDto, req);
+    this.logger.log(JSON.stringify(inputData));
 
-    // 构建输入数据（mode 有值时直接映射为 forceIntent，跳过 LLM 意图识别）
-    const inputData: InputData = {
-      input: sendMessageDto.input,
-      userInfo: userInfo as any,
-      userId: req.user.userId,
-      location: sendMessageDto.location,
-      forceIntent: sendMessageDto.mode,
-      context: sendMessageDto.context,
-      deepDiveSessionId: sendMessageDto.deepDiveSessionId,
-    };
+    const processedResult = await this.aiService.process(inputData);
+    this.logger.log(JSON.stringify(processedResult));
 
-    console.log(inputData);
-    // 调用AI服务处理消息（内部已包含意图识别和处理）
-    const processedResult: ProcessedResult =
-      await this.aiService.process(inputData);
+    const extra = await this.aiService.handlePostProcess(
+      processedResult,
+      sendMessageDto.input,
+      req.user.userId,
+      req.user.email,
+      req.user.name,
+      sendMessageDto.deepDiveSessionId,
+    );
 
-    console.log(processedResult);
-
-    //根据意图执行额外业务逻辑
-    if (
-      (processedResult.intent === 'todo' ||
-        processedResult.intent === 'reminder') &&
-      processedResult.data
-    ) {
-      // 当意图是todo或reminder时，都保存到待办事项
-      // 因为从用户语义上来说，设置提醒和创建待办事项是类似的需求
-      const todoData = processedResult.data;
-      const message = await this.todoService.create({
-        title: todoData.title,
-        content: todoData.content,
-        type: todoData.type || 'work',
-        priority: todoData.priority || 'medium',
-        todoTime: todoData.todoTime,
-        isUrgent: todoData.isUrgent || false,
-        creator: userInfo.name,
-        originInput: sendMessageDto.input,
-        originOutput: processedResult.output,
-      });
-
-      // 安排提醒邮件（同步发送应用内通知）
-      await this.scheduleService.scheduleOneTimeEmail(
-        message.id,
-        todoData.todoTime,
-        userInfo.email,
-        '待办事项提醒: ' + todoData.title,
-        `您有一条待办事项：${todoData.content}`,
-        userInfo.id,
-      );
-
-      return ResOp.success({
-        output: processedResult.output,
-        messageId: message.id,
-        intent: processedResult.intent,
-      });
-    }
-
-    // deepdive 意图：把用户问题和 AI 回答持久化到 DB（独立 sessionId）
-    if (
-      processedResult.intent === 'deepdive' &&
-      sendMessageDto.deepDiveSessionId
-    ) {
-      const sessionId = `deepdive:${sendMessageDto.deepDiveSessionId}`;
-      const now = new Date().toISOString();
-      await Promise.all([
-        this.chatHistoryService.create({
-          content: sendMessageDto.input,
-          role: 'local',
-          date: now,
-          sessionId,
-          userId: req.user.userId,
-        }),
-        this.chatHistoryService.create({
-          content: processedResult.output,
-          role: 'ai',
-          date: now,
-          sessionId,
-          userId: req.user.userId,
-        }),
-      ]);
-    }
-
-    // 对于其他意图，直接返回结果
     return ResOp.success({
       output: processedResult.output,
       intent: processedResult.intent,
+      ...extra,
     });
   }
 
@@ -155,24 +95,7 @@ export class AiController {
     @Request() req,
     @Res({ passthrough: false }) res: Response,
   ): Promise<void> {
-    const userInfo = {
-      id: req.user.userId,
-      name: req.user.name,
-      email: req.user.email,
-      age: req.user.age,
-      gender: req.user.gender,
-      hobby: req.user.hobby,
-    };
-
-    const inputData: InputData = {
-      input: sendMessageDto.input,
-      userInfo: userInfo as any,
-      userId: req.user.userId,
-      location: sendMessageDto.location,
-      forceIntent: sendMessageDto.mode,
-      context: sendMessageDto.context,
-      deepDiveSessionId: sendMessageDto.deepDiveSessionId,
-    };
+    const inputData = this.buildInputData(sendMessageDto, req);
 
     res.setHeader('Content-Type', 'text/event-stream; charset=utf-8');
     res.setHeader('Cache-Control', 'no-cache, no-transform');
@@ -195,73 +118,20 @@ export class AiController {
           continue;
         }
         if (ev.type === 'done') {
-          const payload: Record<string, unknown> = {
+          const extra = await this.aiService.handlePostProcess(
+            { output: ev.output, intent: ev.intent, data: ev.data },
+            sendMessageDto.input,
+            req.user.userId,
+            req.user.email,
+            req.user.name,
+            sendMessageDto.deepDiveSessionId,
+          );
+          writeSse('done', {
             output: ev.output,
             intent: ev.intent,
             data: ev.data,
-          };
-
-          if (
-            (ev.intent === 'todo' || ev.intent === 'reminder') &&
-            ev.data
-          ) {
-            const todoData = ev.data as {
-              title: string;
-              content: string;
-              type?: string;
-              priority?: string;
-              todoTime?: string;
-              isUrgent?: boolean;
-            };
-            const message = await this.todoService.create({
-              title: todoData.title,
-              content: todoData.content,
-              type: todoData.type || 'work',
-              priority: todoData.priority || 'medium',
-              todoTime: todoData.todoTime,
-              isUrgent: todoData.isUrgent || false,
-              creator: userInfo.name,
-              originInput: sendMessageDto.input,
-              originOutput: ev.output,
-            });
-
-            await this.scheduleService.scheduleOneTimeEmail(
-              message.id,
-              todoData.todoTime,
-              userInfo.email,
-              '待办事项提醒: ' + todoData.title,
-              `您有一条待办事项：${todoData.content}`,
-              userInfo.id,
-            );
-
-            payload.messageId = message.id;
-          }
-
-          if (
-            ev.intent === 'deepdive' &&
-            sendMessageDto.deepDiveSessionId
-          ) {
-            const sessionId = `deepdive:${sendMessageDto.deepDiveSessionId}`;
-            const now = new Date().toISOString();
-            await Promise.all([
-              this.chatHistoryService.create({
-                content: sendMessageDto.input,
-                role: 'local',
-                date: now,
-                sessionId,
-                userId: req.user.userId,
-              }),
-              this.chatHistoryService.create({
-                content: ev.output,
-                role: 'ai',
-                date: now,
-                sessionId,
-                userId: req.user.userId,
-              }),
-            ]);
-          }
-
-          writeSse('done', payload);
+            ...extra,
+          });
         }
       }
     } catch (e) {

@@ -1,4 +1,4 @@
-import { Injectable, Logger, forwardRef, Inject } from '@nestjs/common';
+import { Injectable, Logger, forwardRef, Inject, OnModuleInit } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { ChatPromptTemplate } from '@langchain/core/prompts';
 import { RunnableSequence } from '@langchain/core/runnables';
@@ -12,6 +12,15 @@ import { RedisChatMemory } from './memory/redis-chat-memory';
 import { AiModelProvider } from './ai-model.provider';
 import { SkillService } from '../skill/skill.service';
 import { createDynamicSkillTool } from './tools/dynamic-skill.tool';
+import { ChatIntentHandler } from './intent-handlers/chat.intent-handler';
+import { TodoIntentHandler } from './intent-handlers/todo.intent-handler';
+import { DeepDiveIntentHandler } from './intent-handlers/deepdive.intent-handler';
+import { DatabaseQueryTool } from './tools/database-query.tool';
+import { CreateReminderTool } from './tools/create-reminder.tool';
+import { WeatherQueryTool } from './tools/weather-query.tool';
+import { TodoService } from '../todo/todo.service';
+import { AdvancedSchedulerService } from '../schedule/advanced-scheduler.service';
+import { ChatHistoryService } from '../chat-history/chat-history.service';
 
 // 基础输入输出接口
 export interface InputData {
@@ -71,8 +80,13 @@ class PromptBuilder {
   }
 }
 
+type RouteOutcome =
+  | { kind: 'agent' }
+  | { kind: 'handler'; handler: IntentHandler }
+  | { kind: 'fallback'; result: ProcessedResult };
+
 @Injectable()
-export class AiService {
+export class AiService implements OnModuleInit {
   private readonly logger = new Logger(AiService.name);
   private readonly intentHandlers: Map<string, IntentHandler> = new Map();
   private readonly tools: Map<string, StructuredTool> = new Map();
@@ -94,6 +108,15 @@ export class AiService {
     private redisService: RedisService,
     @Inject(forwardRef(() => SkillService))
     private skillService: SkillService,
+    private chatIntentHandler: ChatIntentHandler,
+    private todoIntentHandler: TodoIntentHandler,
+    private deepDiveIntentHandler: DeepDiveIntentHandler,
+    private databaseQueryTool: DatabaseQueryTool,
+    private createReminderTool: CreateReminderTool,
+    private weatherQueryTool: WeatherQueryTool,
+    private todoService: TodoService,
+    private scheduleService: AdvancedSchedulerService,
+    private chatHistoryService: ChatHistoryService,
   ) {
     const promptBuilder = new PromptBuilder()
       .addPrompt('date', '当前时间：{date}', {
@@ -120,7 +143,7 @@ export class AiService {
           },
           date: new Date().toLocaleString(),
         };
-        console.log('[intentChain] 输入数据:', JSON.stringify(mapped));
+        this.logger.log('[intentChain] 输入数据: ' + JSON.stringify(mapped));
         return mapped;
       },
       promptBuilder.buildSystemMessage(
@@ -136,6 +159,15 @@ export class AiService {
       ),
       model.withStructuredOutput(this.intentRecognitionSchema),
     ]);
+  }
+
+  onModuleInit() {
+    this.registerIntentHandler(this.chatIntentHandler);
+    this.registerIntentHandler(this.todoIntentHandler);
+    this.registerIntentHandler(this.deepDiveIntentHandler);
+    this.registerTool(this.databaseQueryTool as unknown as StructuredTool);
+    this.registerTool(this.createReminderTool as unknown as StructuredTool);
+    this.registerTool(this.weatherQueryTool as unknown as StructuredTool);
   }
 
   /** 与 BaseIntentHandler.createGlobalMemory 一致，保证 Agent 与普通聊天共用 Redis 上下文 */
@@ -231,17 +263,21 @@ export class AiService {
     const agentPrompt = ChatPromptTemplate.fromMessages([
       [
         'system',
-        `你是 Todor，一个专业的 AI 私人助手，能与用户进行任何话题的自然对话。
+        `你是 Todor，用户的 AI 私人助手。
 当前时间：${new Date().toLocaleString()}
-用户信息：姓名 ${inputData.userInfo.name}，邮箱 ${inputData.userInfo.email}
+用户：${inputData.userInfo.name}，邮箱 ${inputData.userInfo.email}
 ${locationInfo}
 
 对话历史：
 ${escapedHistory}
 
-你拥有一些工具，但工具只在用户明确需要时才使用。对于聊天、讲故事、问答、情感支持等普通对话请求，请直接用自然语言回答，不要调用任何工具。
-如果需要用户邮箱，请使用：${inputData.userInfo.email}
-如果需要用户名，请使用：${inputData.userInfo.name}`,
+工具只在用户明确需要时才调用，普通对话直接回答。
+
+回复风格要求：
+- 直接给出答案，不展示推理过程或分析步骤
+- 用自然口语，像朋友聊天，不要像在写报告
+- 不用"首先…其次…最后…"这类结构拆解问题
+- 简洁，能一句话说清楚就不说两句`,
       ],
       ['human', '{input}'],
       ['placeholder', '{agent_scratchpad}'],
@@ -290,69 +326,121 @@ ${escapedHistory}
     };
   }
 
-  // 主处理方法
-  async process(inputData: InputData): Promise<ProcessedResult> {
-    // 1. 识别意图（前端强制指定时跳过 LLM 识别）
-    const intent =
-      inputData.forceIntent ?? (await this.recognizeIntent(inputData));
-    console.log(intent);
-
-    this.logger.log(`识别到的意图: ${intent}`);
-
-    // 2. 工具类意图直接走 Agent
+  private async resolveRoute(
+    intent: string,
+    inputData: InputData,
+  ): Promise<RouteOutcome> {
     const toolIntents = ['query', 'email', 'agent'];
     if (toolIntents.includes(intent) && this.tools.size > 0) {
       this.logger.log(`意图 "${intent}" 转交 Agent 处理`);
-      return this.processWithAgent(inputData);
+      return { kind: 'agent' };
     }
 
-    // 若用户有 enabled skill，对「泛对话」类意图走 Agent，便于调用动态 skill。
-    // 结构化意图（todo / reminder / deepdive）必须走专用 Handler，不能被 skill 逻辑截胡。
     const intentsThatSkipSkillAgent = ['todo', 'reminder', 'deepdive'];
     const userId = inputData.userId ?? inputData.userInfo?.id;
-    if (
-      userId &&
-      !toolIntents.includes(intent) &&
-      !intentsThatSkipSkillAgent.includes(intent)
-    ) {
+    if (userId && !toolIntents.includes(intent) && !intentsThatSkipSkillAgent.includes(intent)) {
       try {
         const userSkills = await this.skillService.findEnabled(userId);
         if (userSkills.length > 0 && this.tools.size > 0) {
-          this.logger.log(
-            `用户有 ${userSkills.length} 个 skill，转交 Agent 处理`,
-          );
-          return this.processWithAgent(inputData);
+          this.logger.log(`用户有 ${userSkills.length} 个 skill，转交 Agent 处理`);
+          return { kind: 'agent' };
         }
       } catch {
         // 忽略，继续正常流程
       }
     }
 
-    // 3. 获取对应的处理器
     let handler = this.intentHandlers.get(intent);
-
-    // 特殊处理：当意图是reminder时，使用todo处理器
-    // 因为从用户语义上来说，设置提醒和创建待办事项是类似的需求
     if (!handler && intent === 'reminder') {
       handler = this.intentHandlers.get('todo');
       this.logger.log('使用todo处理器处理reminder意图');
     }
 
     if (!handler) {
-      // 没有对应处理器时，尝试用 Agent 兜底
       if (this.tools.size > 0) {
         this.logger.log(`未找到意图 "${intent}" 的处理器，转交 Agent 兜底`);
-        return this.processWithAgent(inputData);
+        return { kind: 'agent' };
       }
-
       return {
-        output: `抱歉，我暂时无法处理这种类型的请求`,
-        intent: 'unknown',
+        kind: 'fallback',
+        result: { output: '抱歉，我暂时无法处理这种类型的请求', intent: 'unknown' },
       };
     }
 
-    // 4. 使用处理器处理请求
-    return handler.process(inputData);
+    return { kind: 'handler', handler };
+  }
+
+  async handlePostProcess(
+    result: ProcessedResult,
+    input: string,
+    userId: string,
+    userEmail: string,
+    userName: string,
+    deepDiveSessionId?: string,
+  ): Promise<{ messageId?: string }> {
+    if (
+      (result.intent === 'todo' || result.intent === 'reminder') &&
+      result.data
+    ) {
+      const todoData = result.data;
+      const todo = await this.todoService.create({
+        title: todoData.title,
+        content: todoData.content,
+        type: todoData.type || 'work',
+        priority: todoData.priority || 'medium',
+        todoTime: todoData.todoTime,
+        isUrgent: todoData.isUrgent || false,
+        creator: userName,
+        originInput: input,
+        originOutput: result.output,
+      });
+
+      await this.scheduleService.scheduleOneTimeEmail(
+        todo.id,
+        todoData.todoTime,
+        userEmail,
+        '待办事项提醒: ' + todoData.title,
+        `您有一条待办事项：${todoData.content}`,
+        userId,
+      );
+
+      return { messageId: todo.id };
+    }
+
+    if (result.intent === 'deepdive' && deepDiveSessionId) {
+      const now = new Date().toISOString();
+      const sessionId = `deepdive:${deepDiveSessionId}`;
+      await Promise.all([
+        this.chatHistoryService.create({
+          content: input,
+          role: 'local',
+          date: now,
+          sessionId,
+          userId,
+        }),
+        this.chatHistoryService.create({
+          content: result.output,
+          role: 'ai',
+          date: now,
+          sessionId,
+          userId,
+        }),
+      ]);
+    }
+
+    return {};
+  }
+
+  // 主处理方法
+  async process(inputData: InputData): Promise<ProcessedResult> {
+    const intent =
+      inputData.forceIntent ?? (await this.recognizeIntent(inputData));
+    this.logger.log(`识别到的意图: ${intent}`);
+
+    const route = await this.resolveRoute(intent, inputData);
+    if (route.kind === 'agent') return this.processWithAgent(inputData);
+    if (route.kind === 'fallback') return route.result;
+    return route.handler.process(inputData);
   }
 
   /**
@@ -363,65 +451,20 @@ ${escapedHistory}
       inputData.forceIntent ?? (await this.recognizeIntent(inputData));
     yield { type: 'intent', intent };
 
-    const toolIntents = ['query', 'email', 'agent'];
-    if (toolIntents.includes(intent) && this.tools.size > 0) {
+    const route = await this.resolveRoute(intent, inputData);
+
+    if (route.kind === 'agent') {
       const result = await this.processWithAgent(inputData);
-      yield {
-        type: 'done',
-        output: result.output,
-        intent: result.intent,
-        data: result.data,
-      };
+      yield { type: 'done', output: result.output, intent: result.intent, data: result.data };
       return;
     }
 
-    const intentsThatSkipSkillAgent = ['todo', 'reminder', 'deepdive'];
-    const userId = inputData.userId ?? inputData.userInfo?.id;
-    if (
-      userId &&
-      !toolIntents.includes(intent) &&
-      !intentsThatSkipSkillAgent.includes(intent)
-    ) {
-      try {
-        const userSkills = await this.skillService.findEnabled(userId);
-        if (userSkills.length > 0 && this.tools.size > 0) {
-          const result = await this.processWithAgent(inputData);
-          yield {
-            type: 'done',
-            output: result.output,
-            intent: result.intent,
-            data: result.data,
-          };
-          return;
-        }
-      } catch {
-        // 与 process 一致：忽略后继续
-      }
-    }
-
-    let handler = this.intentHandlers.get(intent);
-    if (!handler && intent === 'reminder') {
-      handler = this.intentHandlers.get('todo');
-    }
-
-    if (!handler) {
-      if (this.tools.size > 0) {
-        const result = await this.processWithAgent(inputData);
-        yield {
-          type: 'done',
-          output: result.output,
-          intent: result.intent,
-          data: result.data,
-        };
-        return;
-      }
-      yield {
-        type: 'done',
-        output: '抱歉，我暂时无法处理这种类型的请求',
-        intent: 'unknown',
-      };
+    if (route.kind === 'fallback') {
+      yield { type: 'done', output: route.result.output, intent: route.result.intent };
       return;
     }
+
+    const { handler } = route;
 
     type StreamHandler = {
       streamChat?: (i: InputData) => AsyncGenerator<string, string>;
@@ -432,12 +475,7 @@ ${escapedHistory}
       const h = handler as StreamHandler;
       if (!h.streamChat) {
         const result = await handler.process(inputData);
-        yield {
-          type: 'done',
-          output: result.output,
-          intent: result.intent,
-          data: result.data,
-        };
+        yield { type: 'done', output: result.output, intent: result.intent, data: result.data };
         return;
       }
       const gen = h.streamChat(inputData);
@@ -446,8 +484,7 @@ ${escapedHistory}
         yield { type: 'token', text: step.value as string };
         step = await gen.next();
       }
-      const full = step.value as string;
-      yield { type: 'done', output: full, intent: 'chat' };
+      yield { type: 'done', output: step.value as string, intent: 'chat' };
       return;
     }
 
@@ -455,12 +492,7 @@ ${escapedHistory}
       const h = handler as StreamHandler;
       if (!h.streamDeepDive) {
         const result = await handler.process(inputData);
-        yield {
-          type: 'done',
-          output: result.output,
-          intent: result.intent,
-          data: result.data,
-        };
+        yield { type: 'done', output: result.output, intent: result.intent, data: result.data };
         return;
       }
       const gen = h.streamDeepDive(inputData);
@@ -469,18 +501,12 @@ ${escapedHistory}
         yield { type: 'token', text: step.value as string };
         step = await gen.next();
       }
-      const full = step.value as string;
-      yield { type: 'done', output: full, intent: 'deepdive' };
+      yield { type: 'done', output: step.value as string, intent: 'deepdive' };
       return;
     }
 
     const result = await handler.process(inputData);
-    yield {
-      type: 'done',
-      output: result.output,
-      intent: result.intent,
-      data: result.data,
-    };
+    yield { type: 'done', output: result.output, intent: result.intent, data: result.data };
   }
 
   async recognizeAudio(
