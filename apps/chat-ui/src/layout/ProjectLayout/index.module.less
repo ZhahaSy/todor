@@ -24,4 +24,39 @@
       min-height: 0;
     }
   }
+
+  &.mobile {
+    flex-direction: column;
+    padding: 0;
+    gap: 0;
+    background: #fff;
+
+    .main {
+      border-radius: 0;
+      box-shadow: none;
+      height: 0; // flex will grow it
+    }
+  }
+}
+
+.mobileHeader {
+  display: flex;
+  align-items: center;
+  height: 52px;
+  padding: 0 12px;
+  background: #fff;
+  border-bottom: 1px solid #ECEEF3;
+  flex-shrink: 0;
+  gap: 8px;
+
+  .menuBtn {
+    color: #5B6EF5;
+    font-size: 18px;
+  }
+
+  .headerTitle {
+    font-size: 16px;
+    font-weight: 600;
+    color: #1a1a2e;
+  }
 }

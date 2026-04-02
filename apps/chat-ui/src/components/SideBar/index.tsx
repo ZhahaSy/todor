@@ -18,7 +18,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { deleteDeepDiveSession, getDeepDiveSessions } from "@client/api";
 import type { DeepDiveSession } from "@client/api";
 
-const Sidebar = () => {
+const Sidebar = ({ onClose }: { onClose?: () => void }) => {
   const [collapsed, setCollapsed] = useState(false);
   const [sessions, setSessions] = useState<DeepDiveSession[]>([]);
   const navigate = useNavigate();
@@ -152,7 +152,13 @@ const Sidebar = () => {
       <Button
         type="text"
         className={styles.collapseBtn}
-        onClick={() => setCollapsed(!collapsed)}
+        onClick={() => {
+          if (onClose) {
+            onClose();
+          } else {
+            setCollapsed(!collapsed);
+          }
+        }}
         icon={collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
         block={!collapsed}
       >

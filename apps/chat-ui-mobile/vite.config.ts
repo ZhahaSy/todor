@@ -1,11 +1,12 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
+import basicSsl from "@vitejs/plugin-basic-ssl";
 
 const host = process.env.TAURI_DEV_HOST;
 
 // https://vite.dev/config/
 export default defineConfig(async () => ({
-  plugins: [react()],
+  plugins: [react(), basicSsl()],
 
   // Vite options tailored for Tauri development and only applied in `tauri dev` or `tauri build`
   //
@@ -18,6 +19,7 @@ export default defineConfig(async () => ({
   },
   // 2. tauri expects a fixed port, fail if that port is not available
   server: {
+    host: true,
     port: 5174,
     // host: host || false,
     // hmr: host
