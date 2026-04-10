@@ -39,3 +39,7 @@ pnpm-lock.yaml
 yarn.lock
 .pnpm-store
 .pnpm-workspace.yaml
+
+src-tauri/
+android/
+ios/

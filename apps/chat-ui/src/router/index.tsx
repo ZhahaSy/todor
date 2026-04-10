@@ -1,4 +1,4 @@
-import { createBrowserRouter, redirect, RouteObject } from "react-router-dom"
+import { createBrowserRouter, createHashRouter, redirect, RouteObject } from "react-router-dom"
 import ProjectLayout from "@/layout/ProjectLayout";
 import Home from "@/pages/chat";
 import {loginPage as Login, SignIn} from "@client/ui";
@@ -42,8 +42,7 @@ const routes: RouteObject[] = [
         path: '/login',
         element: <Login onSignIn={() => {
             console.log('onSignIn');
-            
-            window.location.href = '/signin';
+            window.location.href = isCapacitor ? '/#/signin' : '/signin';
         }} />,
     },
     {
@@ -52,6 +51,9 @@ const routes: RouteObject[] = [
     },
 ]
 
-const router: RouterType = createBrowserRouter(routes, { basename: import.meta.env.VITE_ROUTER_BASE });
+const isCapacitor = typeof window !== "undefined" && window.location.protocol === "capacitor:";
+const router: RouterType = isCapacitor
+  ? createHashRouter(routes)
+  : createBrowserRouter(routes, { basename: import.meta.env.VITE_ROUTER_BASE });
 
 export default router;

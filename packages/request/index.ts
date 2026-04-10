@@ -40,6 +40,10 @@ const instance = axios.create({
   baseURL: "/api/",
 });
 
+export function setBaseURL(url: string) {
+  instance.defaults.baseURL = url;
+}
+
 instance.interceptors.request.use((config) => {
   return config;
 });
@@ -76,7 +80,8 @@ instance.interceptors.response.use(
         content: "请先登录",
         duration: 1.2,
         onClose: () => {
-          window.location.href = "/login";
+          const isCapacitor = window.location.protocol === "capacitor:";
+          window.location.href = isCapacitor ? "/#/login" : "/login";
         },
       });
       return Promise.reject(error);

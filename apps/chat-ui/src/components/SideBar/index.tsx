@@ -27,7 +27,7 @@ const Sidebar = ({ onClose }: { onClose?: () => void }) => {
   // 加载深度会话列表
   useEffect(() => {
     getDeepDiveSessions()
-      .then(setSessions)
+      .then((res) => setSessions(Array.isArray(res) ? res : []))
       .catch(() => {});
   }, [location.pathname]); // 每次导航时刷新
 
@@ -67,7 +67,7 @@ const Sidebar = ({ onClose }: { onClose?: () => void }) => {
                       await deleteDeepDiveSession(s.sessionId);
                       message.success("已删除");
                       const list = await getDeepDiveSessions();
-                      setSessions(list);
+                      setSessions(Array.isArray(list) ? list : []);
                       const cur = new URLSearchParams(location.search).get("session");
                       const norm = (x: string) => x.replace(/^deepdive:/, "");
                       if (cur && norm(cur) === norm(s.sessionId)) {

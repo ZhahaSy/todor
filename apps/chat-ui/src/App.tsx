@@ -1,10 +1,15 @@
-import { bindAntdMessageApi } from '@client/request';
+import { bindAntdMessageApi, setBaseURL } from '@client/request';
 import { App as AntdApp, ConfigProvider } from 'antd';
 import zhCN from 'antd/locale/zh_CN';
 import { useLayoutEffect } from 'react';
 import { RouterProvider } from 'react-router-dom';
 
 import routers from '@/router';
+
+// Capacitor Android 下使用公网地址
+if (typeof window !== 'undefined' && window.location.protocol === 'capacitor:') {
+  setBaseURL(import.meta.env.VITE_API_BASE_URL ?? '/api/');
+}
 
 /** 把 App.useApp() 的 message 交给 axios 拦截器，否则静态 message 可能不挂载到当前 ConfigProvider */
 const RequestMessageBridge = () => {
