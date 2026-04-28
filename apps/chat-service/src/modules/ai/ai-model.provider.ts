@@ -1,6 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { ChatDeepSeek } from '@langchain/deepseek';
+import { ChatOpenAI } from '@langchain/openai';
 
 /**
  * AI 模型提供者
@@ -9,7 +9,7 @@ import { ChatDeepSeek } from '@langchain/deepseek';
 @Injectable()
 export class AiModelProvider {
   private readonly logger = new Logger(AiModelProvider.name);
-  private chatModel: ChatDeepSeek;
+  private chatModel: ChatOpenAI;
 
   constructor(private configService: ConfigService) {
     this.initializeModel();
@@ -26,7 +26,7 @@ export class AiModelProvider {
       throw new Error('DEEPSEEK_API_KEY is not configured');
     }
 
-    this.chatModel = new ChatDeepSeek({
+    this.chatModel = new ChatOpenAI({
       apiKey,
       model,
       temperature: 0.7,
@@ -64,12 +64,12 @@ export class AiModelProvider {
    * @param temperature 可选的温度参数，如果与默认值不同则创建新实例
    * @returns ChatDeepSeek 实例
    */
-  getModel(temperature?: number): ChatDeepSeek {
+  getModel(temperature?: number): ChatOpenAI {
     // 如果指定了不同的温度参数，创建新实例
     if (temperature !== undefined && temperature !== 0.7) {
       this.logger.debug(`创建临时 AI 模型实例，temperature=${temperature}`);
       const { apiKey, model, timeout, configuration } = this.getModelConfig();
-      return new ChatDeepSeek({
+      return new ChatOpenAI({
         apiKey,
         model,
         temperature,
@@ -91,9 +91,9 @@ export class AiModelProvider {
     temperature?: number;
     maxTokens?: number;
     topP?: number;
-  }): ChatDeepSeek {
+  }): ChatOpenAI {
     const { apiKey, model, timeout, configuration } = this.getModelConfig();
-    return new ChatDeepSeek({
+    return new ChatOpenAI({
       apiKey,
       model,
       temperature: options.temperature ?? 0.7,
