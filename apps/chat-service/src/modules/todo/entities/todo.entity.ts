@@ -11,7 +11,7 @@ export class Todo {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column({ comment: 'todo标题' })
+  @Column({ type: 'varchar', comment: 'todo标题', nullable: true })
   title: string | null;
 
   @Column({ type: 'varchar', comment: 'todo内容' })

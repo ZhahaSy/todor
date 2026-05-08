@@ -1,7 +1,6 @@
 import { forwardRef, Inject, Injectable, Logger } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { verifyPassword, encryptPassword } from '@/utils/cryptogram';
-import { UserService } from '../user/user.service';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from '../user/entities/user.entity';
@@ -19,8 +18,8 @@ export class AuthService {
   constructor(
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
-    @Inject(forwardRef(() => UserService))
-    private readonly usersService: UserService,
+    @Inject(forwardRef(() => require('../user/user.service').UserService))
+    private readonly usersService: any,
     @Inject(JwtService)
     private readonly jwtService: JwtService,
   ) {}

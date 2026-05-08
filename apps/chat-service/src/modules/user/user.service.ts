@@ -6,7 +6,6 @@ import { encryptPassword, verifyPassword } from '@/utils/cryptogram';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { ChangePasswordDto } from './dto/change-password.dto';
-import { AuthService } from '../auth/auth.service';
 import { LoginDto } from './dto/login.dto';
 import {
   NotFoundUser,
@@ -22,8 +21,8 @@ export class UserService {
   constructor(
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
-    @Inject(forwardRef(() => AuthService))
-    private readonly authService: AuthService,
+    @Inject(forwardRef(() => require('../auth/auth.service').AuthService))
+    private readonly authService: any,
   ) {}
 
   async create(createUserDto: Partial<CreateUserDto>) {
