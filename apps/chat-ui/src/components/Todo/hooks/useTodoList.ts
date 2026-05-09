@@ -4,6 +4,8 @@ import * as TodoApi from "@client/api";
 
 export interface UseTodoListReturn {
   todoList: TodoItemEntity[];
+  loading: boolean;
+  actionLoading: boolean;
   getTodoList: () => Promise<void>;
   addTodo: (
     params: Partial<
@@ -30,17 +32,25 @@ const useTodoList = ({
   };
 }) => {
   const [todoList, setTodoList] = useState<TodoItemEntity[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [actionLoading, setActionLoading] = useState(false);
+
   const getTodoList = async (params?: {
     todoMonth?: string;
     type?: ("work" | "life" | "study" | "all")[];
     keyword?: string;
     status?: string;
   }) => {
-    const res = await TodoApi.getTodoList({
-      ...getListParams,
-      ...params,
-    });
-    setTodoList(res || []);
+    setLoading(true);
+    try {
+      const res = await TodoApi.getTodoList({
+        ...getListParams,
+        ...params,
+      });
+      setTodoList(res || []);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const addTodo = async (
@@ -48,23 +58,38 @@ const useTodoList = ({
       Omit<TodoItemEntity, "id" | "createTime" | "originInput" | "originOutput">
     >
   ) => {
-    await TodoApi.addTodo(params);
-    getTodoList();
+    setActionLoading(true);
+    try {
+      await TodoApi.addTodo(params);
+      await getTodoList();
+    } finally {
+      setActionLoading(false);
+    }
   };
   const updateTodoStatus = async (
     id: string,
     status: "active" | "completed"
   ) => {
-    await TodoApi.updateTodo({
-      id,
-      status,
-    });
-    getTodoList();
+    setActionLoading(true);
+    try {
+      await TodoApi.updateTodo({
+        id,
+        status,
+      });
+      await getTodoList();
+    } finally {
+      setActionLoading(false);
+    }
   };
 
   const deleteTodo = async (id: string) => {
-    await TodoApi.deleteTodo(id);
-    getTodoList();
+    setActionLoading(true);
+    try {
+      await TodoApi.deleteTodo(id);
+      await getTodoList();
+    } finally {
+      setActionLoading(false);
+    }
   };
 
   useEffect(() => {
@@ -75,6 +100,8 @@ const useTodoList = ({
 
   return {
     todoList,
+    loading,
+    actionLoading,
     getTodoList,
     addTodo,
     updateTodoStatus,

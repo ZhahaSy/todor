@@ -7,11 +7,14 @@ const Chat = () => {
       addMessage,
       appendToLastAiContent,
       replaceLastAiContent,
+      initialLoading,
+      error,
+      reload,
       loadingMore,
       hasMore,
       loadMore,
     } = useChat();
-    const { handleSubmit, handleCancel, handleRetry, loading } = useSendMessage({
+    const { handleSubmit, handleCancel, loading } = useSendMessage({
       addMessage,
       appendToLastAiContent,
       replaceLastAiContent,
@@ -21,7 +24,9 @@ const Chat = () => {
             <ChatList
                 messages={messages}
                 loading={loading}
-                onRetry={handleRetry}
+                initialLoading={initialLoading}
+                error={error}
+                onRetry={reload}
                 loadingMore={loadingMore}
                 hasMore={hasMore}
                 onLoadMore={loadMore}

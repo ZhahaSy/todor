@@ -60,11 +60,15 @@ export const useSendMessage = ({
               date: aiDate,
             });
           },
-          onError: (msg) => console.error("stream:", msg),
+          onError: (msg) => {
+            console.error("stream:", msg);
+            replaceLastAiContent("⚠️ 消息发送失败，请重试");
+          },
         }
       );
     } catch (error) {
       console.error("Message send failed:", error);
+      replaceLastAiContent("⚠️ 消息发送失败，请重试");
     } finally {
       setLoading(false);
     }

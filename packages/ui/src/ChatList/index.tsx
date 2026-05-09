@@ -1,6 +1,6 @@
 import { Bubble, BubbleProps, Welcome } from "@ant-design/x";
 import type { BubbleListRef } from "@ant-design/x/es/bubble/BubbleList";
-import { Spin } from "antd";
+import { Spin, Result, Button } from "antd";
 import { useRef, useEffect, useCallback } from "react";
 
 import styles from "./index.module.less";
@@ -16,6 +16,8 @@ import { ChatHistory } from "@client/entities";
 export interface ChatListProps {
   messages: ChatHistory[];
   loading: boolean;
+  initialLoading?: boolean;
+  error?: string | null;
   loadingMore?: boolean;
   hasMore?: boolean;
   onRetry: () => void;
@@ -57,10 +59,13 @@ const roles: GetProp<typeof Bubble.List, "roles"> = {
 
 const ChatList = ({
   messages,
+  initialLoading = false,
+  error,
   loadingMore = false,
   hasMore = false,
   onLoadMore,
   onDeepDive,
+  onRetry,
 }: ChatListProps) => {
   const listRef = useRef<BubbleListRef>(null);
   // 记录触顶加载前的 scrollHeight，加载后恢复滚动位置
@@ -89,6 +94,31 @@ const ChatList = ({
       prevScrollHeightRef.current = 0;
     }
   }, [messages.length, loadingMore]);
+
+  if (initialLoading) {
+    return (
+      <div className={styles.chatList}>
+        <div className={styles.centerTip}>
+          <Spin size="large" />
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className={styles.chatList}>
+        <div className={styles.centerTip}>
+          <Result
+            status="error"
+            title="加载失败"
+            subTitle={error}
+            extra={<Button type="primary" onClick={onRetry}>重试</Button>}
+          />
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className={styles.chatList}>

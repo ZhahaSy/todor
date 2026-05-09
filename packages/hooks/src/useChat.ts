@@ -14,6 +14,14 @@ export type ReturnType = {
    */
   messages: HistRecordItem[];
   /**
+   * 初始加载中
+   */
+  initialLoading: boolean;
+  /**
+   * 初始加载失败的错误信息
+   */
+  error: string | null;
+  /**
    * 是否正在加载更多历史（触顶加载）
    */
   loadingMore: boolean;
@@ -36,12 +44,16 @@ export type ReturnType = {
   appendToLastAiContent: (delta: string) => void;
   /** 将最后一条 AI 消息设为完整内容（done 时兜底，避免 token 未解析时界面空白） */
   replaceLastAiContent: (full: string) => void;
+  /** 重新加载初始数据 */
+  reload: () => Promise<void>;
 };
 
 const PAGE_SIZE = 10;
 
 export const useChat = (): ReturnType => {
   const [messages, setMessages] = useState<HistRecordItem[]>([]);
+  const [initialLoading, setInitialLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [loadingMore, setLoadingMore] = useState(false);
   const [hasMore, setHasMore] = useState(true);
   // offset 以「已加载总数」为准（不含乐观追加的新消息）
@@ -66,20 +78,24 @@ export const useChat = (): ReturnType => {
   }, []);
 
   // 初始化：加载最新一页（最后 PAGE_SIZE 条）
+  const reload = useCallback(async () => {
+    setInitialLoading(true);
+    setError(null);
+    try {
+      await fetchPage(0, false);
+    } catch (err) {
+      setError("加载聊天记录失败，请重试");
+      console.error("Failed to init messages:", err);
+    } finally {
+      setInitialLoading(false);
+    }
+  }, [fetchPage]);
+
   useEffect(() => {
     if (initializedRef.current) return;
     initializedRef.current = true;
-
-    const init = async () => {
-      try {
-        await fetchPage(0, false);
-      } catch (error) {
-        console.error("Failed to init messages:", error);
-      }
-    };
-
-    init();
-  }, [fetchPage]);
+    reload();
+  }, [reload]);
 
   // 触顶加载更早的历史
   const loadMore = useCallback(async () => {
@@ -166,11 +182,14 @@ export const useChat = (): ReturnType => {
 
   return {
     messages,
+    initialLoading,
+    error,
     loadingMore,
     hasMore,
     loadMore,
     addMessage,
     appendToLastAiContent,
     replaceLastAiContent,
+    reload,
   };
 };

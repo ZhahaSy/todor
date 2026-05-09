@@ -125,11 +125,31 @@ export const useDeepDiveChat = (): UseDeepDiveChatReturn => {
                 sessionId: sid,
               }).catch(console.error);
             },
-            onError: (msg) => console.error("deep dive stream:", msg),
+            onError: (msg) => {
+              console.error("deep dive stream:", msg);
+              setMessages((prev) => {
+                if (prev.length === 0) return prev;
+                const last = prev[prev.length - 1];
+                if (last.role !== "ai") return prev;
+                const next = [...prev];
+                next[next.length - 1] = { ...last, content: "⚠️ 消息发送失败，请重试" };
+                return next;
+              });
+            },
           }
         );
       } catch (e) {
-        if (!abortRef.current) console.error("deep dive submit failed", e);
+        if (!abortRef.current) {
+          console.error("deep dive submit failed", e);
+          setMessages((prev) => {
+            if (prev.length === 0) return prev;
+            const last = prev[prev.length - 1];
+            if (last.role !== "ai") return prev;
+            const next = [...prev];
+            next[next.length - 1] = { ...last, content: "⚠️ 消息发送失败，请重试" };
+            return next;
+          });
+        }
       } finally {
         setLoading(false);
       }
