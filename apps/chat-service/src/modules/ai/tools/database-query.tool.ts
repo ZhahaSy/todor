@@ -1,39 +1,50 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { z } from 'zod';
-import { StructuredTool } from '@langchain/core/tools';
+import { DynamicStructuredTool } from '@langchain/core/tools';
 import { TodoService } from '../../todo/todo.service';
+import type { UserToolContext } from './user-tool-context';
+import { makeStructuredTool } from './make-structured-tool';
+
+// creator 由请求上下文注入，不暴露给模型
+const querySchema = z.object({
+  type: z
+    .array(z.enum(['work', 'life', 'study', 'all']))
+    .optional()
+    .describe('待办类型过滤'),
+  status: z
+    .enum(['active', 'completed'])
+    .optional()
+    .describe('待办状态，默认 active'),
+  keyword: z.string().optional().describe('标题或内容关键词搜索'),
+  todoMonth: z.string().optional().describe('按月份筛选，格式 YYYY-MM'),
+});
 
 @Injectable()
-// @ts-expect-error: StructuredTool generic depth exceeds TS limit
-export class DatabaseQueryTool extends StructuredTool {
-  readonly name = 'database_query';
-  readonly description =
-    '查询用户的待办事项列表。可按类型（work/life/study）、状态（active/completed）、关键词筛选，也可查询今日或紧急待办。';
+export class DatabaseQueryTool {
   readonly category = 'data' as const;
   private readonly logger = new Logger(DatabaseQueryTool.name);
 
-  readonly schema = z.object({
-    creator: z.string().describe('用户名，必填'),
-    type: z
-      .array(z.enum(['work', 'life', 'study', 'all']))
-      .optional()
-      .describe('待办类型过滤'),
-    status: z
-      .enum(['active', 'completed'])
-      .optional()
-      .describe('待办状态，默认 active'),
-    keyword: z.string().optional().describe('标题或内容关键词搜索'),
-    todoMonth: z.string().optional().describe('按月份筛选，格式 YYYY-MM'),
-  });
+  constructor(private readonly todoService: TodoService) {}
 
-  constructor(private readonly todoService: TodoService) {
-    super();
+  /** 按请求构造工具实例，userId 取自可信的用户上下文 */
+  bindUser(ctx: UserToolContext): DynamicStructuredTool {
+    const userId = ctx.userInfo.id;
+    return makeStructuredTool({
+      name: 'database_query',
+      description:
+        '查询当前用户的待办事项列表。可按类型（work/life/study）、状态（active/completed）、关键词、月份筛选。',
+      schema: querySchema,
+      func: (input) => this.run(input, userId),
+    });
   }
 
-  protected async _call(input: z.infer<typeof this.schema>): Promise<string> {
+  private async run(
+    input: z.infer<typeof querySchema>,
+    userId: string,
+  ): Promise<string> {
     try {
       const todos = await this.todoService.getTodoList({
-        creator: input.creator,
+        userId,
         type: input.type as ('work' | 'life' | 'study' | 'all')[],
         status: input.status,
         keyword: input.keyword,

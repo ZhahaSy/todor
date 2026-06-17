@@ -79,6 +79,7 @@ export class User {
     comment: '密码哈希',
     length: 255,
     default: '',
+    select: false, // 默认不返回，避免随实体响应泄露；需要时用 addSelect 显式选取
   })
   hashPwd: string;
 
@@ -87,6 +88,7 @@ export class User {
     length: 255,
     default: '',
     nullable: true,
+    select: false,
   })
   salt: string;
 

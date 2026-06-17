@@ -97,4 +97,13 @@ export class Todo {
     default: null,
   })
   creator: string | null;
+
+  @Index() // 归属用户ID（权威归属，替代 creator 名做鉴权）
+  @Column({
+    type: 'varchar',
+    comment: '归属用户ID',
+    default: null,
+    nullable: true,
+  })
+  userId: string | null;
 }

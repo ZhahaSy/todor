@@ -33,6 +33,18 @@ yarn-error.log*
 .DS_Store
 *.pem
 
+# Secrets & local env (templates/public env are NOT ignored — see negations below)
+.env
+.env.*
+**/.env
+**/.env.*
+!**/.env.example
+!**/.env.production
+
+# SQLite databases (contain user data)
+*.db
+**/*.db
+
 # lock
 package-lock.json
 pnpm-lock.yaml

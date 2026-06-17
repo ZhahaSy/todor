@@ -1,5 +1,5 @@
 import { useState, useCallback, useRef } from "react";
-import { addChatHistory, getChatHistory, sendMessageStream } from "@client/api";
+import { getChatHistory, sendMessageStream } from "@client/api";
 import type { ChatHistory } from "@client/entities";
 
 /** 纯 HTTP（非安全上下文）下 randomUUID 不可用；会话 id 只用 getRandomValues，避免打包/运行环境差异 */
@@ -60,7 +60,7 @@ export const useDeepDiveChat = (): UseDeepDiveChatReturn => {
       setLoading(true);
 
       const isFirstMessage = messages.length === 0;
-      const title = isFirstMessage ? value.slice(0, 30) : undefined;
+      void isFirstMessage; // 标题由后端首条落库时生成
 
       const userMsg: ChatHistory = {
         role: "local",
@@ -69,15 +69,7 @@ export const useDeepDiveChat = (): UseDeepDiveChatReturn => {
         todoId: "",
       };
       setMessages((prev) => [...prev, userMsg]);
-
-      // 持久化用户消息
-      addChatHistory({
-        content: value,
-        role: "local",
-        date: userMsg.date!,
-        sessionId: sid,
-        title,
-      }).catch(console.error);
+      // 持久化由后端在流式完成时统一完成（user + ai 两条），前端只做内存渲染
 
       const aiDate = new Date().toISOString();
       setMessages((prev) => [
@@ -118,12 +110,7 @@ export const useDeepDiveChat = (): UseDeepDiveChatReturn => {
                 next[next.length - 1] = { ...last, content: output };
                 return next;
               });
-              addChatHistory({
-                content: output,
-                role: "ai",
-                date: aiDate,
-                sessionId: sid,
-              }).catch(console.error);
+              // 持久化由后端在流式完成时统一完成，前端不再写库
             },
             onError: (msg) => {
               console.error("deep dive stream:", msg);

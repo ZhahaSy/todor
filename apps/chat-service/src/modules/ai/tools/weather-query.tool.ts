@@ -1,34 +1,48 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { z } from 'zod';
-import { StructuredTool } from '@langchain/core/tools';
+import { DynamicStructuredTool } from '@langchain/core/tools';
+import type { UserToolContext } from './user-tool-context';
+import { makeStructuredTool } from './make-structured-tool';
 
+const weatherSchema = z.object({
+  city: z
+    .string()
+    .optional()
+    .describe('城市名（中文或英文），有用户位置时可不传'),
+});
+
+/**
+ * 天气查询工具。
+ * location 由请求上下文经 bindUser 注入（闭包捕获），不再 mutate 单例 —— 修复高并发下的串号问题。
+ */
 @Injectable()
-// @ts-expect-error: StructuredTool generic depth exceeds TS limit
-export class WeatherQueryTool extends StructuredTool {
-  readonly name = 'weather_query';
-  readonly description =
-    '查询实时天气信息。适合用户问"今天天气怎么样"、"现在几度"、"要带伞吗"、"明天会下雨吗"等场景。不传城市则根据用户位置自动定位。';
+export class WeatherQueryTool {
   readonly category = 'data' as const;
   private readonly logger = new Logger(WeatherQueryTool.name);
 
-  // 由 processWithAgent 在每次调用前注入，优先级高于城市名
-  userLocation?: { lat: number; lon: number };
+  /** 按请求构造工具实例，捕获该用户的位置 */
+  bindUser(ctx: UserToolContext): DynamicStructuredTool {
+    const userLocation = ctx.location;
+    return makeStructuredTool({
+      name: 'weather_query',
+      description:
+        '查询实时天气信息。适合用户问"今天天气怎么样"、"现在几度"、"要带伞吗"、"明天会下雨吗"等场景。不传城市则根据用户位置自动定位。',
+      schema: weatherSchema,
+      func: (input) => this.run(input, userLocation),
+    });
+  }
 
-  readonly schema = z.object({
-    city: z
-      .string()
-      .optional()
-      .describe('城市名（中文或英文），有用户位置时可不传'),
-  });
-
-  protected async _call(input: z.infer<typeof this.schema>): Promise<string> {
+  private async run(
+    input: z.infer<typeof weatherSchema>,
+    userLocation?: { lat: number; lon: number },
+  ): Promise<string> {
     try {
       let lat: number, lon: number, cityName: string;
 
-      if (this.userLocation) {
+      if (userLocation) {
         // 优先使用前端传来的精确坐标
-        lat = this.userLocation.lat;
-        lon = this.userLocation.lon;
+        lat = userLocation.lat;
+        lon = userLocation.lon;
         // 用 Open-Meteo 反查城市名
         const geoRes = await fetch(
           `https://geocoding-api.open-meteo.com/v1/reverse?latitude=${lat}&longitude=${lon}&language=zh`,

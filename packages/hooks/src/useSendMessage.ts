@@ -1,4 +1,4 @@
-import { sendMessageStream, addChatHistory } from "@client/api";
+import { sendMessageStream } from "@client/api";
 import { useState } from "react";
 
 import { HistRecordItem } from "./useChat";
@@ -35,12 +35,15 @@ export const useSendMessage = ({
     setLoading(true);
 
     try {
-      await addMessage({
-        role: "local",
-        content: value,
-        date: new Date().toISOString(),
-        todoId: "",
-      });
+      await addMessage(
+        {
+          role: "local",
+          content: value,
+          date: new Date().toISOString(),
+          todoId: "",
+        },
+        { skipPersist: true }
+      );
 
       const aiDate = new Date().toISOString();
       await addMessage(
@@ -53,12 +56,8 @@ export const useSendMessage = ({
         {
           onToken: (t) => appendToLastAiContent(t),
           onDone: ({ output }) => {
+            // 持久化由后端在流式完成时统一完成，前端只做内存渲染
             replaceLastAiContent(output);
-            void addChatHistory({
-              content: output,
-              role: "ai",
-              date: aiDate,
-            });
           },
           onError: (msg) => {
             console.error("stream:", msg);

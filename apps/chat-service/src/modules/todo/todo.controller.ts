@@ -33,37 +33,47 @@ export class TodoController {
   ) {}
   @Get('/list')
   async getTodoList(@Query() query: TodoListQuery, @Request() req) {
-    // 直接从 JWT payload 中获取用户名，避免数据库查询
-    const name = req.user.name;
     return ResOp.success(
       await this.todoService.getTodoList({
         todoMonth: query.todoMonth,
         type: query.type?.split(',') as ('work' | 'life' | 'study' | 'all')[],
         keyword: query.keyword,
         status: query.status,
-        creator: name,
+        userId: req.user.userId,
       }),
     );
   }
   @Get(':id')
-  async getTodoById(@Param('id') id: string) {
-    return ResOp.success(await this.todoService.getTodoById(id));
+  async getTodoById(@Param('id') id: string, @Request() req) {
+    return ResOp.success(
+      await this.todoService.getTodoById(id, req.user.userId),
+    );
   }
   @Post('/delete')
-  async deleteTodoById(@Body() { id }: { id: string }) {
-    return ResOp.success(await this.todoService.deleteTodoById(id));
+  async deleteTodoById(@Body() { id }: { id: string }, @Request() req) {
+    return ResOp.success(
+      await this.todoService.deleteTodoById(id, req.user.userId),
+    );
   }
   @Post('/update')
-  async updateTodoById(@Body() updateTodoDto: Partial<Todo>) {
+  async updateTodoById(@Body() updateTodoDto: Partial<Todo>, @Request() req) {
     return ResOp.success(
-      await this.todoService.updateTodoById(updateTodoDto.id, updateTodoDto),
+      await this.todoService.updateTodoById(
+        updateTodoDto.id,
+        req.user.userId,
+        updateTodoDto,
+      ),
     );
   }
 
   @Post('/create')
   async createTodo(@Body() createTodoDto: Partial<Todo>, @Request() req) {
-    // 先创建 todo 拿到真实 id，再用 id 注册调度任务
-    const todo = await this.todoService.create(createTodoDto);
+    // 归属由后端从 JWT 注入，前端无法伪造
+    const todo = await this.todoService.create({
+      ...createTodoDto,
+      userId: req.user.userId,
+      creator: req.user.name,
+    });
     const userEmail = req.user.email;
     if (createTodoDto.todoTime) {
       await this.scheduleService.scheduleOneTimeEmail(

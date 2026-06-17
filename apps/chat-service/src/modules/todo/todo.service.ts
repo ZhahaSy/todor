@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { ForbiddenException, Injectable } from '@nestjs/common';
 import { Todo } from './entities/todo.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Like, Repository } from 'typeorm';
@@ -12,26 +12,27 @@ export class TodoService {
   ) {}
 
   async create(createTodoDto: Partial<Todo>) {
-    const newTodo = await this.todoRepository.create(createTodoDto);
+    const newTodo = this.todoRepository.create(createTodoDto);
     return await this.todoRepository.save(newTodo);
   }
+
   async getTodoList({
     todoMonth,
     type,
     keyword,
     status,
-    creator,
+    userId,
   }: {
     todoMonth?: string;
     type?: ('work' | 'life' | 'study' | 'all')[];
     keyword?: string;
     status?: string;
-    creator?: string;
+    userId?: string;
   }) {
     return await this.todoRepository.find({
       where: {
-        // 必须数据
-        creator: creator ? creator : undefined,
+        // 归属：按 userId 过滤（权威归属）
+        userId: userId ? userId : undefined,
         isDeleted: false,
         // 可选数据
         title: keyword ? Like(`%${keyword}%`) : undefined,
@@ -46,20 +47,41 @@ export class TodoService {
         // 状态
         status: status ? status : 'active',
       },
-      // 状态
       order: { status: 'ASC', createTime: 'DESC' },
     });
   }
-  async getTodoById(id: string) {
+
+  /** 按 id 查待办；传 userId 时强制归属校验，非属主返回 null */
+  async getTodoById(id: string, userId?: string) {
     return await this.todoRepository.findOne({
-      where: { id, isDeleted: false },
+      where: {
+        id,
+        isDeleted: false,
+        ...(userId ? { userId } : {}),
+      },
     });
   }
-  async deleteTodoById(id: string) {
-    return await this.updateTodoById(id, { isDeleted: true });
+
+  async deleteTodoById(id: string, userId: string) {
+    return await this.updateTodoById(id, userId, { isDeleted: true });
   }
 
-  async updateTodoById(id: string, updateTodoDto: Partial<Todo>) {
-    return await this.todoRepository.update(id, updateTodoDto);
+  /**
+   * 更新待办：先校验归属，非属主抛 ForbiddenException。
+   * 不允许通过 dto 篡改 userId/id 等归属字段。
+   */
+  async updateTodoById(id: string, userId: string, updateTodoDto: Partial<Todo>) {
+    const owned = await this.todoRepository.findOne({
+      where: { id, userId, isDeleted: false },
+    });
+    if (!owned) {
+      throw new ForbiddenException('无权操作该待办或待办不存在');
+    }
+    // 防止越权字段被覆盖
+    const { id: _id, userId: _uid, creator: _creator, ...safe } = updateTodoDto;
+    void _id;
+    void _uid;
+    void _creator;
+    return await this.todoRepository.update(id, safe);
   }
 }

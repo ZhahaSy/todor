@@ -2,10 +2,6 @@ import { CreateUserDto, User, UpdateUserDto, ChangePasswordDto } from "@client/e
 import request from "@client/request";
 
 
-export const getUserList = async () => {
-    return request.get<User[]>('/user/list');
-}
-
 export const login = async (params: {
     username: string;
     password: string;

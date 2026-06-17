@@ -43,12 +43,6 @@ export class UserService {
     }
   }
 
-  async getUserList() {
-    return await this.userRepository.find({
-      order: { id: 'DESC' },
-    });
-  }
-
   async findOne(params: Partial<User>) {
     return await this.userRepository.findOne({
       where: {
@@ -141,8 +135,12 @@ export class UserService {
         return ResOp.error(UserOrPasswordError, '两次输入的密码不一致');
       }
 
-      // 查询用户
-      const user = await this.userRepository.findOne({ where: { id: userId } });
+      // 查询用户（hashPwd 为 select:false，校验旧密码需显式选取）
+      const user = await this.userRepository
+        .createQueryBuilder('u')
+        .addSelect('u.hashPwd')
+        .where('u.id = :userId', { userId })
+        .getOne();
 
       if (!user) {
         return ResOp.error(NotFoundUser, '用户不存在');

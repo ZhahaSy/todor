@@ -8,7 +8,8 @@
       "Bash(find /Users/zhangshuangyi/selfSpace/my-turborepo/packages/ui -name \"index.ts\" -o -name \"index.tsx\" | xargs cat)",
       "Bash(pnpm --filter @client/ui check-types 2>&1 | head -50)",
       "Bash(pnpm --filter chat-ui check-types 2>&1 | head -60)",
-      "Bash(cd /Users/zhangshuangyi/selfSpace/my-turborepo/apps/chat-ui && npx tsc --noEmit 2>&1 | head -60)"
+      "Bash(cd /Users/zhangshuangyi/selfSpace/my-turborepo/apps/chat-ui && npx tsc --noEmit 2>&1 | head -60)",
+      "Bash(npx jest *)"
     ]
   }
 }

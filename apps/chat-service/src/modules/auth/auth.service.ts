@@ -1,4 +1,4 @@
-import { forwardRef, Inject, Injectable, Logger } from '@nestjs/common';
+import { Inject, Injectable, Logger } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { verifyPassword, encryptPassword } from '@/utils/cryptogram';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -18,8 +18,6 @@ export class AuthService {
   constructor(
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
-    @Inject(forwardRef(() => require('../user/user.service').UserService))
-    private readonly usersService: any,
     @Inject(JwtService)
     private readonly jwtService: JwtService,
   ) {}
@@ -29,7 +27,12 @@ export class AuthService {
    * 支持新旧两种加密算法，自动迁移旧密码到 Argon2
    */
   async validateUser(userName: string, password: string): Promise<any> {
-    const user = await this.usersService.findOne({ name: userName });
+    // hashPwd/salt 在实体上是 select:false，校验密码需显式选取
+    const user = await this.userRepository
+      .createQueryBuilder('u')
+      .addSelect(['u.hashPwd', 'u.salt'])
+      .where('u.name = :userName', { userName })
+      .getOne();
 
     if (!user) {
       return ResOp.error(NotFoundUser, '账号或密码错误');

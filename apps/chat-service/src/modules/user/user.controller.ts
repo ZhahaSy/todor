@@ -4,7 +4,6 @@ import {
   Get,
   Post,
   Put,
-  Query,
   Request,
   Response,
   UseGuards,
@@ -25,16 +24,6 @@ export class UserController {
   @Post('/create')
   async create(@Body() createUserDto: CreateUserDto) {
     return ResOp.success(await this.userService.create(createUserDto));
-  }
-  @UseGuards(JwtAuthGuard)
-  @Get('/list')
-  async getTodoList() {
-    return ResOp.success(await this.userService.getUserList());
-  }
-  @UseGuards(JwtAuthGuard)
-  @Get('/findOne')
-  async findOne(@Query('id') id: string) {
-    return ResOp.success(await this.userService.findOne({ id }));
   }
   @Post('/login')
   async login(

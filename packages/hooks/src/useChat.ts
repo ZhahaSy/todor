@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from "react";
-import { addChatHistory, getChatHistory } from "@client/api";
+import { getChatHistory } from "@client/api";
 
 export interface HistRecordItem {
   role: "local" | "ai";
@@ -137,14 +137,12 @@ export const useChat = (): ReturnType => {
   const addMessage = useCallback(
     async (
       { role, content, date, todoId }: HistRecordItem,
-      options?: { skipPersist?: boolean }
+      // options 保留以兼容调用方；持久化已统一由后端在流式完成时处理，前端仅内存渲染
+      _options?: { skipPersist?: boolean }
     ): Promise<boolean> => {
       try {
         const newMessage: HistRecordItem = { role, content, date, todoId };
         setMessages((prev) => [...prev, newMessage]);
-        if (!options?.skipPersist) {
-          addChatHistory(newMessage);
-        }
         return true;
       } catch (error) {
         console.error("Message add failed:", error);
