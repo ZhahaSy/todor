@@ -109,3 +109,26 @@ export const recognizeAudio = async (data: {
     const res = await request.post("/ai/asr/recognize", data)
     return res
 }
+
+// ===== AI 配额管理（仅管理员）=====
+
+export interface AiQuotaUsage {
+  used: number;
+  limit: number;
+  whitelisted: boolean;
+}
+
+/** 查询当前全局每日 AI 配额 */
+export const getAiQuota = async () => {
+  return request.get<{ limit: number }>("/ai/quota");
+};
+
+/** 设置全局每日 AI 配额（0 表示不限制），立即生效 */
+export const setAiQuota = async (limit: number) => {
+  return request.put<{ limit: number }>("/ai/quota", { limit });
+};
+
+/** 查询指定用户当日 AI 使用情况 */
+export const getUserQuotaUsage = async (userId: string) => {
+  return request.get<AiQuotaUsage>(`/ai/quota/usage/${encodeURIComponent(userId)}`);
+};

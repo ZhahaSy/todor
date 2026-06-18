@@ -10,6 +10,7 @@ import {
   PlusOutlined,
   AppstoreOutlined,
   DeleteOutlined,
+  SafetyOutlined,
 } from "@ant-design/icons";
 import { Button, Menu, Tooltip, Popconfirm, message } from "antd";
 import type { MenuProps } from "antd";
@@ -17,12 +18,14 @@ import { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { deleteDeepDiveSession, getDeepDiveSessions } from "@client/api";
 import type { DeepDiveSession } from "@client/api";
+import useUserStore from "@/store/useUserStore";
 
 const Sidebar = ({ onClose }: { onClose?: () => void }) => {
   const [collapsed, setCollapsed] = useState(false);
   const [sessions, setSessions] = useState<DeepDiveSession[]>([]);
   const navigate = useNavigate();
   const location = useLocation();
+  const user = useUserStore((s) => s.user);
 
   // 加载深度会话列表
   useEffect(() => {
@@ -100,6 +103,9 @@ const Sidebar = ({ onClose }: { onClose?: () => void }) => {
     { label: "My Todo", icon: <ScheduleOutlined />, key: "myTodo" },
     { label: "技能库", icon: <AppstoreOutlined />, key: "skillHub" },
     { label: "Setting", icon: <SettingOutlined />, key: "setting" },
+    ...(user?.isAdmin
+      ? [{ label: "配额管理", icon: <SafetyOutlined />, key: "adminQuota" }]
+      : []),
   ];
 
   // 计算当前选中 key
@@ -108,6 +114,7 @@ const Sidebar = ({ onClose }: { onClose?: () => void }) => {
     if (path.startsWith("/todo")) return "myTodo";
     if (path.startsWith("/skill-hub")) return "skillHub";
     if (path.startsWith("/setting")) return "setting";
+    if (path.startsWith("/admin/quota")) return "adminQuota";
     if (path.startsWith("/chat")) {
       if (activeSessionId) return `deepdive-${activeSessionId}`;
       return "chat-main";
@@ -122,6 +129,7 @@ const Sidebar = ({ onClose }: { onClose?: () => void }) => {
     if (key === "myTodo") return navigate("/todo");
     if (key === "skillHub") return navigate("/skill-hub");
     if (key === "setting") return navigate("/setting");
+    if (key === "adminQuota") return navigate("/admin/quota");
     if (key === "chat-main") return navigate("/chat");
     if (key === "deepdive-new") return navigate("/chat?new=1");
     if (key.startsWith("deepdive-")) {

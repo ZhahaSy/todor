@@ -11,4 +11,5 @@ export interface User {
     address: string;
     hobby: string;
     schedule: string;
+    isAdmin?: boolean;
 }

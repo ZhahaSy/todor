@@ -5,6 +5,8 @@ import {loginPage as Login, SignIn} from "@client/ui";
 import Todo from "@/pages/todo";
 import Setting from "@/pages/setting";
 import SkillHubPage from "@/pages/skill-hub";
+import AdminQuota from "@/pages/admin-quota";
+import AdminRoute from "@/components/AdminRoute";
 
 type RouterType = ReturnType<typeof createBrowserRouter>;
 
@@ -34,6 +36,14 @@ const routes: RouteObject[] = [
             {
                 path: '/skill-hub',
                 element: <SkillHubPage />,
+            },
+            {
+                path: '/admin/quota',
+                element: (
+                    <AdminRoute>
+                        <AdminQuota />
+                    </AdminRoute>
+                ),
             },
 
         ]

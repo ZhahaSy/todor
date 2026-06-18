@@ -9,6 +9,7 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { Response as ExpressResponse } from 'express';
+import { ConfigService } from '@nestjs/config';
 import { UserService } from './user.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
@@ -19,7 +20,19 @@ import { JwtAuthGuard } from '@/common/guard/jwt.auth';
 
 @Controller('user')
 export class UserController {
-  constructor(private readonly userService: UserService) {}
+  constructor(
+    private readonly userService: UserService,
+    private readonly configService: ConfigService,
+  ) {}
+
+  /** 当前用户是否为管理员（基于 ADMIN_USER_IDS 环境变量判定） */
+  private isAdmin(userId: string): boolean {
+    const ids = (this.configService.get<string>('ADMIN_USER_IDS') ?? '')
+      .split(',')
+      .map((s) => s.trim())
+      .filter(Boolean);
+    return ids.includes(userId);
+  }
 
   @Post('/create')
   async create(@Body() createUserDto: CreateUserDto) {
@@ -48,8 +61,10 @@ export class UserController {
   @UseGuards(JwtAuthGuard)
   @Get('/info')
   async info(@Request() req) {
+    const user = await this.userService.findOne({ id: req.user.userId });
+    // 附带 isAdmin，供前端决定是否展示管理员入口（真正的鉴权仍在后端 AdminGuard）
     return ResOp.success(
-      await this.userService.findOne({ id: req.user.userId }),
+      user ? { ...user, isAdmin: this.isAdmin(req.user.userId) } : user,
     );
   }
 

@@ -1,9 +1,12 @@
 import { Module, forwardRef } from '@nestjs/common';
 import { AiService } from './ai.service';
 import { AiModelProvider } from './ai-model.provider';
+import { AiQuotaService } from './ai-quota.service';
 import { AgentChatService } from './agent-chat.service';
 import { DeepDiveIntentHandler } from './intent-handlers/deepdive.intent-handler';
 import { AiController } from './ai.controller';
+import { AiQuotaController } from './ai-quota.controller';
+import { AdminGuard } from '@/common/guard/admin.guard';
 import { ScheduleModule } from '../schedule/schedule.module';
 import { TodoModule } from '../todo/todo.module';
 import { UserModule } from '../user/user.module';
@@ -25,10 +28,12 @@ import { ChatHistoryModule } from '../chat-history/chat-history.module';
     ChatHistoryModule,
     forwardRef(() => SkillModule),
   ],
-  controllers: [AiController],
+  controllers: [AiController, AiQuotaController],
   providers: [
     AiModelProvider,
     AiService,
+    AiQuotaService,
+    AdminGuard,
     AgentChatService,
     DeepDiveIntentHandler,
     DatabaseQueryTool,

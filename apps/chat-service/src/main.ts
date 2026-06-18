@@ -13,6 +13,16 @@ import {
 
 dotenv.config(); // 添加这行加载.env文件
 
+// JWT_SECRET 缺失即拒绝启动：没有它就只能用代码里的兜底密钥签名 token，等于鉴权失效。
+// 放在 dotenv.config() 之后是唯一能可靠读到 .env / 容器 env 的时机。
+if (!process.env.JWT_SECRET) {
+  // eslint-disable-next-line no-console
+  console.error(
+    '[FATAL] JWT_SECRET 未配置。请在部署环境（如 ECS 的 chat-service.env）设置一个足够随机的长字符串后再启动。',
+  );
+  process.exit(1);
+}
+
 const BODY_LIMIT = 10 * 1024 * 1024;
 
 async function bootstrap() {
@@ -53,18 +63,20 @@ async function bootstrap() {
   // 添加cookie-parser中间件
   app.use(cookieParser());
 
-  // Swagger配置
-  const config = new DocumentBuilder()
-    .setTitle('Chat Service API')
-    .setDescription('AI聊天服务接口文档')
-    .setVersion('1.0')
-    .addTag('AI')
-    .build();
-  const document = SwaggerModule.createDocument(app, config, {
-    extraModels: [ResOp],
-    ignoreGlobalPrefix: false,
-  });
-  SwaggerModule.setup('swagger', app, document);
+  // Swagger配置：仅非生产环境暴露，避免线上公开全部接口结构
+  if (process.env.NODE_ENV !== 'production') {
+    const config = new DocumentBuilder()
+      .setTitle('Chat Service API')
+      .setDescription('AI聊天服务接口文档')
+      .setVersion('1.0')
+      .addTag('AI')
+      .build();
+    const document = SwaggerModule.createDocument(app, config, {
+      extraModels: [ResOp],
+      ignoreGlobalPrefix: false,
+    });
+    SwaggerModule.setup('swagger', app, document);
+  }
 
   const port = process.env.PORT ?? 3000;
   app.enableShutdownHooks();
