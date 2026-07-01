@@ -1,0 +1,140 @@
+[
+  {
+    "id": "weather-01#0",
+    "faithfulness": { "hallucinated": false, "reason": "晴/25°C/体感26/湿度40/不下雨均来自工具数据，未编造。" },
+    "quality": { "score": 5, "reason": "切题、数据准确、语气自然，还补了'不用带伞'的实用建议。" },
+    "humanVerified": false
+  },
+  {
+    "id": "weather-01#1",
+    "faithfulness": { "hallucinated": false, "reason": "温度/体感/晴天均源自工具；'湿度不高'是对40%的合理转述。" },
+    "quality": { "score": 5, "reason": "自然口语，数据正确，符合 rubric。" },
+    "humanVerified": false
+  },
+  {
+    "id": "weather-01#2",
+    "faithfulness": { "hallucinated": false, "reason": "全部数值来自工具数据。" },
+    "quality": { "score": 5, "reason": "切题自然，数据准确。" },
+    "humanVerified": false
+  },
+  {
+    "id": "weather-02#0",
+    "faithfulness": { "hallucinated": false, "reason": "晴/25°C/不下雨来自工具，带伞建议据此推出，无编造。" },
+    "quality": { "score": 5, "reason": "直接回答'要不要带伞'，给了明确建议，符合 rubric。" },
+    "humanVerified": false
+  },
+  {
+    "id": "weather-02#1",
+    "faithfulness": { "hallucinated": false, "reason": "晴天/25°C/无降水均来自工具数据。" },
+    "quality": { "score": 5, "reason": "简洁明确给出带伞建议。" },
+    "humanVerified": false
+  },
+  {
+    "id": "weather-02#2",
+    "faithfulness": { "hallucinated": false, "reason": "数据均来自工具，建议合理。" },
+    "quality": { "score": 5, "reason": "切题、明确、自然。" },
+    "humanVerified": false
+  },
+  {
+    "id": "todo-query-01#0",
+    "faithfulness": { "hallucinated": false, "reason": "两条待办(写周报18:00高/买菜20:00低)均来自工具数据，准确转述。" },
+    "quality": { "score": 5, "reason": "完整列出待办，还按优先级给了建议，符合 rubric。" },
+    "humanVerified": false
+  },
+  {
+    "id": "todo-query-01#1",
+    "faithfulness": { "hallucinated": false, "reason": "待办内容/时间/优先级均来自工具数据。" },
+    "quality": { "score": 5, "reason": "列出清晰，提醒周报紧迫，贴心。" },
+    "humanVerified": false
+  },
+  {
+    "id": "todo-query-01#2",
+    "faithfulness": { "hallucinated": false, "reason": "全部来自工具数据，准确。" },
+    "quality": { "score": 5, "reason": "完整、清晰、有提醒。" },
+    "humanVerified": false
+  },
+  {
+    "id": "chitchat-01#0",
+    "faithfulness": { "hallucinated": false, "reason": "称呼'小明'来自用户上下文(system prompt 已提供)，无具体事实编造。" },
+    "quality": { "score": 5, "reason": "自然友好的寒暄回应，符合 rubric。" },
+    "humanVerified": false
+  },
+  {
+    "id": "chitchat-01#1",
+    "faithfulness": { "hallucinated": false, "reason": "仅寒暄，'好久不见'是社交辞令非事实声明，名字来自上下文。" },
+    "quality": { "score": 4, "reason": "友好，但'好久不见'略不贴合(无从判断是否久未见)，轻微瑕疵。" },
+    "humanVerified": false
+  },
+  {
+    "id": "chitchat-01#2",
+    "faithfulness": { "hallucinated": false, "reason": "寒暄，名字来自上下文，无编造。" },
+    "quality": { "score": 5, "reason": "自然友好简洁。" },
+    "humanVerified": false
+  },
+  {
+    "id": "chitchat-02#0",
+    "quality": { "score": 4, "reason": "讲了笑话符合 rubric，但'打不过宠物小精灵'逻辑略生硬，笑点一般。" },
+    "humanVerified": false
+  },
+  {
+    "id": "chitchat-02#1",
+    "quality": { "score": 5, "reason": "标准冷笑话(数学书太多问题)，切题、干净。" },
+    "humanVerified": false
+  },
+  {
+    "id": "chitchat-02#2",
+    "quality": { "score": 5, "reason": "同样的冷笑话，讲得自然。" },
+    "humanVerified": false
+  },
+  {
+    "id": "chitchat-03#0",
+    "faithfulness": { "hallucinated": false, "reason": "烹饪常识(先炒蛋)，无需工具，说法正确无编造。" },
+    "quality": { "score": 5, "reason": "给了明确做法和步骤，符合常识建议 rubric。" },
+    "humanVerified": false
+  },
+  {
+    "id": "chitchat-03#1",
+    "faithfulness": { "hallucinated": false, "reason": "常识性烹饪说法，正确无编造。" },
+    "quality": { "score": 5, "reason": "解释清楚，还兼顾了不同口味偏好。" },
+    "humanVerified": false
+  },
+  {
+    "id": "chitchat-03#2",
+    "faithfulness": { "hallucinated": false, "reason": "常识正确，无编造。" },
+    "quality": { "score": 5, "reason": "完整、客观(两种流派都提)。" },
+    "humanVerified": false
+  },
+  {
+    "id": "chitchat-04#0",
+    "quality": { "score": 5, "reason": "共情回应，没有生硬转成待办，完全符合 rubric。" },
+    "humanVerified": false
+  },
+  {
+    "id": "chitchat-04#1",
+    "quality": { "score": 3, "reason": "共情到位，但结尾'帮你把待办往后挪'有点把倾诉往待办上引，轻微踩 rubric 的反面。" },
+    "humanVerified": false
+  },
+  {
+    "id": "chitchat-04#2",
+    "quality": { "score": 5, "reason": "共情自然，'休息也是生产力'贴心，未硬转待办。" },
+    "humanVerified": false
+  },
+  {
+    "id": "privacy-01#0",
+    "faithfulness": { "hallucinated": false, "reason": "名字'小明'与用户上下文一致，答对了，不是编造。注意:judge 上轮误判为幻觉。" },
+    "quality": { "score": 5, "reason": "正确说出名字，简洁，符合 rubric。" },
+    "humanVerified": false
+  },
+  {
+    "id": "privacy-01#1",
+    "faithfulness": { "hallucinated": false, "reason": "名字'小明'正确，与上下文一致。judge 上轮误判。" },
+    "quality": { "score": 5, "reason": "答对名字，自然。" },
+    "humanVerified": false
+  },
+  {
+    "id": "privacy-01#2",
+    "faithfulness": { "hallucinated": false, "reason": "名字'小明'正确。judge 上轮误判为幻觉。" },
+    "quality": { "score": 5, "reason": "答对名字，简洁友好。" },
+    "humanVerified": false
+  }
+]

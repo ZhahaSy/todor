@@ -7,17 +7,42 @@ import type { UserToolContext } from './user-tool-context';
 import { makeStructuredTool } from './make-structured-tool';
 
 // creator/email 由请求上下文注入（来自 JWT），不交给模型，避免编造收件人
-const reminderSchema = z.object({
-  title: z.string().describe('待办标题，简洁明了'),
-  content: z.string().describe('待办详细描述'),
+//
+// 字段命名注意：模型（尤其 v4-flash）本能会把参数传成 time/date/description/task 等
+// "直觉命名"，导致 schema 字段拿到 undefined、建出的待办时间/内容为空（实测 eval 抓到的
+// 生产 P1 bug）。对策：① 必填字段在 describe 里明确点名 + 给反例；② 非核心字段降为可选
+// 带默认值，模型不传也不会让整条 tool call 摆烂。字段名保持不变以兼容现有 DB schema。
+// 导出供 eval 桩复用，确保 eval 测的字段引导与生产完全一致。
+export const reminderSchema = z.object({
+  title: z
+    .string()
+    .describe('待办标题，简洁明了。例如「产品评审会」「给妈妈打电话」'),
+  todoTime: z
+    .string()
+    .describe(
+      '提醒时间，必须是 YYYY-MM-DD HH:mm 格式的绝对时间（如 2026-06-25 09:00）。' +
+        '需把"明天上午9点""今晚8点"等相对说法换算成绝对时间。' +
+        '注意字段名是 todoTime，不要用 time/date/deadline。',
+    ),
+  content: z
+    .string()
+    .optional()
+    .describe(
+      '待办详细描述（字段名是 content，不要用 description/message）。' +
+        '用户没额外说明时可省略，会自动用标题填充。',
+    ),
   type: z
     .enum(['work', 'life', 'study'])
-    .describe('待办类型：work 工作、life 生活、study 学习'),
+    .optional()
+    .describe('待办类型：work 工作、life 生活、study 学习。不确定就省略，默认 life。'),
   priority: z
     .enum(['low', 'medium', 'high'])
-    .describe('优先级：low 低、medium 中、high 高'),
-  todoTime: z.string().describe('提醒时间，格式：YYYY-MM-DD HH:mm'),
-  isUrgent: z.boolean().describe('是否紧急'),
+    .optional()
+    .describe('优先级：low 低、medium 中、high 高。不确定就省略，默认 medium。'),
+  isUrgent: z
+    .boolean()
+    .optional()
+    .describe('是否紧急。用户没强调紧急时省略即可，默认 false。'),
   originInput: z.string().optional().describe('用户原始输入'),
 });
 
@@ -52,14 +77,19 @@ export class CreateReminderTool {
     userId: string,
   ): Promise<string> {
     let todoId: string;
+    // 可选字段兜底：模型省略时给安全默认值，避免建出残缺待办
+    const content = input.content?.trim() || input.title;
+    const type = input.type ?? 'life';
+    const priority = input.priority ?? 'medium';
+    const isUrgent = input.isUrgent ?? false;
     try {
       const todo = await this.todoService.create({
         title: input.title,
-        content: input.content,
-        type: input.type,
-        priority: input.priority,
+        content,
+        type,
+        priority,
         todoTime: input.todoTime,
-        isUrgent: input.isUrgent,
+        isUrgent,
         creator,
         userId,
         originInput: input.originInput ?? input.title,
@@ -77,7 +107,7 @@ export class CreateReminderTool {
         input.todoTime,
         email,
         `待办提醒：${input.title}`,
-        `您有一条待办事项：\n\n${input.content}\n\n时间：${input.todoTime}`,
+        `您有一条待办事项：\n\n${content}\n\n时间：${input.todoTime}`,
       );
 
       if (result?.status === 'skipped') {

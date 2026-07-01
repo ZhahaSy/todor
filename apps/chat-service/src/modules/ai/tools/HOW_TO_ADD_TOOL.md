@@ -130,3 +130,13 @@ src/modules/ai/
     ├── base.intent-handler.ts
     └── deepdive.intent-handler.ts ← 深入模式（独立会话，不并入 agent）
 ```
+
+---
+
+## 第三步：补 Eval 用例（强烈建议）
+
+新增工具后，在 `eval/cases/agent.cases.json` 补几条用例，验证 agent 在该调它时会调、
+不该调时不调、关键参数解析正确。然后跑 `pnpm eval`（或先 `pnpm eval:selftest` 验证评分逻辑）。
+
+为什么重要：工具描述（description）写得好不好，直接决定模型选不选它。改了一个工具的 description，
+很可能悄悄影响其它工具的选择——eval 是唯一能稳定发现这种回归的手段。详见 `eval/README.md`。

@@ -1,0 +1,263 @@
+[
+  {
+    "id": "weather-01",
+    "desc": "直接问天气，应调 weather_query",
+    "input": "今天天气怎么样？",
+    "expect": {
+      "tools": { "shouldCall": ["weather_query"], "shouldNotCall": ["create_reminder", "database_query"] },
+      "rubric": "回复应基于工具返回的天气数据，给出温度/天气状况，语气自然。",
+      "checkFaithfulness": true
+    }
+  },
+  {
+    "id": "weather-02",
+    "desc": "口语化问天气（要带伞吗），应调 weather_query",
+    "input": "我出门要带伞吗",
+    "expect": {
+      "tools": { "shouldCall": ["weather_query"], "shouldNotCall": ["create_reminder"] },
+      "rubric": "应根据天气数据判断是否需要带伞并给出明确建议。",
+      "checkFaithfulness": true
+    }
+  },
+  {
+    "id": "weather-03",
+    "desc": "指定城市问天气，应调 weather_query 且 city 参数为上海",
+    "input": "上海现在几度",
+    "expect": {
+      "tools": {
+        "shouldCall": ["weather_query"],
+        "args": { "weather_query": { "city": { "kind": "contains", "value": "上海" } } }
+      }
+    }
+  },
+  {
+    "id": "todo-query-01",
+    "desc": "问自己有什么待办，应调 database_query",
+    "input": "我今天有什么待办？",
+    "expect": {
+      "tools": { "shouldCall": ["database_query"], "shouldNotCall": ["create_reminder"] },
+      "rubric": "应列出工具返回的待办事项。",
+      "checkFaithfulness": true
+    }
+  },
+  {
+    "id": "todo-query-02",
+    "desc": "口语化问任务安排，应调 database_query",
+    "input": "我还有啥没做完的事儿",
+    "expect": {
+      "tools": { "shouldCall": ["database_query"], "shouldNotCall": ["weather_query"] }
+    }
+  },
+  {
+    "id": "reminder-01",
+    "desc": "明确的建待办+时间，应调 create_reminder，todoTime 为明天",
+    "input": "提醒我明天上午9点开产品评审会",
+    "expect": {
+      "tools": {
+        "shouldCall": ["create_reminder"],
+        "args": {
+          "create_reminder": {
+            "todoTime": { "kind": "dateOffsetDays", "offsetDays": 1 },
+            "title": { "kind": "contains", "value": "评审" }
+          }
+        }
+      }
+    }
+  },
+  {
+    "id": "reminder-02",
+    "desc": "明天的提醒，应调 create_reminder，todoTime 为明天（避开'今晚'因当前时刻已过被模型反问的 flaky）",
+    "input": "明晚8点提醒我给妈妈打电话",
+    "expect": {
+      "tools": {
+        "shouldCall": ["create_reminder"],
+        "args": {
+          "create_reminder": { "todoTime": { "kind": "dateOffsetDays", "offsetDays": 1 } }
+        }
+      }
+    }
+  },
+  {
+    "id": "reminder-03",
+    "desc": "建待办时优先级/类型的合理性（高优先级工作）",
+    "input": "帮我记一个紧急的工作待办：下午3点前必须提交季度报告",
+    "expect": {
+      "tools": {
+        "shouldCall": ["create_reminder"],
+        "args": {
+          "create_reminder": {
+            "type": { "kind": "oneOf", "values": ["work"] },
+            "priority": { "kind": "oneOf", "values": ["high", "medium"] }
+          }
+        }
+      }
+    }
+  },
+  {
+    "id": "chitchat-01",
+    "desc": "纯打招呼，不应调任何工具",
+    "input": "你好呀",
+    "expect": {
+      "tools": { "shouldNotCall": ["weather_query", "create_reminder", "database_query"] },
+      "rubric": "应自然回应寒暄，简洁友好。",
+      "checkFaithfulness": true
+    }
+  },
+  {
+    "id": "chitchat-02",
+    "desc": "闲聊式提问（讲个笑话），不应调任何工具",
+    "input": "给我讲个冷笑话",
+    "expect": {
+      "tools": { "shouldNotCall": ["weather_query", "create_reminder", "database_query"] },
+      "rubric": "应讲一个笑话，不应调用工具。"
+    }
+  },
+  {
+    "id": "chitchat-03",
+    "desc": "常识性问题，不应调天气/待办工具",
+    "input": "番茄炒蛋应该先放番茄还是先放蛋？",
+    "expect": {
+      "tools": { "shouldNotCall": ["weather_query", "create_reminder", "database_query"] },
+      "rubric": "应给出常识性烹饪建议。",
+      "checkFaithfulness": true
+    }
+  },
+  {
+    "id": "chitchat-04",
+    "desc": "情绪倾诉，不应调工具，不应硬建待办",
+    "input": "今天好累啊，感觉什么都不想干",
+    "expect": {
+      "tools": { "shouldNotCall": ["create_reminder", "weather_query", "database_query"] },
+      "rubric": "应共情回应，不应生硬地把倾诉变成待办。"
+    }
+  },
+  {
+    "id": "compound-01",
+    "desc": "复合意图：查天气 + 建待办，两个工具都应调",
+    "input": "看看明天天气，然后提醒我明天早上8点出门带伞",
+    "expect": {
+      "tools": { "shouldCall": ["weather_query", "create_reminder"] }
+    }
+  },
+  {
+    "id": "edge-01",
+    "desc": "模糊时间（下周三），应调 create_reminder（不强断言具体日期，宽松）",
+    "input": "下周三下午提醒我交房租",
+    "expect": {
+      "tools": { "shouldCall": ["create_reminder"] }
+    }
+  },
+  {
+    "id": "edge-02",
+    "desc": "信息不足的天气提问（没说城市也没位置），仍应调 weather_query（工具内部兜底定位）",
+    "input": "等下会下雨吗",
+    "expect": {
+      "tools": { "shouldCall": ["weather_query"] }
+    }
+  },
+  {
+    "id": "privacy-01",
+    "desc": "问用户自己的信息，应走 get_user_info 而非乱编",
+    "input": "你还记得我叫什么名字吗",
+    "expect": {
+      "tools": { "shouldNotCall": ["weather_query", "create_reminder", "database_query"] },
+      "rubric": "应正确说出用户名字（小明），不应编造其他名字。",
+      "checkFaithfulness": true
+    }
+  },
+  {
+    "id": "memory-save-01",
+    "desc": "用户显式要求记住一条长期事实，应调 save_memory",
+    "input": "记一下，我对花生过敏。",
+    "expect": {
+      "tools": {
+        "shouldCall": ["save_memory"],
+        "shouldNotCall": ["create_reminder", "recall_memory"]
+      }
+    }
+  },
+  {
+    "id": "memory-recall-01",
+    "desc": "问及自己的长期偏好，应调 recall_memory 查而非编",
+    "input": "你还记得我有什么忌口吗？",
+    "expect": {
+      "tools": {
+        "shouldCall": ["recall_memory"],
+        "shouldNotCall": ["save_memory", "weather_query"]
+      },
+      "rubric": "应基于查到的记忆回答，没有则如实说不知道，不编造。",
+      "checkFaithfulness": true
+    }
+  },
+  {
+    "id": "memory-delete-01",
+    "desc": "用户要求遗忘某条记忆，应调 delete_memory",
+    "input": "别记我对花生过敏这事了。",
+    "expect": {
+      "tools": {
+        "shouldCall": ["delete_memory"],
+        "shouldNotCall": ["save_memory"]
+      }
+    }
+  },
+  {
+    "id": "depth-decision-01",
+    "desc": "开放决策类：该不该换工作，考验是否给出权衡维度而非空泛",
+    "input": "我现在的工作钱多但很闲学不到东西，要不要跳去一个钱少但成长快的公司？",
+    "expect": {
+      "tools": { "shouldNotCall": ["weather_query", "create_reminder", "database_query"] },
+      "rubric": "充分=点出关键权衡维度（如职业阶段/财务安全垫/成长的可迁移性/机会成本/可逆性），并给出帮助用户自己判断的具体思路；浅=只说'看你自己''各有利弊'之类正确的废话。",
+      "expectDepth": true
+    }
+  },
+  {
+    "id": "depth-tech-01",
+    "desc": "技术概念解释：JWT vs session，考验是否讲清关键区别与取舍",
+    "input": "JWT 和 session 做登录认证有什么区别，我该选哪个？",
+    "expect": {
+      "tools": { "shouldNotCall": ["weather_query", "create_reminder", "database_query"] },
+      "rubric": "充分=讲清核心区别（服务端有无状态/可扩展性/失效与吊销难易/存储位置与安全考量），并给出按场景的选型建议；浅=只说'JWT是令牌session是会话'这种字面解释、不触及取舍。",
+      "expectDepth": true
+    }
+  },
+  {
+    "id": "depth-advice-01",
+    "desc": "学习建议类：想学做饭，考验是否给可操作路径而非套话",
+    "input": "我完全不会做饭，想从零开始学，给点建议？",
+    "expect": {
+      "tools": { "shouldNotCall": ["weather_query", "create_reminder", "database_query"] },
+      "rubric": "充分=给出可操作的起步路径（先掌握的基础菜/技法、必备厨具、避免的常见坑、循序渐进的顺序）；浅='多练习''从简单的开始''熟能生巧'这类放之四海皆准的空话。",
+      "expectDepth": true
+    }
+  },
+  {
+    "id": "depth-debug-01",
+    "desc": "技术排查类：列表渲染卡顿，考验是否给出具体排查方向",
+    "input": "我的网页列表数据一多就很卡，可能是什么原因，怎么排查？",
+    "expect": {
+      "tools": { "shouldNotCall": ["weather_query", "create_reminder", "database_query"] },
+      "rubric": "充分=列出具体可能原因（未虚拟化的长列表/重复渲染/key 不稳定/重计算未缓存/大图未懒加载等）和对应排查手段（Performance 面板、React DevTools Profiler 等）；浅=只说'优化代码''减少数据量'这类不可操作的泛泛之谈。",
+      "expectDepth": true
+    }
+  },
+  {
+    "id": "depth-compare-01",
+    "desc": "对比权衡类：自研 vs 第三方，考验是否给出判断维度",
+    "input": "一个功能是自己写还是用现成的第三方库，怎么判断？",
+    "expect": {
+      "tools": { "shouldNotCall": ["weather_query", "create_reminder", "database_query"] },
+      "rubric": "充分=给出判断维度（功能与需求契合度/维护与安全更新/体积与依赖风险/定制与掌控成本/团队熟悉度/长期维护负担），帮用户形成决策框架；浅=只说'看情况''各有优劣'。",
+      "expectDepth": true
+    }
+  },
+  {
+    "id": "depth-howto-01",
+    "desc": "方法论类：如何提升专注力，考验是否给具体可执行方法",
+    "input": "我总是很难专注，工作时老走神，有什么办法改善吗？",
+    "expect": {
+      "tools": { "shouldNotCall": ["weather_query", "create_reminder", "database_query"] },
+      "rubric": "充分=给出具体可执行的方法（如番茄工作法/排除干扰源/任务拆小/单线程处理/精力管理）并简述为什么有用；浅='多休息''集中注意力''培养习惯'这类无法落地的空话。",
+      "expectDepth": true
+    }
+  }
+]

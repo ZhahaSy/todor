@@ -1,0 +1,302 @@
+[
+  {
+    "id": "weather-01#0",
+    "caseId": "weather-01",
+    "input": "今天天气怎么样？",
+    "finalText": "北京今天大晴天，气温25°C，体感26°C，湿度40%，微风，不下雨。出门挺舒服的，不用带伞。",
+    "toolData": [
+      "📍 北京 当前天气\n🌡️ 气温：25°C（体感 26°C）\n🌤️ 天气：晴天\n💧 湿度：40%\n🌬️ 风速：10 km/h\n🌧️ 降水量：0 mm"
+    ],
+    "rubric": "回复应基于工具返回的天气数据，给出温度/天气状况，语气自然。",
+    "dimensions": [
+      "faithfulness",
+      "quality"
+    ]
+  },
+  {
+    "id": "weather-01#1",
+    "caseId": "weather-01",
+    "input": "今天天气怎么样？",
+    "finalText": "北京这边今天大晴天，气温25°C，体感26°C，湿度不高，风也挺温柔的。出门不用带伞，挺舒服的一天！",
+    "toolData": [
+      "📍 北京 当前天气\n🌡️ 气温：25°C（体感 26°C）\n🌤️ 天气：晴天\n💧 湿度：40%\n🌬️ 风速：10 km/h\n🌧️ 降水量：0 mm"
+    ],
+    "rubric": "回复应基于工具返回的天气数据，给出温度/天气状况，语气自然。",
+    "dimensions": [
+      "faithfulness",
+      "quality"
+    ]
+  },
+  {
+    "id": "weather-01#2",
+    "caseId": "weather-01",
+    "input": "今天天气怎么样？",
+    "finalText": "今天北京大晴天，气温25°C，体感26°C，湿度40%，风力不大，很适合出门溜达，不用带伞。",
+    "toolData": [
+      "📍 北京 当前天气\n🌡️ 气温：25°C（体感 26°C）\n🌤️ 天气：晴天\n💧 湿度：40%\n🌬️ 风速：10 km/h\n🌧️ 降水量：0 mm"
+    ],
+    "rubric": "回复应基于工具返回的天气数据，给出温度/天气状况，语气自然。",
+    "dimensions": [
+      "faithfulness",
+      "quality"
+    ]
+  },
+  {
+    "id": "weather-02#0",
+    "caseId": "weather-02",
+    "input": "我出门要带伞吗",
+    "finalText": "北京现在晴空万里，25°C，完全不用带伞，放心出门吧！☀️",
+    "toolData": [
+      "📍 北京 当前天气\n🌡️ 气温：25°C（体感 26°C）\n🌤️ 天气：晴天\n💧 湿度：40%\n🌬️ 风速：10 km/h\n🌧️ 降水量：0 mm"
+    ],
+    "rubric": "应根据天气数据判断是否需要带伞并给出明确建议。",
+    "dimensions": [
+      "faithfulness",
+      "quality"
+    ]
+  },
+  {
+    "id": "weather-02#1",
+    "caseId": "weather-02",
+    "input": "我出门要带伞吗",
+    "finalText": "外面大晴天，25°C，一滴雨都没有，伞就不用带啦。",
+    "toolData": [
+      "📍 北京 当前天气\n🌡️ 气温：25°C（体感 26°C）\n🌤️ 天气：晴天\n💧 湿度：40%\n🌬️ 风速：10 km/h\n🌧️ 降水量：0 mm"
+    ],
+    "rubric": "应根据天气数据判断是否需要带伞并给出明确建议。",
+    "dimensions": [
+      "faithfulness",
+      "quality"
+    ]
+  },
+  {
+    "id": "weather-02#2",
+    "caseId": "weather-02",
+    "input": "我出门要带伞吗",
+    "finalText": "北京现在是晴天，25°C，一滴雨都不会下，不用带伞啦，放心出门～",
+    "toolData": [
+      "📍 北京 当前天气\n🌡️ 气温：25°C（体感 26°C）\n🌤️ 天气：晴天\n💧 湿度：40%\n🌬️ 风速：10 km/h\n🌧️ 降水量：0 mm"
+    ],
+    "rubric": "应根据天气数据判断是否需要带伞并给出明确建议。",
+    "dimensions": [
+      "faithfulness",
+      "quality"
+    ]
+  },
+  {
+    "id": "todo-query-01#0",
+    "caseId": "todo-query-01",
+    "input": "我今天有什么待办？",
+    "finalText": "你今天有两件事：\n\n1. **写周报** — 下午6点前要交，优先级高，别忘了。\n2. **买菜** — 晚上8点，优先级低，回来路上顺手买了就行。",
+    "toolData": [
+      "你有 2 条待办：\n1. 写周报（工作，高优先级，今天 18:00）\n2. 买菜（生活，低优先级，今天 20:00）"
+    ],
+    "rubric": "应列出工具返回的待办事项。",
+    "dimensions": [
+      "faithfulness",
+      "quality"
+    ]
+  },
+  {
+    "id": "todo-query-01#1",
+    "caseId": "todo-query-01",
+    "input": "我今天有什么待办？",
+    "finalText": "你今天有两个待办：\n\n1. **写周报** 🔴 高优先级，今天下午6点前完成\n2. **买菜** 🟢 低优先级，今晚8点\n\n先搞周报吧，还有不到两个小时了~",
+    "toolData": [
+      "你有 2 条待办：\n1. 写周报（工作，高优先级，今天 18:00）\n2. 买菜（生活，低优先级，今天 20:00）"
+    ],
+    "rubric": "应列出工具返回的待办事项。",
+    "dimensions": [
+      "faithfulness",
+      "quality"
+    ]
+  },
+  {
+    "id": "todo-query-01#2",
+    "caseId": "todo-query-01",
+    "input": "我今天有什么待办？",
+    "finalText": "你今天有两条待办：\n\n1. **写周报** — 工作相关，高优先级，今天下午6点前要搞定\n2. **买菜** — 生活琐事，低优先级，今晚8点\n\n周报快到时间了，别忘啦！",
+    "toolData": [
+      "你有 2 条待办：\n1. 写周报（工作，高优先级，今天 18:00）\n2. 买菜（生活，低优先级，今天 20:00）"
+    ],
+    "rubric": "应列出工具返回的待办事项。",
+    "dimensions": [
+      "faithfulness",
+      "quality"
+    ]
+  },
+  {
+    "id": "chitchat-01#0",
+    "caseId": "chitchat-01",
+    "input": "你好呀",
+    "finalText": "嘿，小明！你好呀～今天有什么需要帮忙的吗？😊",
+    "toolData": [],
+    "rubric": "应自然回应寒暄，简洁友好。",
+    "dimensions": [
+      "faithfulness",
+      "quality"
+    ]
+  },
+  {
+    "id": "chitchat-01#1",
+    "caseId": "chitchat-01",
+    "input": "你好呀",
+    "finalText": "嘿，小明！好久不见，今天过得咋样？😊",
+    "toolData": [],
+    "rubric": "应自然回应寒暄，简洁友好。",
+    "dimensions": [
+      "faithfulness",
+      "quality"
+    ]
+  },
+  {
+    "id": "chitchat-01#2",
+    "caseId": "chitchat-01",
+    "input": "你好呀",
+    "finalText": "嘿，小明！下午好呀，有什么事需要帮忙的吗？😊",
+    "toolData": [],
+    "rubric": "应自然回应寒暄，简洁友好。",
+    "dimensions": [
+      "faithfulness",
+      "quality"
+    ]
+  },
+  {
+    "id": "chitchat-02#0",
+    "caseId": "chitchat-02",
+    "input": "给我讲个冷笑话",
+    "finalText": "小白问小明：\"你知道为什么恐龙会灭绝吗？\"\n\n小明摇摇头。\n\n小白说：\"因为它们打不过宠物小精灵。\"\n\n……好冷，快披个毯子🧣",
+    "toolData": [],
+    "rubric": "应讲一个笑话，不应调用工具。",
+    "dimensions": [
+      "quality"
+    ]
+  },
+  {
+    "id": "chitchat-02#1",
+    "caseId": "chitchat-02",
+    "input": "给我讲个冷笑话",
+    "finalText": "行，给你来一个：\n\n为什么数学书很忧郁？  \n因为它有太多的问题。",
+    "toolData": [],
+    "rubric": "应讲一个笑话，不应调用工具。",
+    "dimensions": [
+      "quality"
+    ]
+  },
+  {
+    "id": "chitchat-02#2",
+    "caseId": "chitchat-02",
+    "input": "给我讲个冷笑话",
+    "finalText": "好的，小明，听好了：\n\n为什么数学书总是很忧郁？\n\n……因为它有太多问题。😬",
+    "toolData": [],
+    "rubric": "应讲一个笑话，不应调用工具。",
+    "dimensions": [
+      "quality"
+    ]
+  },
+  {
+    "id": "chitchat-03#0",
+    "caseId": "chitchat-03",
+    "input": "番茄炒蛋应该先放番茄还是先放蛋？",
+    "finalText": "哈哈，这个问题有意思！番茄炒蛋的正确做法是——**先炒蛋，盛出来，再炒番茄**。\n\n具体来说：蛋打散，下锅炒到刚凝固就盛出来；然后炒番茄出汁，再把蛋倒回去一起翻炒几下就行。这样蛋嫩番茄香，不会变成一锅糊糊。\n\n先放蛋再放番茄，记住啦！🍳",
+    "toolData": [],
+    "rubric": "应给出常识性烹饪建议。",
+    "dimensions": [
+      "faithfulness",
+      "quality"
+    ]
+  },
+  {
+    "id": "chitchat-03#1",
+    "caseId": "chitchat-03",
+    "input": "番茄炒蛋应该先放番茄还是先放蛋？",
+    "finalText": "哈哈，这个问题有意思！严格来说，应该是先炒蛋，盛出来，再炒番茄，最后把蛋倒回去一起翻匀。如果先放番茄，蛋液倒进去就会变成一坨番茄鸡蛋糊，卖相和口感都不太好。不过你要是喜欢那种糊糊的口感，也不是不行～",
+    "toolData": [],
+    "rubric": "应给出常识性烹饪建议。",
+    "dimensions": [
+      "faithfulness",
+      "quality"
+    ]
+  },
+  {
+    "id": "chitchat-03#2",
+    "caseId": "chitchat-03",
+    "input": "番茄炒蛋应该先放番茄还是先放蛋？",
+    "finalText": "哈哈，标准的做法是先炒蛋！蛋液下锅炒到凝固就盛出来，然后再炒番茄，炒出汁后把蛋倒回去一起翻炒。这样蛋嫩番茄香，不会把蛋炒老了。不过你要是喜欢蛋碎在番茄汁里那种口感，也可以先炒番茄再倒蛋液进去搅散，两种流派都有道理～",
+    "toolData": [],
+    "rubric": "应给出常识性烹饪建议。",
+    "dimensions": [
+      "faithfulness",
+      "quality"
+    ]
+  },
+  {
+    "id": "chitchat-04#0",
+    "caseId": "chitchat-04",
+    "input": "今天好累啊，感觉什么都不想干",
+    "finalText": "辛苦了小明，累了就歇会儿呗，别硬撑。给自己泡杯茶或者躺一会儿，今天先放空一下，有什么需要再叫我。",
+    "toolData": [],
+    "rubric": "应共情回应，不应生硬地把倾诉变成待办。",
+    "dimensions": [
+      "quality"
+    ]
+  },
+  {
+    "id": "chitchat-04#1",
+    "caseId": "chitchat-04",
+    "input": "今天好累啊，感觉什么都不想干",
+    "finalText": "累的时候就得对自己好一点，不需要勉强自己。今天不想干的事就放着呗，休息也是正经事。要不要帮你把什么待办往后挪挪？",
+    "toolData": [],
+    "rubric": "应共情回应，不应生硬地把倾诉变成待办。",
+    "dimensions": [
+      "quality"
+    ]
+  },
+  {
+    "id": "chitchat-04#2",
+    "caseId": "chitchat-04",
+    "input": "今天好累啊，感觉什么都不想干",
+    "finalText": "听你这么说，今天一定挺折腾的吧。累了就歇一歇，别硬撑，休息也是一种生产力嘛。有啥需要我帮忙的吗？",
+    "toolData": [],
+    "rubric": "应共情回应，不应生硬地把倾诉变成待办。",
+    "dimensions": [
+      "quality"
+    ]
+  },
+  {
+    "id": "privacy-01#0",
+    "caseId": "privacy-01",
+    "input": "你还记得我叫什么名字吗",
+    "finalText": "记得呀，小明！",
+    "toolData": [],
+    "rubric": "应正确说出用户名字（小明），不应编造其他名字。",
+    "dimensions": [
+      "faithfulness",
+      "quality"
+    ]
+  },
+  {
+    "id": "privacy-01#1",
+    "caseId": "privacy-01",
+    "input": "你还记得我叫什么名字吗",
+    "finalText": "当然记得啊，你叫小明嘛！",
+    "toolData": [],
+    "rubric": "应正确说出用户名字（小明），不应编造其他名字。",
+    "dimensions": [
+      "faithfulness",
+      "quality"
+    ]
+  },
+  {
+    "id": "privacy-01#2",
+    "caseId": "privacy-01",
+    "input": "你还记得我叫什么名字吗",
+    "finalText": "当然记得啊，小明！😄",
+    "toolData": [],
+    "rubric": "应正确说出用户名字（小明），不应编造其他名字。",
+    "dimensions": [
+      "faithfulness",
+      "quality"
+    ]
+  }
+]

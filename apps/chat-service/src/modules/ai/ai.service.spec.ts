@@ -24,6 +24,8 @@ describe('AiService.handlePostProcess persistence', () => {
       {} as any, // agentChatService
       {} as any, // deepDiveIntentHandler
       chatHistoryService,
+      {} as any, // memoryExtractor
+      {} as any, // memoryService
     );
   });
 
@@ -91,5 +93,97 @@ describe('AiService.handlePostProcess persistence', () => {
     );
     const [userMsg] = created;
     expect(userMsg.title).toBeUndefined();
+  });
+});
+
+/**
+ * 验证 autoExtractMemory 的 confidence 驱动写入：
+ * stated 才存，inferred / routeToUserField 命中 / 抽取失败都不写库。
+ */
+describe('AiService.autoExtractMemory（confidence 驱动）', () => {
+  let stored: any[];
+  let memoryService: any;
+  const buildService = (extractResult: any) => {
+    stored = [];
+    memoryService = {
+      create: jest.fn(async (m: any) => stored.push(m)),
+      hasSimilarActive: jest.fn(async () => false),
+    };
+    const extractor = {
+      extract: jest.fn(async () =>
+        extractResult instanceof Error
+          ? Promise.reject(extractResult)
+          : extractResult,
+      ),
+    };
+    return new AiService(
+      {} as any,
+      {} as any,
+      {} as any,
+      {} as any,
+      extractor as any,
+      memoryService as any,
+    );
+  };
+
+  const fact = (over: any) => ({
+    value: 'high',
+    confidence: 'stated',
+    category: 'health',
+    subject: 'self',
+    temporality: 'permanent',
+    sensitivity: 'normal',
+    content: '对花生过敏',
+    source: 'x',
+    routeToUserField: null,
+    ...over,
+  });
+
+  it('stated：写入 user_memory', async () => {
+    const svc = buildService([fact({})]);
+    await svc.autoExtractMemory('我对花生过敏', 'u1');
+    expect(stored).toHaveLength(1);
+    expect(stored[0].content).toBe('对花生过敏');
+    expect(stored[0].userId).toBe('u1');
+  });
+
+  it('inferred：跳过不写（留二次确认）', async () => {
+    const svc = buildService([fact({ confidence: 'inferred' })]);
+    await svc.autoExtractMemory('他好像不爱加班', 'u1');
+    expect(stored).toHaveLength(0);
+  });
+
+  it('routeToUserField 命中：本期跳过', async () => {
+    const svc = buildService([fact({ routeToUserField: 'job' })]);
+    await svc.autoExtractMemory('我是程序员', 'u1');
+    expect(stored).toHaveLength(0);
+  });
+
+  it('空数组：不写', async () => {
+    const svc = buildService([]);
+    await svc.autoExtractMemory('今天好累', 'u1');
+    expect(stored).toHaveLength(0);
+  });
+
+  it('多事实：只写 stated 的那条', async () => {
+    const svc = buildService([
+      fact({ content: 'A', confidence: 'stated' }),
+      fact({ content: 'B', confidence: 'inferred' }),
+    ]);
+    await svc.autoExtractMemory('...', 'u1');
+    expect(stored.map((s) => s.content)).toEqual(['A']);
+  });
+
+  it('抽取器抛错：不崩、不写', async () => {
+    const svc = buildService(new Error('boom'));
+    await expect(svc.autoExtractMemory('x', 'u1')).resolves.toBeUndefined();
+    expect(stored).toHaveLength(0);
+  });
+
+  it('已有相似记忆：跳过不重复写（防双写）', async () => {
+    const svc = buildService([fact({})]);
+    memoryService.hasSimilarActive = jest.fn(async () => true);
+    await svc.autoExtractMemory('我对花生过敏', 'u1');
+    expect(stored).toHaveLength(0);
   });
 });

@@ -149,6 +149,20 @@ export class AiController {
           writeSse('token', { t: ev.text });
           continue;
         }
+        if (ev.type === 'tool_call') {
+          // 工具调用可视化用：前端旧版本会静默忽略未知事件，向后兼容
+          writeSse('tool_call', { id: ev.id, name: ev.name, args: ev.args });
+          continue;
+        }
+        if (ev.type === 'tool_result') {
+          writeSse('tool_result', {
+            id: ev.id,
+            name: ev.name,
+            ok: ev.ok,
+            ms: ev.ms,
+          });
+          continue;
+        }
         if (ev.type === 'done') {
           const extra = await this.aiService.handlePostProcess(
             { output: ev.output, intent: ev.intent, data: ev.data },
@@ -164,6 +178,11 @@ export class AiController {
             data: ev.data,
             ...extra,
           });
+          // 自动记忆抽取：fire-and-forget，绝不 await（不阻塞 done 已发出的响应）
+          void this.aiService.autoExtractMemory(
+            sendMessageDto.input,
+            req.user.userId,
+          );
         }
       }
     } catch (e) {

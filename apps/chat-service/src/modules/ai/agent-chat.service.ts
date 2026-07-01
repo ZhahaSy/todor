@@ -17,8 +17,18 @@ import { createGetUserInfoTool } from './tools/get-user-info.tool';
 import { WeatherQueryTool } from './tools/weather-query.tool';
 import { DatabaseQueryTool } from './tools/database-query.tool';
 import { CreateReminderTool } from './tools/create-reminder.tool';
+import {
+  SaveMemoryTool,
+  RecallMemoryTool,
+  DeleteMemoryTool,
+} from './tools/memory.tools';
 import { extractTokenText } from './utils/langchain-stream';
 import type { InputData } from './ai.service';
+import type {
+  AgentStreamEvent,
+  RunTrace,
+  ToolCallRecord,
+} from './agent-events';
 
 /**
  * 统一的流式 tool-calling agent。
@@ -42,6 +52,9 @@ export class AgentChatService {
     private readonly weatherTool: WeatherQueryTool,
     private readonly databaseQueryTool: DatabaseQueryTool,
     private readonly createReminderTool: CreateReminderTool,
+    private readonly saveMemoryTool: SaveMemoryTool,
+    private readonly recallMemoryTool: RecallMemoryTool,
+    private readonly deleteMemoryTool: DeleteMemoryTool,
   ) {}
 
   /** 与各 handler 一致的全局记忆，保证跨场景共享上下文 */
@@ -70,6 +83,9 @@ export class AgentChatService {
       this.weatherTool.bindUser(ctx),
       this.databaseQueryTool.bindUser(ctx),
       this.createReminderTool.bindUser(ctx),
+      this.saveMemoryTool.bindUser(ctx),
+      this.recallMemoryTool.bindUser(ctx),
+      this.deleteMemoryTool.bindUser(ctx),
       createGetUserInfoTool(inputData.userInfo),
     ];
 
@@ -116,11 +132,19 @@ ${locationInfo}
   }
 
   /**
-   * 流式处理一条消息。yield 出 token 文本增量，return 完整文本。
-   * 循环：流式调用模型 → 若产生 tool_calls 则执行工具、把结果喂回继续下一轮 →
+   * 流式处理一条消息。
+   *
+   * yield 出结构化事件（token 文本增量 / 工具调用 / 工具结果），return 一份完整 RunTrace。
+   * 循环：流式调用模型 → 若产生 tool_calls 则 emit 事件、执行工具、把结果喂回继续下一轮 →
    * 否则视为最终回复，存记忆并结束。最后一轮强制去掉工具，逼模型给出文本答案。
+   *
+   * 工具调用信息由本循环直接 emit（而非 LangChain callbacks）—— 因为这里是手写循环、
+   * 工具不在 runnable 链路内，回调抓不到。详见 agent-events.ts。
    */
-  async *stream(inputData: InputData): AsyncGenerator<string, string> {
+  async *stream(
+    inputData: InputData,
+  ): AsyncGenerator<AgentStreamEvent, RunTrace> {
+    const startedAt = Date.now();
     const model = this.aiModelProvider.getModel(0.7);
     const tools = await this.buildTools(inputData);
     const toolMap = new Map(tools.map((t) => [t.name, t]));
@@ -138,8 +162,18 @@ ${locationInfo}
     ];
 
     let full = '';
+    const toolCallRecords: ToolCallRecord[] = [];
+    let iterations = 0;
+
+    const buildTrace = (): RunTrace => ({
+      finalText: full,
+      toolCalls: toolCallRecords,
+      iterations,
+      totalMs: Date.now() - startedAt,
+    });
 
     for (let iter = 0; iter < AgentChatService.MAX_ITERATIONS; iter++) {
+      iterations = iter + 1;
       const isLastIteration = iter === AgentChatService.MAX_ITERATIONS - 1;
       // 末轮去掉工具，强制模型输出文本（避免循环结束时还停在 tool_call 上没有回复）
       const runner = isLastIteration ? model : modelWithTools;
@@ -153,7 +187,7 @@ ${locationInfo}
         if (piece) {
           textThisRound += piece;
           full += piece;
-          yield piece;
+          yield { type: 'token', text: piece };
         }
         accumulated = accumulated
           ? accumulated.concat(chunk as AIMessageChunk)
@@ -164,7 +198,7 @@ ${locationInfo}
 
       if (toolCalls.length === 0 || isLastIteration) {
         await memory.saveContext({ input: inputData.input }, { output: full });
-        return full;
+        return buildTrace();
       }
 
       // 有工具调用：把本轮 AI 消息 + 各工具结果追加进上下文，进入下一轮
@@ -173,21 +207,51 @@ ${locationInfo}
       );
 
       for (const call of toolCalls) {
+        const callId = call.id ?? `${call.name}_${toolCallRecords.length}`;
+        yield {
+          type: 'tool_call',
+          id: callId,
+          name: call.name,
+          args: call.args ?? {},
+        };
+
         const tool = toolMap.get(call.name);
         let result: string;
+        let ok = true;
+        const toolStartedAt = Date.now();
         if (!tool) {
+          ok = false;
           result = `工具 ${call.name} 不存在`;
           this.logger.warn(result);
         } else {
           try {
             result = (await tool.invoke(call.args ?? {})) as string;
           } catch (err) {
+            ok = false;
             result = `工具 ${call.name} 执行失败：${
               err instanceof Error ? err.message : String(err)
             }`;
             this.logger.error(result);
           }
         }
+        const ms = Date.now() - toolStartedAt;
+
+        toolCallRecords.push({
+          name: call.name,
+          args: call.args ?? {},
+          result,
+          ok,
+          ms,
+        });
+        yield {
+          type: 'tool_result',
+          id: callId,
+          name: call.name,
+          result,
+          ok,
+          ms,
+        };
+
         messages.push(
           new ToolMessage({ content: result, tool_call_id: call.id! }),
         );
@@ -196,6 +260,6 @@ ${locationInfo}
 
     // 理论上不可达（末轮已 return），兜底保存
     await memory.saveContext({ input: inputData.input }, { output: full });
-    return full;
+    return buildTrace();
   }
 }

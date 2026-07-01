@@ -20,6 +20,12 @@
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "jest --config ./test/jest-e2e.json",
+    "eval": "TS_NODE_PROJECT=eval/tsconfig.json TS_NODE_TRANSPILE_ONLY=1 node -r ts-node/register -r tsconfig-paths/register eval/run.ts",
+    "eval:selftest": "TS_NODE_PROJECT=eval/tsconfig.json TS_NODE_TRANSPILE_ONLY=1 node -r ts-node/register -r tsconfig-paths/register eval/selftest.ts",
+    "eval:calib:extract": "TS_NODE_PROJECT=eval/tsconfig.json TS_NODE_TRANSPILE_ONLY=1 node -r ts-node/register -r tsconfig-paths/register eval/calibration/extract.ts",
+    "eval:calib:selftest": "TS_NODE_PROJECT=eval/tsconfig.json TS_NODE_TRANSPILE_ONLY=1 node -r ts-node/register -r tsconfig-paths/register eval/calibration/metrics.selftest.ts",
+    "eval:calib:run": "TS_NODE_PROJECT=eval/tsconfig.json TS_NODE_TRANSPILE_ONLY=1 node -r ts-node/register -r tsconfig-paths/register eval/calibration/run-calibration.ts",
+    "eval:memory": "TS_NODE_PROJECT=eval/tsconfig.json TS_NODE_TRANSPILE_ONLY=1 node -r ts-node/register -r tsconfig-paths/register eval/eval-memory.ts",
     "check:imports": "node ./scripts/check-prod-imports.mjs"
   },
   "dependencies": {

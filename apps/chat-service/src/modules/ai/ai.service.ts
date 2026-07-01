@@ -5,6 +5,8 @@ import { User } from '../user/entities/user.entity';
 import { DeepDiveIntentHandler } from './intent-handlers/deepdive.intent-handler';
 import { ChatHistoryService } from '../chat-history/chat-history.service';
 import { AgentChatService } from './agent-chat.service';
+import { MemoryExtractorService } from '../memory/memory-extractor.service';
+import { MemoryService } from '../memory/memory.service';
 
 // 基础输入输出接口
 export interface InputData {
@@ -23,10 +25,19 @@ export interface ProcessedResult {
   data?: any;
 }
 
-/** SSE 流：意图 → 若干 token → 最终完成（含完整文本） */
+/** SSE 流：意图 → 若干 token / 工具事件 → 最终完成（含完整文本） */
 export type AiStreamEvent =
   | { type: 'intent'; intent: string }
   | { type: 'token'; text: string }
+  | { type: 'tool_call'; id: string; name: string; args: unknown }
+  | {
+      type: 'tool_result';
+      id: string;
+      name: string;
+      result: string;
+      ok: boolean;
+      ms: number;
+    }
   | { type: 'done'; output: string; intent: string; data?: any };
 
 // 意图处理接口（deepdive handler 仍实现它）
@@ -51,7 +62,61 @@ export class AiService {
     private readonly agentChatService: AgentChatService,
     private readonly deepDiveIntentHandler: DeepDiveIntentHandler,
     private readonly chatHistoryService: ChatHistoryService,
+    private readonly memoryExtractor: MemoryExtractorService,
+    private readonly memoryService: MemoryService,
   ) {}
+
+  /**
+   * 自动记忆抽取（第二期）。**调用方必须 fire-and-forget，不要 await** —— 它在回复
+   * 发出之后后台跑，绝不能阻塞用户拿到 done。
+   *
+   * confidence 驱动（见 docs/long-term-memory-design.md §3，经 eval 实测修正）：
+   * - stated（用户明说）→ 直接静默写入 user_memory
+   * - inferred（模型推测）→ 本期跳过（二次确认依赖 GenUI，留第三期）
+   * - routeToUserField 命中 → 本期跳过（更新 User 字段的鉴权另议）
+   * 整体 try/catch 包裹：抽取失败只记日志，绝不冒泡（避免未捕获 promise 异常）。
+   */
+  async autoExtractMemory(input: string, userId: string): Promise<void> {
+    try {
+      const facts = await this.memoryExtractor.extract(input);
+      for (const f of facts) {
+        if (f.confidence !== 'stated') {
+          this.logger.debug(`记忆抽取：inferred 跳过（待二次确认）：${f.content}`);
+          continue;
+        }
+        if (f.routeToUserField) {
+          this.logger.debug(`记忆抽取：命中 User.${f.routeToUserField}，本期跳过：${f.content}`);
+          continue;
+        }
+        // 去重：与 save_memory 工具写入的、或已存的实质相同记忆，不重复存（避免双写）
+        const dup = await this.memoryService.hasSimilarActive(
+          userId,
+          f.subject,
+          f.content,
+        );
+        if (dup) {
+          this.logger.debug(`记忆抽取：已存在相似记忆，跳过：${f.content}`);
+          continue;
+        }
+        await this.memoryService.create({
+          userId,
+          content: f.content,
+          category: f.category,
+          subject: f.subject,
+          confidence: f.confidence,
+          sensitivity: f.sensitivity,
+          temporality: f.temporality,
+          expiresHint: f.expiresHint ?? null,
+          source: f.source,
+        });
+        this.logger.log(`自动记忆已存：${f.content}`);
+      }
+    } catch (e) {
+      this.logger.warn(
+        `自动记忆抽取失败（不影响对话）：${e instanceof Error ? e.message : String(e)}`,
+      );
+    }
+  }
 
   private isDeepDive(inputData: InputData): boolean {
     return inputData.forceIntent === 'deepdive';
@@ -68,7 +133,8 @@ export class AiService {
     while (!step.done) {
       step = await gen.next();
     }
-    return { output: step.value as string, intent: 'agent' };
+    // generator 的 return 值是 RunTrace，最终文本在 finalText
+    return { output: step.value.finalText, intent: 'agent' };
   }
 
   /**
@@ -92,10 +158,28 @@ export class AiService {
     const gen = this.agentChatService.stream(inputData);
     let step = await gen.next();
     while (!step.done) {
-      yield { type: 'token', text: step.value as string };
+      const ev = step.value as Exclude<
+        typeof step.value,
+        { finalText: string }
+      >;
+      if (ev.type === 'token') {
+        yield { type: 'token', text: ev.text };
+      } else if (ev.type === 'tool_call') {
+        yield { type: 'tool_call', id: ev.id, name: ev.name, args: ev.args };
+      } else if (ev.type === 'tool_result') {
+        yield {
+          type: 'tool_result',
+          id: ev.id,
+          name: ev.name,
+          result: ev.result,
+          ok: ev.ok,
+          ms: ev.ms,
+        };
+      }
       step = await gen.next();
     }
-    yield { type: 'done', output: step.value as string, intent: 'agent' };
+    // return 值是 RunTrace，最终文本在 finalText
+    yield { type: 'done', output: step.value.finalText, intent: 'agent' };
   }
 
   /**

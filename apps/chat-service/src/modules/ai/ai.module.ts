@@ -17,6 +17,13 @@ import { CreateReminderTool } from './tools/create-reminder.tool';
 import { WeatherQueryTool } from './tools/weather-query.tool';
 import { SkillModule } from '../skill/skill.module';
 import { ChatHistoryModule } from '../chat-history/chat-history.module';
+import { MemoryModule } from '../memory/memory.module';
+import {
+  SaveMemoryTool,
+  RecallMemoryTool,
+  DeleteMemoryTool,
+} from './tools/memory.tools';
+import { MemoryExtractorService } from '../memory/memory-extractor.service';
 
 @Module({
   imports: [
@@ -26,6 +33,7 @@ import { ChatHistoryModule } from '../chat-history/chat-history.module';
     RedisModule,
     MessageModule,
     ChatHistoryModule,
+    MemoryModule,
     forwardRef(() => SkillModule),
   ],
   controllers: [AiController, AiQuotaController],
@@ -39,6 +47,10 @@ import { ChatHistoryModule } from '../chat-history/chat-history.module';
     DatabaseQueryTool,
     CreateReminderTool,
     WeatherQueryTool,
+    SaveMemoryTool,
+    RecallMemoryTool,
+    DeleteMemoryTool,
+    MemoryExtractorService,
   ],
   exports: [AiService, AiModelProvider],
 })

@@ -1,0 +1,180 @@
+[
+  {
+    "id": "mem-allergy-self",
+    "input": "我对花生过敏，以后帮我看吃的注意点。",
+    "desc": "用户本人健康约束 — 正例，敏感",
+    "expect": {
+      "op": "write",
+      "memories": [
+        {
+          "shouldRemember": true,
+          "value": "high",
+          "confidence": "stated",
+          "category": "health",
+          "subject": "self",
+          "temporality": "permanent",
+          "sensitivity": "sensitive",
+          "content": "对花生过敏",
+          "route": "user_memory"
+        }
+      ]
+    }
+  },
+  {
+    "id": "mem-goal-temporal",
+    "input": "我在准备12月的考研。",
+    "desc": "有时限的目标 — temporal + expiresHint",
+    "expect": {
+      "op": "write",
+      "memories": [
+        {
+          "shouldRemember": true,
+          "value": "high",
+          "confidence": "stated",
+          "category": "goal",
+          "subject": "self",
+          "temporality": "temporal",
+          "expiresHint": "考研后",
+          "content": "在准备12月考研",
+          "route": "user_memory"
+        }
+      ]
+    }
+  },
+  {
+    "id": "mem-thirdparty-irrelevant",
+    "input": "我朋友老王对海鲜过敏，昨天差点出事。",
+    "desc": "无关第三方 — 反例，不入库",
+    "expect": { "op": "none", "memories": [] }
+  },
+  {
+    "id": "mem-hypothetical",
+    "input": "要是我对麸质过敏的话，这家面包店是不是就不能去了？",
+    "desc": "假设句 — 反例，提到了≠成立了",
+    "expect": { "op": "none", "memories": [] }
+  },
+  {
+    "id": "mem-emotion-transient",
+    "input": "今天被领导骂了，烦死了，感觉这工作没法干了。",
+    "desc": "情绪/时效 — 反例，低价值不记",
+    "expect": { "op": "none", "memories": [] }
+  },
+  {
+    "id": "mem-pet-and-todo",
+    "input": "记一下，我家猫叫咪，下周一要打疫苗。",
+    "desc": "一句话同时触发 memory(宠物事实) + todo(事件)",
+    "expect": {
+      "op": "write",
+      "memories": [
+        {
+          "shouldRemember": true,
+          "value": "medium",
+          "confidence": "stated",
+          "category": "relationship",
+          "subject": "猫:咪",
+          "temporality": "permanent",
+          "sensitivity": "normal",
+          "content": "养了一只猫，叫咪",
+          "route": "user_memory"
+        }
+      ],
+      "alsoCreatesTodo": true,
+      "todoNote": "下周一给猫打疫苗 — 有终点的事件，进 todo 而非 memory"
+    }
+  },
+  {
+    "id": "mem-preference-not-hobby",
+    "input": "我最近开始喜欢喝美式了，以前只喝拿铁的。",
+    "desc": "细粒度偏好 — 进 user_memory 而非 User.hobby；也是偏好变化",
+    "expect": {
+      "op": "write",
+      "memories": [
+        {
+          "shouldRemember": true,
+          "value": "medium",
+          "confidence": "stated",
+          "category": "preference",
+          "subject": "self",
+          "temporality": "permanent",
+          "sensitivity": "normal",
+          "content": "咖啡偏好转向美式（以前喝拿铁）",
+          "route": "user_memory"
+        }
+      ]
+    }
+  },
+  {
+    "id": "mem-surgery-sensitive",
+    "input": "我下个月要去医院做个小手术，这阵子可能状态不好。",
+    "desc": "敏感健康信息 — memory(sensitive+temporal) + todo(手术事件)",
+    "expect": {
+      "op": "write",
+      "memories": [
+        {
+          "shouldRemember": true,
+          "value": "high",
+          "confidence": "stated",
+          "category": "health",
+          "subject": "self",
+          "temporality": "temporal",
+          "expiresHint": "手术康复后",
+          "sensitivity": "sensitive",
+          "content": "下月做小手术，近期身体状态不佳",
+          "route": "user_memory"
+        }
+      ],
+      "alsoCreatesTodo": true,
+      "todoNote": "下月手术 — 事件进 todo"
+    }
+  },
+  {
+    "id": "mem-multi-fact",
+    "input": "我是程序员，平时喜欢爬山，对海鲜过敏。",
+    "desc": "一句话三个事实，分别路由：job→User、hobby→User、过敏→user_memory",
+    "expect": {
+      "op": "write",
+      "memories": [
+        {
+          "shouldRemember": true, "value": "high", "confidence": "stated",
+          "category": "profile_extra", "subject": "self", "temporality": "permanent",
+          "sensitivity": "normal", "content": "职业是程序员", "route": "User.job"
+        },
+        {
+          "shouldRemember": true, "value": "medium", "confidence": "stated",
+          "category": "preference", "subject": "self", "temporality": "permanent",
+          "sensitivity": "normal", "content": "喜欢爬山", "route": "User.hobby"
+        },
+        {
+          "shouldRemember": true, "value": "high", "confidence": "stated",
+          "category": "health", "subject": "self", "temporality": "permanent",
+          "sensitivity": "sensitive", "content": "对海鲜过敏", "route": "user_memory"
+        }
+      ]
+    }
+  },
+  {
+    "id": "mem-self-correction",
+    "input": "我不喜欢咖啡……啊不对，我是说不喜欢苦的，美式还行。",
+    "desc": "当场改口 — 只记最终成立的，不记被否定的'不喜欢咖啡'",
+    "expect": {
+      "op": "write",
+      "memories": [
+        {
+          "shouldRemember": true, "value": "medium", "confidence": "stated",
+          "category": "preference", "subject": "self", "temporality": "permanent",
+          "sensitivity": "normal", "content": "不喜欢苦味，美式可以接受", "route": "user_memory"
+        }
+      ]
+    }
+  },
+  {
+    "id": "mem-delete-intent",
+    "input": "你别记我对花生过敏这事了。",
+    "desc": "用户主动要求遗忘 — delete 操作，非写入",
+    "expect": {
+      "op": "delete",
+      "deleteTarget": "对花生过敏",
+      "memories": []
+    }
+  }
+]

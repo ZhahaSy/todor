@@ -76,6 +76,9 @@ describe('AgentChatService', () => {
     const weather = makeToolStub('weather_query', '📍 北京 晴 25°C');
     const db = makeToolStub('database_query', '无待办');
     const reminder = makeToolStub('create_reminder', '✅ 待办已创建');
+    const saveMem = makeToolStub('save_memory', '✅ 已记住');
+    const recallMem = makeToolStub('recall_memory', '查到 1 条记忆');
+    const deleteMem = makeToolStub('delete_memory', '✅ 已忘记');
     return new AgentChatService(
       aiModelProvider,
       redisService,
@@ -83,17 +86,26 @@ describe('AgentChatService', () => {
       weather as any,
       db as any,
       reminder as any,
+      saveMem as any,
+      recallMem as any,
+      deleteMem as any,
     );
   }
 
-  async function drain(gen: AsyncGenerator<string, string>) {
+  async function drain(gen: AsyncGenerator<any, any>) {
     const tokens: string[] = [];
+    const toolCalls: { name: string; args: unknown }[] = [];
     let step = await gen.next();
     while (!step.done) {
-      tokens.push(step.value as string);
+      const ev = step.value;
+      if (ev.type === 'token') tokens.push(ev.text);
+      else if (ev.type === 'tool_call')
+        toolCalls.push({ name: ev.name, args: ev.args });
       step = await gen.next();
     }
-    return { tokens, final: step.value as string };
+    // return 值是 RunTrace
+    const trace = step.value;
+    return { tokens, toolCalls, trace, final: trace.finalText as string };
   }
 
   it('纯聊天：模型不调工具，第一轮直接流式输出', async () => {
@@ -138,5 +150,32 @@ describe('AgentChatService', () => {
         typeof m?.content === 'string' && m.content.includes('北京 晴 25°C'),
     );
     expect(hasToolResult).toBe(true);
+  });
+
+  it('RunTrace 记录工具调用：名称、入参、成功标记、迭代轮数', async () => {
+    let round = 0;
+    const svc = buildService(() => {
+      round += 1;
+      return round === 1
+        ? toolCallChunk('weather_query', { city: '北京' })
+        : textChunks('晴');
+    });
+    const { toolCalls, trace } = await drain(svc.stream(inputData));
+
+    // 事件流里捕获到一次工具调用
+    expect(toolCalls).toEqual([
+      { name: 'weather_query', args: { city: '北京' } },
+    ]);
+    // RunTrace 里完整记录了该次调用
+    expect(trace.toolCalls).toHaveLength(1);
+    expect(trace.toolCalls[0]).toMatchObject({
+      name: 'weather_query',
+      args: { city: '北京' },
+      ok: true,
+    });
+    expect(trace.toolCalls[0].result).toContain('北京 晴 25°C');
+    // 两轮：第一轮工具，第二轮文本
+    expect(trace.iterations).toBe(2);
+    expect(typeof trace.totalMs).toBe('number');
   });
 });

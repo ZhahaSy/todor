@@ -11,6 +11,7 @@ import { HubSkillDef } from './modules/skill/entities/hub-skill-def.entity';
 import { User } from './modules/user/entities/user.entity';
 import { Skill } from './modules/skill/entities/skill.entity';
 import { DeepDiveExtra } from './modules/chat-history/entities/deep-dive-extra.entity';
+import { UserMemory } from './modules/memory/entities/user-memory.entity';
 
 import { ConfigModule } from '@nestjs/config';
 import { ChatHistoryModule } from './modules/chat-history/chat-history.module';
@@ -27,6 +28,7 @@ import { AuthModule } from './modules/auth/auth.module';
 import { MessageModule } from './modules/message/message.module';
 import { ScheduleModule } from './modules/schedule/schedule.module';
 import { SkillModule } from './modules/skill/skill.module';
+import { MemoryModule } from './modules/memory/memory.module';
 
 export const IS_DEV = process.env.RUNNING_ENV !== 'prod';
 @Module({
@@ -36,7 +38,7 @@ export const IS_DEV = process.env.RUNNING_ENV !== 'prod';
       database:
         process.env.DB_DATABASE ||
         (IS_DEV ? 'dbs/chat.db' : '/var/data/chat-service/chat.db'),
-      entities: [Todo, ChatHistory, Notification, ScheduledTask, HubSkillDef, User, Skill, DeepDiveExtra],
+      entities: [Todo, ChatHistory, Notification, ScheduledTask, HubSkillDef, User, Skill, DeepDiveExtra, UserMemory],
       synchronize: true, // 自动同步表结构（新表/新列），pm2 reload 已固化 env，不再有误触风险
     }),
 
@@ -69,6 +71,7 @@ export const IS_DEV = process.env.RUNNING_ENV !== 'prod';
     AuthModule,
     UserModule,
     SkillModule,
+    MemoryModule,
   ],
   controllers: [AppController],
   providers: [AppService],
