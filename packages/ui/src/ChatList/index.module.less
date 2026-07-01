@@ -21,8 +21,13 @@
         }
         // AI 消息气泡
         .ant-bubble-content[class*="start"] {
-            background: #F5F6FB !important;
-            color: #1a1d2e !important;
+            background: var(--ant-color-fill-tertiary, #F5F6FB) !important;
+            color: var(--ant-color-text, #1a1d2e) !important;
+        }
+
+        // markdown 分割线：模型常把 --- 当段落分隔输出，视觉上无必要，直接隐藏，靠段落间距分隔
+        .ant-bubble-content hr {
+            display: none;
         }
     }
 }
@@ -35,7 +40,7 @@
 
 .noMoreTip {
     text-align: center;
-    color: #B0B7C8;
+    color: var(--ant-color-text-quaternary, #B0B7C8);
     font-size: 12px;
     padding: 8px 0;
 }

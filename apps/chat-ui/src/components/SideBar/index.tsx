@@ -11,6 +11,8 @@ import {
   AppstoreOutlined,
   DeleteOutlined,
   SafetyOutlined,
+  SunOutlined,
+  MoonOutlined,
 } from "@ant-design/icons";
 import { Button, Menu, Tooltip, Popconfirm, message } from "antd";
 import type { MenuProps } from "antd";
@@ -19,6 +21,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { deleteDeepDiveSession, getDeepDiveSessions } from "@client/api";
 import type { DeepDiveSession } from "@client/api";
 import useUserStore from "@/store/useUserStore";
+import useThemeStore from "@/store/useThemeStore";
 
 const Sidebar = ({ onClose }: { onClose?: () => void }) => {
   const [collapsed, setCollapsed] = useState(false);
@@ -26,6 +29,8 @@ const Sidebar = ({ onClose }: { onClose?: () => void }) => {
   const navigate = useNavigate();
   const location = useLocation();
   const user = useUserStore((s) => s.user);
+  const themeMode = useThemeStore((s) => s.mode);
+  const toggleTheme = useThemeStore((s) => s.toggle);
 
   // 加载深度会话列表
   useEffect(() => {
@@ -142,6 +147,16 @@ const Sidebar = ({ onClose }: { onClose?: () => void }) => {
     <div className={`${styles.sidebar} ${collapsed ? styles.collapsed : ""}`}>
       <div className={styles.topBar}>
         <UserSelector isShowName={!collapsed} />
+        {!collapsed && (
+          <Tooltip title={themeMode === "dark" ? "切换浅色" : "切换深色"}>
+            <Button
+              type="text"
+              size="small"
+              icon={themeMode === "dark" ? <SunOutlined /> : <MoonOutlined />}
+              onClick={toggleTheme}
+            />
+          </Tooltip>
+        )}
       </div>
 
       <div className={`${styles.conversationList} ${styles.withSubMenu}`}>

@@ -1,23 +1,23 @@
 .sender {
   border-radius: 14px !important;
-  border: 1.5px solid #eef0f8 !important;
+  border: 1.5px solid var(--ant-color-border-secondary, #eef0f8) !important;
   box-shadow: 0 2px 16px rgba(91, 110, 245, 0.08) !important;
-  background: #fff !important;
+  background: var(--ant-color-bg-container, #fff) !important;
   transition: border-color 0.2s, box-shadow 0.2s;
 
   &:focus-within {
-    border-color: #5B6EF5 !important;
+    border-color: var(--ant-color-primary, #5B6EF5) !important;
     box-shadow: 0 4px 20px rgba(91, 110, 245, 0.14) !important;
   }
 }
 
 .toggleBtn {
-  color: #aab0c8;
+  color: var(--ant-color-text-tertiary, #aab0c8);
   border-radius: 8px;
 
   &:hover {
-    color: #5B6EF5 !important;
-    background: #f0f1fe !important;
+    color: var(--ant-color-primary, #5B6EF5) !important;
+    background: var(--ant-color-primary-bg, #f0f1fe) !important;
   }
 }
 
@@ -28,8 +28,8 @@
   gap: 10px;
   padding: 12px 16px;
   border-radius: 14px;
-  border: 1.5px solid #eef0f8;
-  background: #fff;
+  border: 1.5px solid var(--ant-color-border-secondary, #eef0f8);
+  background: var(--ant-color-bg-container, #fff);
   box-shadow: 0 2px 16px rgba(91, 110, 245, 0.08);
 }
 
@@ -38,10 +38,10 @@
   flex: 1;
   height: 44px;
   border-radius: 22px;
-  border: 1.5px solid #e0e3f5;
-  background: #f7f8fc;
+  border: 1.5px solid var(--ant-color-border, #e0e3f5);
+  background: var(--ant-color-fill-tertiary, #f7f8fc);
   font-size: 14px;
-  color: #4a5080;
+  color: var(--ant-color-text-secondary, #4a5080);
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -52,9 +52,9 @@
   -webkit-user-select: none;
 
   &:hover:not(:disabled) {
-    background: #eef0fc;
-    border-color: #5B6EF5;
-    color: #5B6EF5;
+    background: var(--ant-color-primary-bg, #eef0fc);
+    border-color: var(--ant-color-primary, #5B6EF5);
+    color: var(--ant-color-primary, #5B6EF5);
   }
 
   &:disabled {
@@ -63,15 +63,15 @@
   }
 
   &.recording {
-    background: #eef0fe;
-    border-color: #5B6EF5;
-    color: #5B6EF5;
+    background: var(--ant-color-primary-bg, #eef0fe);
+    border-color: var(--ant-color-primary, #5B6EF5);
+    color: var(--ant-color-primary, #5B6EF5);
   }
 
   &.canceling {
-    background: #fff1f0;
-    border-color: #ffa39e;
-    color: #ff4d4f;
+    background: var(--ant-color-error-bg, #fff1f0);
+    border-color: var(--ant-color-error-border, #ffa39e);
+    color: var(--ant-color-error, #ff4d4f);
   }
 }
 
@@ -87,12 +87,12 @@
   display: inline-block;
   width: 3px;
   height: 100%;
-  background: #5B6EF5;
+  background: var(--ant-color-primary, #5B6EF5);
   border-radius: 2px;
   animation: waveAnim 0.7s ease-in-out infinite;
 
   .canceling & {
-    background: #ff4d4f;
+    background: var(--ant-color-error, #ff4d4f);
   }
 }
 

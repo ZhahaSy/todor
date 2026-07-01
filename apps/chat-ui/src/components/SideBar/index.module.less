@@ -1,5 +1,5 @@
 .sidebar {
-  background: #fff;
+  background: var(--ant-color-bg-container, #fff);
   border-radius: 16px;
   display: flex;
   flex-direction: column;
@@ -21,7 +21,7 @@
     display: flex;
     align-items: center;
     padding: 0 10px 12px;
-    border-bottom: 1px solid #ECEEF3;
+    border-bottom: 1px solid var(--ant-color-border-secondary, #ECEEF3);
     margin-bottom: 6px;
   }
 
@@ -34,16 +34,16 @@
     // 覆盖 ant Menu 选中/hover 色
     :global {
       .ant-menu-item:hover {
-        background: #F0F2F7 !important;
-        color: #5B6EF5 !important;
+        background: var(--ant-color-fill-tertiary, #F0F2F7) !important;
+        color: var(--ant-color-primary, #5B6EF5) !important;
       }
       .ant-menu-item-selected {
-        background: #EDEFFE !important;
-        color: #5B6EF5 !important;
+        background: var(--ant-color-primary-bg, #EDEFFE) !important;
+        color: var(--ant-color-primary, #5B6EF5) !important;
         font-weight: 600;
       }
       .ant-menu-item-selected .anticon {
-        color: #5B6EF5 !important;
+        color: var(--ant-color-primary, #5B6EF5) !important;
       }
     }
   }
@@ -86,13 +86,13 @@
 
   .collapseBtn {
     margin: 8px 10px 0;
-    color: #9BA3B8;
+    color: var(--ant-color-text-tertiary, #9BA3B8);
     border-radius: 10px;
     transition: color 0.2s, background 0.2s;
 
     &:hover {
-      color: #5B6EF5;
-      background: #F0F2F7;
+      color: var(--ant-color-primary, #5B6EF5);
+      background: var(--ant-color-fill-tertiary, #F0F2F7);
     }
   }
 }

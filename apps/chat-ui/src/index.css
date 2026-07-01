@@ -1,4 +1,4 @@
 #root {
     height: 100vh;
-    background-color: #F0F2F7;
+    background-color: var(--ant-color-bg-layout, #F0F2F7);
   }

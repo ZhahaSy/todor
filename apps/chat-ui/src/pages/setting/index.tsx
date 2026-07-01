@@ -12,6 +12,7 @@ import {
   Divider,
   Popconfirm,
   Radio,
+  Segmented,
 } from 'antd';
 import {
   UserOutlined,
@@ -19,9 +20,13 @@ import {
   DownloadOutlined,
   DeleteOutlined,
   ThunderboltOutlined,
+  BgColorsOutlined,
+  SunOutlined,
+  MoonOutlined,
 } from '@ant-design/icons';
 import SkillTab from './SkillTab';
 import useUserStore from '@/store/useUserStore';
+import useThemeStore from '@/store/useThemeStore';
 import { updateUserInfo, exportUserData } from '@client/api';
 import type { UpdateUserDto } from '@client/entities';
 
@@ -30,6 +35,8 @@ const { TextArea } = Input;
 
 const Setting = () => {
   const { user, getUserInfo } = useUserStore();
+  const themeMode = useThemeStore((s) => s.mode);
+  const setThemeMode = useThemeStore((s) => s.setMode);
   const [profileForm] = Form.useForm();
   const [loading, setLoading] = useState(false);
 
@@ -207,7 +214,7 @@ const Setting = () => {
       <Space direction="vertical" size="large" style={{ width: '100%' }}>
         <div>
           <h3>导出数据</h3>
-          <p style={{ color: '#666', marginBottom: 16 }}>
+          <p style={{ color: 'var(--ant-color-text-secondary)', marginBottom: 16 }}>
             将您的个人信息导出为 JSON 格式文件
           </p>
           <Button icon={<DownloadOutlined />} onClick={handleExportData}>
@@ -219,7 +226,7 @@ const Setting = () => {
 
         <div>
           <h3>清空数据</h3>
-          <p style={{ color: '#666', marginBottom: 16 }}>
+          <p style={{ color: 'var(--ant-color-text-secondary)', marginBottom: 16 }}>
             删除所有待办事项和聊天记录（此操作不可恢复）
           </p>
           <Popconfirm
@@ -239,6 +246,28 @@ const Setting = () => {
     </Card>
   );
 
+  // 外观设置
+  const AppearanceTab = () => (
+    <Card title={<><BgColorsOutlined /> 外观设置</>}>
+      <Space direction="vertical" size="large" style={{ width: '100%' }}>
+        <div>
+          <h3 style={{ marginBottom: 4 }}>主题模式</h3>
+          <p style={{ color: 'var(--ant-color-text-secondary)', marginBottom: 16 }}>
+            选择浅色或深色界面，设置会自动保存到本地
+          </p>
+          <Segmented
+            value={themeMode}
+            onChange={(val) => setThemeMode(val as 'light' | 'dark')}
+            options={[
+              { label: '浅色', value: 'light', icon: <SunOutlined /> },
+              { label: '深色', value: 'dark', icon: <MoonOutlined /> },
+            ]}
+          />
+        </div>
+      </Space>
+    </Card>
+  );
+
   return (
     <div style={{ width: '100%', height: '100%', overflow: 'auto' }}>
       <Tabs defaultActiveKey="profile" style={{ marginBottom: 24, width: '100%', position: 'sticky', top: 0, left: 0, right: 0 }}>
@@ -252,6 +281,17 @@ const Setting = () => {
           key="profile"
         >
           <ProfileTab />
+        </TabPane>
+        <TabPane
+          tab={
+            <span>
+              <BgColorsOutlined />
+              外观
+            </span>
+          }
+          key="appearance"
+        >
+          <AppearanceTab />
         </TabPane>
         {/* <TabPane
           tab={
