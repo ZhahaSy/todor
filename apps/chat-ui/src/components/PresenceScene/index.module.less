@@ -1,0 +1,305 @@
+.scene {
+  position: relative;
+  flex: 0 0 245px;
+  overflow: hidden;
+  border-radius: 18px;
+  padding: 18px 22px 14px;
+  color: #f7f8ff;
+  background: linear-gradient(145deg, #232842 0%, #171a2a 100%);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  transition: background 500ms ease;
+}
+
+.scene.immersive {
+  flex: 1;
+  min-width: 0;
+  min-height: 100%;
+  border-radius: 0;
+  padding: 26px 32px;
+}
+
+.scene.immersive .room {
+  height: calc(100% - 54px);
+  margin-top: 0;
+}
+
+.scene.immersive .floor {
+  bottom: -20%;
+  height: 52%;
+}
+
+.scene.immersive .character {
+  bottom: 20%;
+  width: min(260px, 30vw);
+  height: min(300px, 42vh);
+}
+
+.scene.immersive .window {
+  top: 14%;
+  left: 17%;
+  transform: scale(1.55);
+  transform-origin: top left;
+}
+
+.scene.immersive .shelf {
+  top: 22%;
+  right: 18%;
+  transform: scale(1.45);
+  transform-origin: top right;
+}
+
+.scene.immersive .speech {
+  top: auto;
+  right: auto;
+  bottom: calc(100% - 8px);
+  left: 50%;
+  width: min(440px, 42vw);
+  max-height: min(280px, 32vh);
+  overflow-y: auto;
+  transform: translateX(-50%);
+  line-height: 1.5;
+  white-space: normal;
+  text-align: left;
+  font-size: 13px;
+  scrollbar-width: thin;
+}
+
+.headerActions {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.sceneAction {
+  padding: 5px 10px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 999px;
+  color: rgba(247, 248, 255, 0.72);
+  background: rgba(255, 255, 255, 0.06);
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.sceneAction:hover {
+  color: #fff;
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.scene.warm {
+  background: linear-gradient(145deg, #3a2d3b 0%, #1f1a2a 100%);
+}
+
+.scene.sunny {
+  background: linear-gradient(145deg, #34446b 0%, #20243a 100%);
+}
+
+.sceneHeader {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+}
+
+.eyebrow {
+  display: block;
+  margin-bottom: 4px;
+  color: rgba(233, 237, 255, 0.55);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+}
+
+h1 {
+  margin: 0;
+  font-size: 21px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+.statusDot {
+  width: 8px;
+  height: 8px;
+  margin-top: 5px;
+  border-radius: 50%;
+  background: #9da9ff;
+  box-shadow: 0 0 0 5px rgba(157, 169, 255, 0.12), 0 0 14px #9da9ff;
+}
+
+.room {
+  position: relative;
+  height: 135px;
+  margin-top: 4px;
+  perspective: 500px;
+}
+
+.floor {
+  position: absolute;
+  right: -15%;
+  bottom: -45px;
+  left: -15%;
+  height: 105px;
+  transform: rotateX(62deg);
+  transform-origin: top;
+  background: repeating-linear-gradient(90deg, rgba(166, 174, 239, 0.12) 0 1px, transparent 1px 42px),
+    linear-gradient(180deg, rgba(105, 116, 188, 0.25), rgba(24, 27, 46, 0.1));
+}
+
+.window {
+  position: absolute;
+  top: 9px;
+  left: 10%;
+  width: 92px;
+  height: 69px;
+  overflow: hidden;
+  border: 4px solid rgba(207, 217, 255, 0.2);
+  border-bottom-width: 6px;
+  background: linear-gradient(180deg, #29365b, #46527d);
+  box-shadow: 0 0 36px rgba(117, 155, 255, 0.24);
+}
+
+.window::before,
+.window::after {
+  position: absolute;
+  content: "";
+  background: rgba(220, 228, 255, 0.2);
+}
+
+.window::before {
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  width: 2px;
+}
+
+.window::after {
+  top: 50%;
+  right: 0;
+  left: 0;
+  height: 2px;
+}
+
+.window span {
+  position: absolute;
+  width: 3px;
+  height: 3px;
+  border-radius: 50%;
+  background: #e3e7ff;
+  opacity: 0.7;
+}
+
+.window span:nth-child(1) { top: 15px; left: 18px; }
+.window span:nth-child(2) { top: 42px; left: 68px; }
+.window span:nth-child(3) { top: 26px; left: 77px; }
+
+.shelf {
+  position: absolute;
+  right: 8%;
+  top: 30px;
+  width: 72px;
+  height: 5px;
+  border-radius: 3px;
+  background: rgba(203, 207, 245, 0.24);
+}
+
+.shelf b {
+  position: relative;
+  display: inline-block;
+  width: 12px;
+  height: 18px;
+  margin: -17px 3px 0;
+  border-radius: 2px 2px 0 0;
+  background: rgba(182, 192, 247, 0.35);
+  vertical-align: bottom;
+}
+
+.shelf b:nth-child(2) { height: 24px; background: rgba(230, 190, 160, 0.45); }
+.shelf b:nth-child(3) { height: 14px; background: rgba(157, 184, 225, 0.5); }
+
+.character {
+  position: absolute;
+  z-index: 2;
+  bottom: 10px;
+  left: 50%;
+  width: 112px;
+  height: 132px;
+  padding: 0;
+  border: 0;
+  transform: translateX(-50%);
+  background: transparent;
+  cursor: pointer;
+  filter: drop-shadow(0 14px 12px rgba(0, 0, 0, 0.28));
+  transition: transform 320ms ease, filter 320ms ease;
+}
+
+.character:hover { filter: drop-shadow(0 16px 17px rgba(157, 169, 255, 0.35)); }
+.character img { width: 100%; height: 100%; object-fit: contain; }
+.character.listening { transform: translateX(-50%) translateY(-5px) scale(1.03); }
+.character.thinking { animation: breathe 1.6s ease-in-out infinite; }
+
+.speech {
+  position: absolute;
+  top: -2px;
+  right: -54px;
+  min-width: 66px;
+  padding: 6px 9px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 11px 11px 11px 3px;
+  color: rgba(247, 248, 255, 0.88);
+  background: rgba(39, 43, 73, 0.82);
+  font-size: 11px;
+  white-space: nowrap;
+  backdrop-filter: blur(8px);
+}
+
+.plant {
+  position: absolute;
+  right: 10%;
+  bottom: 11px;
+  width: 25px;
+  height: 45px;
+}
+
+.plant span {
+  position: absolute;
+  bottom: 14px;
+  left: 11px;
+  width: 9px;
+  height: 27px;
+  border-radius: 100% 0 100% 0;
+  background: #799a87;
+  transform-origin: bottom;
+}
+
+.plant span:nth-child(1) { transform: rotate(-30deg); }
+.plant span:nth-child(2) { transform: rotate(26deg) scale(0.85); }
+.plant span:nth-child(3) { transform: rotate(4deg) scale(0.72); }
+.plant i {
+  position: absolute;
+  bottom: 0;
+  left: 4px;
+  width: 22px;
+  height: 14px;
+  border-radius: 2px 2px 7px 7px;
+  background: #be8d77;
+}
+
+.caption {
+  position: relative;
+  z-index: 2;
+  margin: 0;
+  color: rgba(233, 237, 255, 0.62);
+  font-size: 12px;
+}
+
+@keyframes breathe {
+  0%, 100% { transform: translateX(-50%) translateY(0); }
+  50% { transform: translateX(-50%) translateY(-4px); }
+}
+
+@media (max-width: 700px) {
+  .scene { flex-basis: 210px; padding: 14px 16px 10px; }
+  .room { height: 112px; }
+  .character { bottom: 3px; height: 112px; }
+  .window { transform: scale(0.82); transform-origin: top left; }
+  .shelf { transform: scale(0.82); transform-origin: top right; }
+}

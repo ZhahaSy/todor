@@ -1,9 +1,12 @@
-import React, { useEffect, useCallback, useRef } from "react";
+import React, { useEffect, useCallback, useRef, useState } from "react";
 import { ChatList, SenderPanel, DeepDivePanel } from "@client/ui";
+import type { ChatMode } from "@client/ui";
 import styles from "./index.module.less";
 import { useChat, useSendMessage, useDeepDiveChat } from "@client/hooks";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { ChatHistory } from "@client/entities";
+import PresenceScene, { PresenceMode } from "@/components/PresenceScene";
+import ImmersiveMode from "@/components/ImmersiveMode";
 
 const serializeMessages = (messages: ChatHistory[]): string =>
   messages
@@ -35,6 +38,21 @@ const ChatPage: React.FC = () => {
     appendToLastAiContent,
     replaceLastAiContent,
   });
+  const [presenceMode, setPresenceMode] = useState<PresenceMode>("idle");
+  const [immersive, setImmersive] = useState(false);
+
+  const handlePresenceSubmit = useCallback(
+    async (value: string, mode: ChatMode = "chat") => {
+      setPresenceMode("listening");
+      await handleSubmit(value, mode);
+    },
+    [handleSubmit]
+  );
+
+  useEffect(() => {
+    if (loading) setPresenceMode("thinking");
+    else if (presenceMode === "thinking") setPresenceMode("idle");
+  }, [loading, presenceMode]);
 
   // 深度对话
   const deepDive = useDeepDiveChat();
@@ -88,8 +106,29 @@ const ChatPage: React.FC = () => {
     );
   }
 
+  if (immersive) {
+    return (
+      <div className={styles.chat}>
+        <ImmersiveMode
+          messages={messages}
+          loading={loading}
+          presenceMode={presenceMode}
+          onSubmit={handlePresenceSubmit}
+          onCancel={handleCancel}
+          onExit={() => setImmersive(false)}
+        />
+      </div>
+    );
+  }
+
   return (
     <div className={styles.chat}>
+      <PresenceScene
+        mode={presenceMode}
+        lastUserMessage={messages.filter((message) => message.role === "local").at(-1)?.content}
+        actionLabel="沉浸"
+        onAction={() => setImmersive(true)}
+      />
       <ChatList
         messages={messages}
         loading={loading}
@@ -103,7 +142,7 @@ const ChatPage: React.FC = () => {
       />
       <div className={styles.senderWrap}>
         <SenderPanel
-          onSubmit={handleSubmit}
+          onSubmit={handlePresenceSubmit}
           sending={loading}
           onCancel={handleCancel}
         />

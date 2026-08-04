@@ -154,8 +154,8 @@ const ChatList = ({
         </>
       ) : (
         <Welcome
-          title="你好，我是你的私人助手。"
-          description="你可以和我聊天。也可以让我帮你解决问题。"
+          title="和他打个招呼。"
+          description="他住在上面的空间里，你可以随时进去坐一会儿。"
         />
       )}
     </div>

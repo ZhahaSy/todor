@@ -1,0 +1,107 @@
+.immersive {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  overflow: hidden;
+  background: #171a2a;
+}
+
+.overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  pointer-events: none;
+  background: linear-gradient(180deg, rgba(11, 13, 26, 0.08) 38%, rgba(11, 13, 26, 0.62) 100%);
+}
+
+.history,
+.senderWrap {
+  pointer-events: auto;
+}
+
+.history {
+  position: absolute;
+  right: 20px;
+  bottom: 104px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  width: min(290px, 25vw);
+  max-height: 32vh;
+  overflow-y: auto;
+  padding: 8px 10px;
+  border: 1px solid transparent;
+  border-radius: 12px;
+  opacity: 0.2;
+  transition: opacity 220ms ease, background 220ms ease, border-color 220ms ease;
+  scrollbar-width: thin;
+}
+
+.history:hover,
+.history:focus-within {
+  border-color: rgba(255, 255, 255, 0.13);
+  opacity: 0.9;
+  background: rgba(16, 19, 38, 0.42);
+  backdrop-filter: blur(8px);
+}
+
+.historyTitle {
+  margin-bottom: 2px;
+  color: rgba(247, 248, 255, 0.8);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+}
+
+.historyMessage {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  margin: 0;
+  line-height: 1.45;
+  overflow-wrap: anywhere;
+  font-size: 12px;
+}
+
+.historySpeaker {
+  flex: 0 0 auto;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.historyContent {
+  min-width: 0;
+  white-space: pre-wrap;
+}
+
+.historyMessage + .historyMessage {
+  padding-top: 3px;
+}
+
+.historyUser {
+  color: rgba(246, 248, 255, 0.72);
+}
+
+.historyAi {
+  color: rgba(255, 255, 255, 0.95);
+}
+
+.senderWrap {
+  position: relative;
+  z-index: 2;
+}
+
+.senderWrap {
+  width: min(760px, calc(100% - 32px));
+  margin: 0 auto 22px;
+}
+
+@media (max-width: 700px) {
+  .history {
+    right: 12px;
+    bottom: 94px;
+    width: min(240px, 56vw);
+  }
+  .senderWrap { margin-bottom: 12px; }
+}
